@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const cors = require("cors");
 const app = express();
-
+1
 app.use(cors());
 app.use(express.json());
 
