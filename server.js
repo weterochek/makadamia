@@ -7,18 +7,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-require('dotenv').config();
-
-const mongoURI = process.env.MONGO_URI || "mongodb://11_ifelephant:ee590bdf579c7404d12fd8cf0990314242d56e62@axs-h.h.filess.io:27018/11_ifelephant";
-mongoose.connect(mongoURI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
+// Подключение к MongoDB
+mongoose.connect("mongodb://11_ifelephant:ee590bdf579c7404d12fd8cf0990314242d56e62@axs-h.h.filess.io:27018/11_ifelephant", {
 })
-  .then(() => console.log("MongoDB connected"))
-  .catch((error) => console.error("MongoDB connection error:", error));
-
-
-// Проверка соединения с сервером
+.then(() => console.log("MongoDB connected"))
+.catch((error) => console.error("MongoDB connection error:", error));
 app.get("/", (req, res) => {
   res.send("Сервер работает!");
 });
@@ -61,6 +54,9 @@ app.post("/login", async (req, res) => {
 });
 
 const PORT = 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
+});
 
 // Проверка соединения
 app.get("/connect", (req, res) => {
