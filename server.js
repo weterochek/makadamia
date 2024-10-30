@@ -9,13 +9,21 @@ app.use(express.json());
 
 require('dotenv').config();
 
-const mongoURI = process.env.MONGO_URI || "mongodb://11_ifelephant:ee590bdf579c7404d12fd8cf0990314242d56e62@axs-h.h.filess.io:27018/11_ifelephant";
-mongoose.connect(mongoURI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-  .then(() => console.log("MongoDB connected"))
-  .catch((error) => console.error("MongoDB connection error:", error));
+async function connectToDatabase() {
+  try {
+    await mongoose.connect(mongoURI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log("MongoDB connected");
+  } catch (error) {
+    console.error("MongoDB connection error:", error);
+    setTimeout(connectToDatabase, 5000); // Повтор через 5 секунд
+  }
+}
+
+connectToDatabase();
+
 
 // Проверка соединения с сервером
 app.get("/", (req, res) => {
