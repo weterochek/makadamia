@@ -7,15 +7,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Подключение к MongoDB с использованием обновленных параметров
+// Подключение к MongoDB
 mongoose.connect("mongodb://11_ifelephant:ee590bdf579c7404d12fd8cf0990314242d56e62@axs-h.h.filess.io:27018/11_ifelephant", {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
 })
 .then(() => console.log("MongoDB connected"))
 .catch((error) => console.error("MongoDB connection error:", error));
-
-// Проверка соединения с сервером
 app.get("/", (req, res) => {
   res.send("Сервер работает!");
 });
