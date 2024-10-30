@@ -17,8 +17,6 @@ mongoose.connect(mongoURI, {
   .then(() => console.log("MongoDB connected"))
   .catch((error) => console.error("MongoDB connection error:", error));
 
-connectToDatabase();
-
 
 // Проверка соединения с сервером
 app.get("/", (req, res) => {
