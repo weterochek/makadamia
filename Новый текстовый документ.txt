@@ -1,0 +1,3 @@
+mkdir project_name
+cd project_name
+npm init -y
