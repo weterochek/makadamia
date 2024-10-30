@@ -9,11 +9,12 @@ app.use(express.json());
 
 // Подключение к MongoDB
 const mongoURI = process.env.MONGO_URI || "mongodb://11_ifelephant:ee590bdf579c7404d12fd8cf0990314242d56e62@axs-h.h.filess.io:27018/11_ifelephant";
-.then(() => console.log("MongoDB connected"))
-.catch((error) => console.error("MongoDB connection error:", error));
-app.get("/", (req, res) => {
-  res.send("Сервер работает!");
-});
+mongoose.connect(mongoURI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+  .then(() => console.log("MongoDB connected"))
+  .catch((error) => console.error("MongoDB connection error:", error));
 
 // Схема и модель пользователя
 const userSchema = new mongoose.Schema({
