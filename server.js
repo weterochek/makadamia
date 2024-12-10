@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const cors = require("cors");
 const app = express();
+const path = require('path');
 
 
 
@@ -19,6 +20,18 @@ mongoose
   .then(() => console.log('Connected to MongoDB Atlas'))
   .catch((error) => console.error('Error connecting to MongoDB Atlas:', error));
 
+// Обслуживание статических файлов
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Маршрут для корневой страницы
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
 // Схема и модель пользователя
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
