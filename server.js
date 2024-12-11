@@ -23,6 +23,21 @@ app.use(cors({
   origin: 'https://makadamiy.onrender.com',
   credentials: true
 }));
+// Используем CORS
+app.use(cors(corsOptions));
+
+// Ваши маршруты
+app.post('/register', async (req, res) => {
+  // Логика регистрации
+});
+
+app.post('/login', async (req, res) => {
+  // Логика авторизации
+});
+
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
+});
 // Указание папки со статическими файлами
 app.use(express.static(path.join(__dirname, "public")));
 
