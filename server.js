@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
@@ -5,7 +6,6 @@ const cors = require("cors");
 const path = require("path");
 const app = express();
 const jwt = require("jsonwebtoken");
-require("dotenv").config();
 app.use(cors());
 app.use(express.json());
 
