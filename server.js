@@ -12,13 +12,22 @@ const path = require('path');
 // Модули для CORS и JSON
 app.use(cors());
 app.use(express.json());
+mongoose.set('strictQuery', true);
 console.log("MongoDB URI from .env:", process.env.MONGODB_URI); // This should print the MongoDB URI
-const URL = process.env.MONGO_URI;
+  const mongoose = require('mongoose');
 
-mongoose
-  .connect(URL, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log('Connected to MongoDB Atlas'))
-  .catch((error) => console.error('Error connecting to MongoDB Atlas:', error));
+const uri = process.env.MONGODB_URI;
+if (!uri) {
+    console.error('MongoDB URI is undefined. Please check your environment variables.');
+    process.exit(1);
+}
+
+mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
+    .then(() => console.log('Connected to MongoDB Atlas'))
+    .catch((err) => {
+        console.error('Error connecting to MongoDB:', err);
+        process.exit(1);
+    });
 
 // Обслуживание статических файлов
 app.use(express.static(path.join(__dirname, 'public')));
