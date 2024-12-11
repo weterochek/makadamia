@@ -33,18 +33,22 @@ const User = mongoose.model("User", userSchema);
 // Регистрация
 app.post('/register', async (req, res) => {
   const { username, password } = req.body;
+  console.log('Registering user:', username);  // Логируем входные данные
 
   try {
     const existingUser = await User.findOne({ username });
     if (existingUser) {
+      console.log('User already exists:', username);  // Логируем ошибку
       return res.status(409).json({ message: 'User already exists' });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = new User({ username, password: hashedPassword });
     await newUser.save();
+    console.log('User registered successfully:', username);  // Логируем успешную регистрацию
     res.status(201).json({ message: 'User registered successfully' });
   } catch (err) {
+    console.error('Error registering user:', err);  // Логируем ошибку
     res.status(500).json({ message: 'Error registering user', error: err.message });
   }
 });
