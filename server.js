@@ -6,8 +6,17 @@ const cors = require("cors");
 const path = require("path");
 const app = express();
 const jwt = require("jsonwebtoken");
-app.use(cors());
+
 app.use(express.json());
+
+// Настройка CORS
+const corsOptions = {
+  origin: 'https://makadamiy.onrender.com',  // Укажите ваш фронтенд
+  credentials: true,  // Разрешить использование cookies/сессий
+};
+
+// Используем CORS с настройками
+app.use(cors(corsOptions));
 
 // Подключение к MongoDB
 const JWT_SECRET = process.env.JWT_SECRET || "ai3ohPh3Aiy9eeThoh8caaM9voh5Aezaenai0Fae2Pahsh2Iexu7Qu/";
@@ -19,25 +28,6 @@ mongoose.connect(mongoURI, {
   .then(() => console.log("MongoDB connected"))
   .catch((error) => console.error("MongoDB connection error:", error));
 
-app.use(cors({
-  origin: 'https://makadamiy.onrender.com',
-  credentials: true
-}));
-// Используем CORS
-app.use(cors(corsOptions));
-
-// Ваши маршруты
-app.post('/register', async (req, res) => {
-  // Логика регистрации
-});
-
-app.post('/login', async (req, res) => {
-  // Логика авторизации
-});
-
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});
 // Указание папки со статическими файлами
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -54,42 +44,42 @@ app.post('/register', async (req, res) => {
   const { username, password } = req.body;
   
   try {
-  const existingUser = await User.findOne({ username });
-  if (existingUser) {
-  return res.status(409).json({ message: 'Пользователь уже существует' });
-  }
-  
-  const hashedPassword = await bcrypt.hash(password, 10);
-  const newUser = new User({ username, password: hashedPassword });
-  await newUser.save();
-  res.status(201).json({ message: 'Пользователь успешно зарегистрирован' });
+    const existingUser = await User.findOne({ username });
+    if (existingUser) {
+      return res.status(409).json({ message: 'Пользователь уже существует' });
+    }
+    
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = new User({ username, password: hashedPassword });
+    await newUser.save();
+    res.status(201).json({ message: 'Пользователь успешно зарегистрирован' });
   } catch (err) {
-  res.status(500).json({ message: 'Ошибка регистрации пользователя', error: err.message });
+    res.status(500).json({ message: 'Ошибка регистрации пользователя', error: err.message });
   }
-  });
+});
 
 // Авторизация пользователя
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
   
   try {
-  const user = await User.findOne({ username });
-  
-  if (!user) {
-  return res.status(401).json({ message: 'Неверное имя пользователя или пароль' });
-  }
-  
-  const isPasswordValid = await bcrypt.compare(password, user.password);
-  if (!isPasswordValid) {
-  return res.status(401).json({ message: 'Неверное имя пользователя или пароль' });
-  }
-  
-  const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '1h' });
-  res.status(200).json({ token });
+    const user = await User.findOne({ username });
+    
+    if (!user) {
+      return res.status(401).json({ message: 'Неверное имя пользователя или пароль' });
+    }
+    
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: 'Неверное имя пользователя или пароль' });
+    }
+    
+    const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '1h' });
+    res.status(200).json({ token });
   } catch (err) {
-  res.status(500).json({ message: 'Ошибка входа', error: err.message });
+    res.status(500).json({ message: 'Ошибка входа', error: err.message });
   }
-  });
+});
 
 // Обработка корневого маршрута
 app.get("/", (req, res) => {
@@ -101,6 +91,7 @@ app.get("/connect", (req, res) => {
   res.send("Соединение с сервером успешно!");
 });
 
+// Порт, на котором будет работать сервер
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
