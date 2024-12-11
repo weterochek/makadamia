@@ -13,7 +13,7 @@ const app = express();
 // Конфигурация
 const JWT_SECRET = process.env.JWT_SECRET || "defaultsecret";
 const PORT = process.env.PORT || 3000;
-const MONGO_URI = process.env.MONGO_URI;
+const MONGODB_URI = process.env.MONGODB_URI;
 
 // Проверка MongoDB URI
 if (!MONGODB_URI) {
