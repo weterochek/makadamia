@@ -58,6 +58,7 @@ app.post('/register', async (req, res) => {
     
     res.status(201).json({ message: 'Пользователь успешно зарегистрирован' });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: 'Ошибка регистрации пользователя', error: err.message });
   }
 });
@@ -81,6 +82,7 @@ app.post('/login', async (req, res) => {
     const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '1h' });
     res.status(200).json({ token });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: 'Ошибка входа', error: err.message });
   }
 });
@@ -93,6 +95,12 @@ app.get("/", (req, res) => {
 // Проверка соединения
 app.get("/connect", (req, res) => {
   res.send("Соединение с сервером успешно!");
+});
+
+// Обработчик ошибок
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: 'Что-то пошло не так!', error: err.message });
 });
 
 // Порт, на котором будет работать сервер
