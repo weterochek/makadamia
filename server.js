@@ -6,7 +6,7 @@ const bcrypt = require("bcryptjs");
 const cors = require("cors");
 const app = express();
 const jwt = require("jsonwebtoken");
-
+const path = require('path');
 
 // Модули для CORS и JSON
 app.use(cors());
