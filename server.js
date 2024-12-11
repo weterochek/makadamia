@@ -13,7 +13,7 @@ const app = express();
 // Конфигурация
 const JWT_SECRET = process.env.JWT_SECRET || "defaultsecret";
 const PORT = process.env.PORT || 3000;
-const MONGODB_URI = process.env.MONGODB_URI;
+const MONGO_URI = process.env.MONGO_URI;
 
 // Проверка MongoDB URI
 if (!MONGODB_URI) {
@@ -23,7 +23,7 @@ if (!MONGODB_URI) {
 
 // Подключение к MongoDB
 mongoose.set("strictQuery", true);
-mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log("Connected to MongoDB Atlas"))
   .catch((err) => {
     console.error("Error connecting to MongoDB:", err);
