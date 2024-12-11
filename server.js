@@ -10,7 +10,7 @@ app.use(cors());
 app.use(express.json());
 
 // Подключение к MongoDB
-app.use(cors({ origin: "https://makadamiy.onrender.com" }));
+app.use(cors({ origin: '*' }));
 const JWT_SECRET = process.env.JWT_SECRET || "ai3ohPh3Aiy9eeThoh8caaM9voh5Aezaenai0Fae2Pahsh2Iexu7Qu/";
 const mongoURI = process.env.MONGO_URI || "mongodb://11_ifelephant:ee590bdf579c7404d12fd8cf0990314242d56e62@axs-h.h.filess.io:27018/11_ifelephant";
 mongoose.connect(mongoURI, {
