@@ -52,47 +52,44 @@ const User = mongoose.model("User", userSchema);
 // Регистрация
 app.post('/register', async (req, res) => {
   const { username, password } = req.body;
-  console.log('Attempting to register:', username);  // Логируем данные
-
+  
   try {
-    const existingUser = await User.findOne({ username });
-    if (existingUser) {
-      console.log('User already exists:', username);  // Логируем ошибку
-      return res.status(409).json({ message: 'User already exists' });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ username, password: hashedPassword });
-    await newUser.save();
-    console.log('User registered successfully:', username);  // Логируем успешную регистрацию
-    res.status(201).json({ message: 'User registered successfully' });
-  } catch (err) {
-    console.error('Error during registration:', err);  // Логируем ошибку
-    res.status(500).json({ message: 'Error registering user', error: err.message });
+  const existingUser = await User.findOne({ username });
+  if (existingUser) {
+  return res.status(409).json({ message: 'Пользователь уже существует' });
   }
-});
+  
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const newUser = new User({ username, password: hashedPassword });
+  await newUser.save();
+  res.status(201).json({ message: 'Пользователь успешно зарегистрирован' });
+  } catch (err) {
+  res.status(500).json({ message: 'Ошибка регистрации пользователя', error: err.message });
+  }
+  });
 
 // Авторизация пользователя
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
-
+  
   try {
-    const user = await User.findOne({ username });
-    if (!user) {
-      return res.status(401).json({ message: 'Invalid username or password' });
-    }
-
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      return res.status(401).json({ message: 'Invalid username or password' });
-    }
-
-    const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '1h' });
-    res.status(200).json({ token });
-  } catch (err) {
-    res.status(500).json({ message: 'Error logging in', error: err.message });
+  const user = await User.findOne({ username });
+  
+  if (!user) {
+  return res.status(401).json({ message: 'Неверное имя пользователя или пароль' });
   }
-});
+  
+  const isPasswordValid = await bcrypt.compare(password, user.password);
+  if (!isPasswordValid) {
+  return res.status(401).json({ message: 'Неверное имя пользователя или пароль' });
+  }
+  
+  const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '1h' });
+  res.status(200).json({ token });
+  } catch (err) {
+  res.status(500).json({ message: 'Ошибка входа', error: err.message });
+  }
+  });
 
 // Обработка корневого маршрута
 app.get("/", (req, res) => {
