@@ -14,7 +14,7 @@ app.use(cors());
 app.use(express.json());
 mongoose.set('strictQuery', true);
 console.log("MongoDB URI from .env:", process.env.MONGODB_URI); // This should print the MongoDB URI
-  const mongoose = require('mongoose');
+  
 
 const uri = process.env.MONGODB_URI;
 if (!uri) {
