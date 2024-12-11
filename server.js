@@ -33,7 +33,7 @@ const User = mongoose.model("User", userSchema);
 // Регистрация
 app.post('/register', async (req, res) => {
   const { username, password } = req.body;
-  console.log('Registering user:', username);  // Логируем входные данные
+  console.log('Attempting to register:', username);  // Логируем данные
 
   try {
     const existingUser = await User.findOne({ username });
@@ -48,7 +48,7 @@ app.post('/register', async (req, res) => {
     console.log('User registered successfully:', username);  // Логируем успешную регистрацию
     res.status(201).json({ message: 'User registered successfully' });
   } catch (err) {
-    console.error('Error registering user:', err);  // Логируем ошибку
+    console.error('Error during registration:', err);  // Логируем ошибку
     res.status(500).json({ message: 'Error registering user', error: err.message });
   }
 });
