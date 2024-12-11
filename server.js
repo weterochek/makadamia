@@ -44,48 +44,51 @@ const userSchema = new mongoose.Schema({
 const User = mongoose.model("User", userSchema);
 
 // Регистрация пользователя
-app.post("/register", async (req, res) => {
+app.post('/register', async (req, res) => {
   const { username, password } = req.body;
+  console.log('Register Request:', req.body);
 
   try {
     const existingUser = await User.findOne({ username });
     if (existingUser) {
-      return res.status(409).json({ message: "User already exists" });
+      return res.status(409).json({ message: 'User already exists' });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = new User({ username, password: hashedPassword });
     await newUser.save();
-
-    res.status(201).json({ message: "User registered successfully" });
+    res.status(201).json({ message: 'User registered successfully' });
   } catch (err) {
-    console.error("Registration Error:", err);
-    res.status(500).json({ message: "Error registering user", error: err.message });
+    console.error('Registration Error:', err);
+    res.status(500).json({ message: 'Error registering user', error: err.message });
   }
 });
 
 // Авторизация пользователя
 app.post("/login", async (req, res) => {
+app.post('/login', async (req, res) => {
   const { username, password } = req.body;
+  console.log('Login Request:', req.body);
 
   try {
     const user = await User.findOne({ username });
     if (!user) {
-      return res.status(401).json({ message: "Invalid username or password" });
+      return res.status(401).json({ message: 'Invalid username or password' });
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      return res.status(401).json({ message: "Invalid username or password" });
+      return res.status(401).json({ message: 'Invalid username or password' });
     }
 
-    const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: "1h" });
+    const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '1h' });
     res.status(200).json({ token });
   } catch (err) {
-    console.error("Login Error:", err);
-    res.status(500).json({ message: "Error logging in", error: err.message });
+    console.error('Login Error:', err);
+    res.status(500).json({ message: 'Error logging in', error: err.message });
   }
 });
+
 
 // Главная страница
 app.get("/", (req, res) => {
