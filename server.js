@@ -19,6 +19,10 @@ mongoose.connect(mongoURI, {
   .then(() => console.log("MongoDB connected"))
   .catch((error) => console.error("MongoDB connection error:", error));
 
+app.use(cors({
+  origin: 'https://makadamiy.onrender.com',
+  credentials: true
+}));
 // Указание папки со статическими файлами
 app.use(express.static(path.join(__dirname, "public")));
 
