@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "start": "concurrently \"node server.js\" \"open http://localhost:3000\""
+    "test": "jest"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -16,7 +17,7 @@
   },
   "devDependencies": {
     "concurrently": "^6.5.1"
-  }
+  },
   "engines": {
   "node": "16.x"
 }
