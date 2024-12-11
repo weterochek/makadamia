@@ -4,14 +4,14 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const cors = require("cors");
 const path = require("path");
-const app = express();
 const jwt = require("jsonwebtoken");
-
-app.use(express.json());
+const app = express();
 
 // Настройка CORS
 const corsOptions = {
-  origin: 'https://makadamiy.onrender.com',  // Укажите ваш фронтенд
+  origin: 'https://makadamiy.onrender.com',  // Укажите точный URL вашего фронтенда
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Разрешаем основные методы
+  allowedHeaders: ['Content-Type', 'Authorization'], // Разрешаем эти заголовки
   credentials: true,  // Разрешить использование cookies/сессий
 };
 
@@ -28,6 +28,9 @@ mongoose.connect(mongoURI, {
   .then(() => console.log("MongoDB connected"))
   .catch((error) => console.error("MongoDB connection error:", error));
 
+// Middleware для обработки JSON
+app.use(express.json());
+
 // Указание папки со статическими файлами
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -39,19 +42,20 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model("User", userSchema);
 
-// Регистрация
+// Регистрация пользователя
 app.post('/register', async (req, res) => {
   const { username, password } = req.body;
   
   try {
     const existingUser = await User.findOne({ username });
     if (existingUser) {
-      return res.status(409).json({ message: 'Пользователь уже существует' });
+      return res.status(409).json({ message: 'Пользователь с таким именем уже существует' });
     }
     
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = new User({ username, password: hashedPassword });
     await newUser.save();
+    
     res.status(201).json({ message: 'Пользователь успешно зарегистрирован' });
   } catch (err) {
     res.status(500).json({ message: 'Ошибка регистрации пользователя', error: err.message });
