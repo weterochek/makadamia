@@ -673,3 +673,4 @@ footer p {
 body {
     font-size: clamp(11px, 1.4vw, 16px); /* Автоматическое масштабирование */
 }
+ 
