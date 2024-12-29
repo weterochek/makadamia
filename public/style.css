@@ -427,7 +427,33 @@ footer {
 footer p {
     margin: 0.5rem 0;
 }
+/* Медиазапросы */
+@media screen and (max-width: 768px) {
+    .dishes-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
 
+@media screen and (max-width: 480px) {
+    .dishes-grid {
+        grid-template-columns: repeat(2, 1fr); /* Два столбца */
+        gap: 8px;
+        padding: 8px;
+    }
+
+    .dish-card {
+        padding: 0.5rem;
+    }
+
+    .dish-card img {
+        width: 100%;
+        height: auto;
+    }
+
+    .dish-card p {
+        font-size: 0.9rem;
+    }
+}
 
 /* Скрытие навигации и использование гамбургер-меню на мобильных устройствах */
 @media screen and (max-width: 768px) {
