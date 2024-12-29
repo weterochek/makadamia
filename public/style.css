@@ -455,30 +455,6 @@ footer p {
     }
 }
 
-/* Скрытие навигации и использование гамбургер-меню на мобильных устройствах */
-@media screen and (max-width: 768px) {
-    .dishes-grid {
-        grid-template-columns: repeat(2, 1fr); /* Два столбца */
-        gap: 12px;
-    }
-}
-
-@media screen and (max-width: 480px) {
-    .dishes-grid {
-        grid-template-columns: repeat(2, 1fr); /* Два столбца */
-        gap: 8px; /* Уменьшенный отступ */
-        padding: 8px;
-    }
-
-    .dish-card {
-        padding: 0.5rem; /* Уменьшенный padding */
-    }
-
-    .dish-card p {
-        font-size: 0.85rem; /* Уменьшенный размер текста */
-    }
-}
-
 @media (max-width: 768px) {
     .navbar {
         flex-direction: column;
