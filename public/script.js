@@ -1,4 +1,17 @@
 let cart = {};
+window.onload = function() {
+  const userAgent = navigator.userAgent.toLowerCase();
+
+  // Проверяем, является ли устройство мобильным
+  if (userAgent.includes('mobile')) {
+    // Перенаправление на мобильную версию сайта
+    window.location.href = "https://mobile-site.onrender.com";
+  } else {
+    // Перенаправление на десктопную версию сайта
+    window.location.href = "https://makadamia.onrender.com";
+  }
+};
+
 // Функция для показа/скрытия выпадающего окна корзины под кнопкой "Корзина"
 document.addEventListener("DOMContentLoaded", function() {
     const cartButton = document.getElementById('cartButton');
