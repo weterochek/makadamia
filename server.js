@@ -86,11 +86,6 @@ app.post('/login', async (req, res) => {
     res.status(500).json({ message: 'Ошибка входа', error: err.message });
   }
 });
-// Маршруты API
-app.use('/api/user', userRoutes);
-
-// Статические файлы
-app.use(express.static(path.join(__dirname, 'public')));
 
 // Обработка корневого маршрута
 app.get("/", (req, res) => {
