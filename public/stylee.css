@@ -146,6 +146,10 @@ header nav {
     object-fit: cover;
 
 }
+.small-text{
+    font-size: 0.8em;
+    color: gray;
+}
 .price-container {
     display: flex;
     justify-content: space-between;
