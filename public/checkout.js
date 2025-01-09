@@ -98,3 +98,28 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 });
+document.addEventListener("DOMContentLoaded", () => {
+    const additionalInfoField = document.getElementById("additionalInfo");
+
+    // Обработчик для поля "Дополнительная информация"
+    additionalInfoField.addEventListener("input", function () {
+        // Если пользователь удалил весь текст, возвращаем "(необязательно)"
+        if (!this.value.trim()) {
+            this.placeholder = "(необязательно)";
+        }
+    });
+
+    additionalInfoField.addEventListener("focus", function () {
+        // Если пользователь начинает писать, убираем placeholder
+        if (this.placeholder === "(необязательно)") {
+            this.placeholder = "";
+        }
+    });
+
+    additionalInfoField.addEventListener("blur", function () {
+        // Если пользователь уходит с поля и текст пустой, возвращаем placeholder
+        if (!this.value.trim()) {
+            this.placeholder = "(необязательно)";
+        }
+    });
+});
