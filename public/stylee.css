@@ -228,7 +228,7 @@ header nav {
     background-color: #fff;
     padding: 15px;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-    width: 295px;
+    width: 350px;
     display: none; /* Скрыто изначально */
     border-radius: 8px;
     z-index: 1000;
@@ -286,6 +286,7 @@ header nav {
     flex-grow: 1;
     padding-right: 10px;
     text-align: left; /* Выравнивание текста по левому краю */
+    font-size: 0.9em;
 }
 
 .cart-item .cart-buttons {
