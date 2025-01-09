@@ -271,3 +271,9 @@ function calculateBalance() {
     }
     return balance;
 }
+// Переход на страницу оформления заказа
+function goToCheckoutPage() {
+    saveCartToLocalStorage();
+    window.location.href = "checkout.html";
+}
+
