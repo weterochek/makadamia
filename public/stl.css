@@ -139,7 +139,10 @@ form button:hover {
     font-size: 1rem;
     font-weight: bold;
 }
-
+textarea::placeholder {
+    color: gray;
+    font-style: italic;
+}
 /* Адаптивность */
 @media (max-width: 768px) {
     header h1 {
