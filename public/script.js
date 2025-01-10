@@ -92,9 +92,9 @@ function checkAuthStatus() {
 }
 
 // Логика для входа
-function handleAuthClick() {
-    window.location.href = '/login';  // Переход на страницу логина (если у вас такая страница есть)
-}
+app.get('/login', (req, res) => {
+    res.sendFile(__dirname + '/login.html'); // Убедитесь, что файл login.html существует
+});
 
 // Логика для выхода
 function logout() {
