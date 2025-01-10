@@ -1,4 +1,24 @@
 let cart = {};
+window.onload = function() {
+    const userAgent = navigator.userAgent.toLowerCase();
+  
+    // Логирование для проверки, что передается в User-Agent
+    console.log("User-Agent: ", userAgent);
+  
+    if (userAgent.includes('mobile')) {
+      // Перенаправление на мобильную версию сайта
+      if (!window.location.href.includes('mobile-site.onrender.com')) {
+        window.location.href = "https://mobile-site.onrender.com";
+      }
+    } else {
+      // Перенаправление на десктопную версию сайта
+      if (!window.location.href.includes('makadamia.onrender.com')) {
+        window.location.href = "https://makadamia.onrender.com";
+      }
+    }
+  };
+let cabinetIsOpen = false; // Флаг для отслеживания состояния личного кабинета
+
 // Функция для показа/скрытия выпадающего окна корзины под кнопкой "Корзина"
 document.addEventListener("DOMContentLoaded", function() {
     const cartButton = document.getElementById('cartButton');
@@ -9,6 +29,7 @@ document.addEventListener("DOMContentLoaded", function() {
         event.stopPropagation(); // Остановка распространения события клика
         cartDropdown.style.display = cartDropdown.style.display === 'block' ? 'none' : 'block';
     });
+
     // Закрытие корзины при клике на крестик
     const closeCartButton = document.createElement("span");
     closeCartButton.innerHTML = "✖";
@@ -43,14 +64,15 @@ function addToCart(itemName, itemPrice) {
 function decrementItem(itemName) {
     if (cart[itemName]) {
         cart[itemName].quantity -= 1;
-        if (cart[itemName].quantity === 0) {
-            delete cart[itemName];
+        if (cart[itemName].quantity <= 0) {
+            delete cart[itemName]; // Удаляем товар из корзины
             revertControlsToAddButton(itemName);
         }
         saveCartToLocalStorage();
         updateCartDisplay();
     }
 }
+
 // Проверка состояния авторизации
 function checkAuthStatus() {
     const token = localStorage.getItem('token');  // Проверка наличия токена в localStorage
@@ -148,7 +170,6 @@ function updateCartDisplay() {
     document.getElementById("totalAmount").textContent = `Итого: ${totalAmount} ₽`;
 }
 
-
 // Сохранение корзины в localStorage
 function saveCartToLocalStorage() {
     const username = localStorage.getItem("username");
@@ -166,9 +187,7 @@ function checkout() {
     saveCartToLocalStorage();
     toggleCart();
 }
-document.addEventListener("DOMContentLoaded", () => {
-    checkAuthStatus();
-});
+
 // Сброс всех кнопок на исходное состояние "Добавить"
 function resetAddToCartButtons() {
     for (const itemName in cart) {
@@ -195,34 +214,13 @@ function loadCartFromLocalStorage() {
     }
 }
 
-// Дополнительные функции, такие как авторизация, остаются без изменений
-
-
-// Обработка кнопки авторизации
-document.addEventListener("DOMContentLoaded", () => {
-    loadCartFromLocalStorage();
-
-    const authButton = document.getElementById("authButton");
-    const username = localStorage.getItem("username");
-
-    if (username) {
-        authButton.textContent = "Личный кабинет";
-        authButton.removeAttribute("onclick");
-        authButton.addEventListener("click", () => openCabinet(username));
-    } else {
-        authButton.textContent = "Вход";
-        authButton.addEventListener("click", () => {
-            window.location.href = "login.html";
-        });
-    }
-
-    loadCartFromLocalStorage(); // Загрузка корзины при загрузке страницы
-});
-
-// Открытие личного кабинета
 // Открытие личного кабинета
 function openCabinet(username) {
-    closeCabinet(); // Закрыть, если уже открыто
+    if (cabinetIsOpen) {
+        closeCabinet(); // Закрыть, если уже открыто
+        return;
+    }
+
     const authButton = document.getElementById("authButton");
     const rect = authButton.getBoundingClientRect();
 
@@ -238,6 +236,7 @@ function openCabinet(username) {
     `;
     
     document.body.insertAdjacentHTML("beforeend", cabinetContent);
+    cabinetIsOpen = true; // Устанавливаем флаг, что кабинет открыт
 
     // Проверка на выход за границы окна
     const cabinetDropdown = document.getElementById("cabinetDropdown");
@@ -250,16 +249,6 @@ function openCabinet(username) {
     // Закрытие окна при клике вне его
     document.addEventListener("click", closeCabinetOnOutsideClick);
 }
-// Функция выхода из аккаунта
-function logout() {
-    saveCartToLocalStorage(); // Сохраняем корзину текущего пользователя перед выходом
-    localStorage.removeItem("username"); // Удаляем данные пользователя
-    alert("Вы вышли из аккаунта.");
-    closeCabinet(); // Закрываем личный кабинет
-    const authButton = document.getElementById("authButton");
-    authButton.textContent = "Вход"; // Меняем текст кнопки на "Вход"
-    authButton.onclick = () => { window.location.href = "login.html"; };
-}
 
 // Закрытие личного кабинета
 function closeCabinet() {
@@ -267,6 +256,7 @@ function closeCabinet() {
     if (cabinetDropdown) {
         cabinetDropdown.remove();
     }
+    cabinetIsOpen = false; // Устанавливаем флаг, что кабинет закрыт
     document.removeEventListener("click", closeCabinetOnOutsideClick);
 }
 
@@ -286,6 +276,7 @@ function calculateBalance() {
     }
     return balance;
 }
+
 // Переход на страницу оформления заказа
 function goToCheckoutPage() {
     saveCartToLocalStorage();
