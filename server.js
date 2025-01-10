@@ -12,6 +12,7 @@ const app = express();
 const allowedOrigins = [
   'https://makadamia.onrender.com',
   'https://mobile-site.onrender.com',
+  'http://localhost:3000', // Для локальной разработки
 ];
 
 const corsOptions = {
@@ -33,10 +34,11 @@ app.use(cors(corsOptions));
 // Подключение к MongoDB
 const JWT_SECRET = process.env.JWT_SECRET || "ai3ohPh3Aiy9eeThoh8caaM9voh5Aezaenai0Fae2Pahsh2Iexu7Qu/";
 const mongoURI = process.env.MONGO_URI || "mongodb://11_ifelephant:ee590bdf579c7404d12fd8cf0990314242d56e62@axs-h.h.filess.io:27018/11_ifelephant";
+
 mongoose.connect(mongoURI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-  ssl: false, // Включено SSL
+  ssl: true, // Включено SSL
 })
   .then(() => console.log("MongoDB connected"))
   .catch((error) => console.error("MongoDB connection error:", error));
@@ -46,7 +48,7 @@ app.use(express.json());
 
 // Перенаправление HTTP на HTTPS
 app.use((req, res, next) => {
-  if (req.headers["x-forwarded-proto"] !== "https") {
+  if (process.env.NODE_ENV === "production" && req.headers["x-forwarded-proto"] !== "https") {
     return res.redirect(`https://${req.headers.host}${req.url}`);
   }
   next();
@@ -92,20 +94,21 @@ app.post('/register', async (req, res) => {
   }
 
   const { username, password } = req.body;
-  
+
   try {
+    console.log("Регистрация пользователя:", req.body);
     const existingUser = await User.findOne({ username });
     if (existingUser) {
       return res.status(409).json({ message: 'Пользователь с таким именем уже существует' });
     }
-    
+
     const hashedPassword = await bcrypt.hash(password, 12); // Увеличено количество раундов
     const newUser = new User({ username, password: hashedPassword });
     await newUser.save();
-    
+
     res.status(201).json({ message: 'Пользователь успешно зарегистрирован' });
   } catch (err) {
-    console.error(err);
+    console.error("Ошибка регистрации:", err);
     res.status(500).json({ message: 'Ошибка регистрации пользователя', error: err.message });
   }
 });
@@ -113,24 +116,25 @@ app.post('/register', async (req, res) => {
 // Авторизация пользователя
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
-  
+
   try {
+    console.log("Попытка входа пользователя:", req.body);
     const user = await User.findOne({ username });
-    
+
     if (!user) {
       return res.status(401).json({ message: 'Неверное имя пользователя или пароль' });
     }
-    
+
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({ message: 'Неверное имя пользователя или пароль' });
     }
-    
+
     const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '1h' });
     const refreshToken = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '7d' });
     res.status(200).json({ token, refreshToken });
   } catch (err) {
-    console.error(err);
+    console.error("Ошибка входа:", err);
     res.status(500).json({ message: 'Ошибка входа', error: err.message });
   }
 });
@@ -171,6 +175,11 @@ app.get("/connect", (req, res) => {
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ message: 'Что-то пошло не так!', error: err.message });
+});
+
+// Обработка 404 ошибок
+app.use((req, res) => {
+  res.status(404).json({ message: "Ресурс не найден" });
 });
 
 // Порт, на котором будет работать сервер
