@@ -78,18 +78,21 @@ function checkAuthStatus() {
     const token = localStorage.getItem('token');  // Проверка наличия токена в localStorage
     const authButton = document.getElementById('authButton');
     const logoutButton = document.getElementById('logoutButton');
+    const cabinetButton = document.getElementById('cabinetButton'); // Кнопка "Личный кабинет"
 
     if (token) {
-        // Если токен существует, показываем кнопку "Выход"
-        authButton.style.display = 'none'; 
-        logoutButton.style.display = 'inline-block';
-        loadCartFromLocalStorage();  // Загружаем корзину
+        // Если токен существует, заменяем "Вход" на "Личный кабинет" и показываем "Выход"
+        authButton.style.display = 'none'; // Скрываем кнопку "Вход"
+        logoutButton.style.display = 'inline-block'; // Показываем "Выход"
+        cabinetButton.style.display = 'inline-block'; // Показываем "Личный кабинет"
     } else {
-        // Если нет токена, показываем кнопку "Вход"
+        // Если нет токена, показываем "Вход" и скрываем остальные кнопки
         authButton.style.display = 'inline-block';
         logoutButton.style.display = 'none';
+        cabinetButton.style.display = 'none';
     }
 }
+
 
 // Логика для входа
 app.get('/login', (req, res) => {
