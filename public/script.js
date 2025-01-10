@@ -89,7 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (token) {
     try {
       const userData = decodeToken(token);
-   const currentTime = Math.floor(Date.now() / 3600); // Текущее время в секундах
+   const currentTime = Math.floor(Date.now() / 1000); // Текущее время в секундах
       if (userData.exp < currentTime) {
         alert("Срок действия токена истек. Пожалуйста, войдите снова.");
         logout();
