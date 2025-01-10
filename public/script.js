@@ -220,14 +220,9 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // Открытие личного кабинета
-let cabinetIsOpen = false; // Флаг, указывающий, открыт ли кабинет
-
+// Открытие личного кабинета
 function openCabinet(username) {
-    if (cabinetIsOpen) {
-        closeCabinet(); // Закрыть, если уже открыто
-        return;
-    }
-
+    closeCabinet(); // Закрыть, если уже открыто
     const authButton = document.getElementById("authButton");
     const rect = authButton.getBoundingClientRect();
 
@@ -237,12 +232,12 @@ function openCabinet(username) {
                 Личный кабинет 
                 <span onclick="closeCabinet()" style="cursor: pointer; font-size: 0.75em; color: black; padding: 0 5px;">✖</span>
             </h2>
+            <p>Пользователь: ${username}</p>
             <button onclick="logout()">Выйти</button>
         </div>
     `;
     
     document.body.insertAdjacentHTML("beforeend", cabinetContent);
-    cabinetIsOpen = true; // Устанавливаем флаг, что кабинет открыт
 
     // Проверка на выход за границы окна
     const cabinetDropdown = document.getElementById("cabinetDropdown");
@@ -254,22 +249,6 @@ function openCabinet(username) {
 
     // Закрытие окна при клике вне его
     document.addEventListener("click", closeCabinetOnOutsideClick);
-}
-
-function closeCabinet() {
-    const cabinetDropdown = document.getElementById("cabinetDropdown");
-    if (cabinetDropdown) {
-        cabinetDropdown.remove();
-        cabinetIsOpen = false; // Устанавливаем флаг, что кабинет закрыт
-        document.removeEventListener("click", closeCabinetOnOutsideClick);
-    }
-}
-
-function closeCabinetOnOutsideClick(event) {
-    const cabinetDropdown = document.getElementById("cabinetDropdown");
-    if (cabinetDropdown && !cabinetDropdown.contains(event.target)) {
-        closeCabinet();
-    }
 }
 // Функция выхода из аккаунта
 function logout() {
