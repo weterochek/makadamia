@@ -11,7 +11,6 @@ const app = express();
 // Настройка CORS
 const allowedOrigins = [
   'https://makadamia.onrender.com',
-  'https://mobile-site.onrender.com',
   'http://localhost:3000', // Для локальной разработки
 ];
 
