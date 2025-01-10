@@ -1,24 +1,22 @@
 let cart = {};
 window.onload = function() {
-    const userAgent = navigator.userAgent.toLowerCase();
-  
-    // Логирование для проверки, что передается в User-Agent
-    console.log("User-Agent: ", userAgent);
-  
-    if (userAgent.includes('mobile')) {
-      // Перенаправление на мобильную версию сайта
-      if (!window.location.href.includes('mobile-site.onrender.com')) {
-        window.location.href = "https://mobile-site.onrender.com";
-      }
-    } else {
-      // Перенаправление на десктопную версию сайта
-      if (!window.location.href.includes('makadamia.onrender.com')) {
-        window.location.href = "https://makadamia.onrender.com";
-      }
-    }
-  };
-let cabinetIsOpen = false; // Флаг для отслеживания состояния личного кабинета
+  const userAgent = navigator.userAgent.toLowerCase();
 
+  // Логирование для проверки, что передается в User-Agent
+  console.log("User-Agent: ", userAgent);
+
+  if (userAgent.includes('mobile')) {
+    // Перенаправление на мобильную версию сайта
+    if (!window.location.href.includes('mobile-site.onrender.com')) {
+      window.location.href = "https://mobile-site.onrender.com";
+    }
+  } else {
+    // Перенаправление на десктопную версию сайта
+    if (!window.location.href.includes('makadamia.onrender.com')) {
+      window.location.href = "https://makadamia.onrender.com";
+    }
+  }
+};
 // Функция для показа/скрытия выпадающего окна корзины под кнопкой "Корзина"
 document.addEventListener("DOMContentLoaded", function() {
     const cartButton = document.getElementById('cartButton');
@@ -29,7 +27,6 @@ document.addEventListener("DOMContentLoaded", function() {
         event.stopPropagation(); // Остановка распространения события клика
         cartDropdown.style.display = cartDropdown.style.display === 'block' ? 'none' : 'block';
     });
-
     // Закрытие корзины при клике на крестик
     const closeCartButton = document.createElement("span");
     closeCartButton.innerHTML = "✖";
@@ -45,7 +42,6 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     cartDropdown.prepend(closeCartButton); // Добавляем крестик в начало содержимого
-    checkAuthStatus();
 });
 
 // Добавление товара в корзину
@@ -64,45 +60,13 @@ function addToCart(itemName, itemPrice) {
 function decrementItem(itemName) {
     if (cart[itemName]) {
         cart[itemName].quantity -= 1;
-        if (cart[itemName].quantity <= 0) {
-            delete cart[itemName]; // Удаляем товар из корзины
+        if (cart[itemName].quantity === 0) {
+            delete cart[itemName];
             revertControlsToAddButton(itemName);
         }
         saveCartToLocalStorage();
         updateCartDisplay();
     }
-}
-
-// Проверка состояния авторизации
-function checkAuthStatus() {
-    const token = localStorage.getItem('token');  // Проверка наличия токена в localStorage
-    const authButton = document.getElementById('authButton');
-    const logoutButton = document.getElementById('logoutButton');
-
-    if (token) {
-        // Если токен существует, показываем кнопку "Выход"
-        authButton.style.display = 'none'; 
-        logoutButton.style.display = 'inline-block';
-        loadCartFromLocalStorage();  // Загружаем корзину
-    } else {
-        // Если нет токена, показываем кнопку "Вход"
-        authButton.style.display = 'inline-block';
-        logoutButton.style.display = 'none';
-    }
-}
-
-// Логика для входа
-function handleAuthClick() {
-    window.location.href = '/login';  // Переход на страницу логина (если у вас такая страница есть)
-}
-
-// Логика для выхода
-function logout() {
-    localStorage.removeItem('token');  // Удаляем токен
-    localStorage.removeItem('username');  // Удаляем данные пользователя
-    cart = {}; // Очистить корзину
-    checkAuthStatus();  // Обновляем интерфейс
-    window.location.href = '/';  // Переход на главную страницу
 }
 
 // Увеличение количества товара
@@ -149,6 +113,7 @@ function updateCartDisplay() {
         const itemTotal = cart[item].price * cart[item].quantity;
         totalAmount += itemTotal;
 
+        // Обновляем количество товара на карточке
         const quantityDisplay = document.getElementById(`quantity_${item}`);
         if (quantityDisplay) {
             quantityDisplay.textContent = cart[item].quantity;
@@ -214,13 +179,36 @@ function loadCartFromLocalStorage() {
     }
 }
 
+// Дополнительные функции, такие как авторизация, остаются без изменений
+
+
+// Обработка кнопки авторизации
+document.addEventListener("DOMContentLoaded", () => {
+    loadCartFromLocalStorage();
+
+    const authButton = document.getElementById("authButton");
+    const username = localStorage.getItem("username");
+
+    if (username) {
+        authButton.textContent = "Личный кабинет";
+        authButton.removeAttribute("onclick");
+        authButton.addEventListener("click", () => openCabinet(username));
+    } else {
+        authButton.textContent = "Вход";
+        authButton.addEventListener("click", () => {
+            window.location.href = "login.html";
+        });
+    }
+
+    loadCartFromLocalStorage(); // Загрузка корзины при загрузке страницы
+});
+
 // Открытие личного кабинета
 function openCabinet(username) {
     if (cabinetIsOpen) {
         closeCabinet(); // Закрыть, если уже открыто
         return;
     }
-
     const authButton = document.getElementById("authButton");
     const rect = authButton.getBoundingClientRect();
 
@@ -236,7 +224,6 @@ function openCabinet(username) {
     `;
     
     document.body.insertAdjacentHTML("beforeend", cabinetContent);
-    cabinetIsOpen = true; // Устанавливаем флаг, что кабинет открыт
 
     // Проверка на выход за границы окна
     const cabinetDropdown = document.getElementById("cabinetDropdown");
@@ -249,6 +236,16 @@ function openCabinet(username) {
     // Закрытие окна при клике вне его
     document.addEventListener("click", closeCabinetOnOutsideClick);
 }
+// Функция выхода из аккаунта
+function logout() {
+    saveCartToLocalStorage(); // Сохраняем корзину текущего пользователя перед выходом
+    localStorage.removeItem("username"); // Удаляем данные пользователя
+    alert("Вы вышли из аккаунта.");
+    closeCabinet(); // Закрываем личный кабинет
+    const authButton = document.getElementById("authButton");
+    authButton.textContent = "Вход"; // Меняем текст кнопки на "Вход"
+    authButton.onclick = () => { window.location.href = "login.html"; };
+}
 
 // Закрытие личного кабинета
 function closeCabinet() {
@@ -256,7 +253,6 @@ function closeCabinet() {
     if (cabinetDropdown) {
         cabinetDropdown.remove();
     }
-    cabinetIsOpen = false; // Устанавливаем флаг, что кабинет закрыт
     document.removeEventListener("click", closeCabinetOnOutsideClick);
 }
 
@@ -276,9 +272,9 @@ function calculateBalance() {
     }
     return balance;
 }
-
 // Переход на страницу оформления заказа
 function goToCheckoutPage() {
     saveCartToLocalStorage();
     window.location.href = "checkout.html";
 }
+
