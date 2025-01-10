@@ -18,7 +18,7 @@ window.onload = function() {
       }
     }
   };
-
+console.log(localStorage.getItem('token'));
 // Функция для показа/скрытия выпадающего окна корзины под кнопкой "Корзина"
 document.addEventListener("DOMContentLoaded", function() {
     const cartButton = document.getElementById('cartButton');
