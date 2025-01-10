@@ -1,22 +1,4 @@
 let cart = {};
-window.onload = function() {
-  const userAgent = navigator.userAgent.toLowerCase();
-
-  // Логирование для проверки, что передается в User-Agent
-  console.log("User-Agent: ", userAgent);
-
-  if (userAgent.includes('mobile')) {
-    // Перенаправление на мобильную версию сайта
-    if (!window.location.href.includes('mobile-site.onrender.com')) {
-      window.location.href = "https://mobile-site.onrender.com";
-    }
-  } else {
-    // Перенаправление на десктопную версию сайта
-    if (!window.location.href.includes('makadamia.onrender.com')) {
-      window.location.href = "https://makadamia.onrender.com";
-    }
-  }
-};
 // Функция для показа/скрытия выпадающего окна корзины под кнопкой "Корзина"
 document.addEventListener("DOMContentLoaded", function() {
     const cartButton = document.getElementById('cartButton');
@@ -42,6 +24,7 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     cartDropdown.prepend(closeCartButton); // Добавляем крестик в начало содержимого
+    checkAuthStatus();
 });
 
 // Добавление товара в корзину
@@ -67,6 +50,37 @@ function decrementItem(itemName) {
         saveCartToLocalStorage();
         updateCartDisplay();
     }
+}
+// Проверка состояния авторизации
+function checkAuthStatus() {
+    const token = localStorage.getItem('token');  // Проверка наличия токена в localStorage
+    const authButton = document.getElementById('authButton');
+    const logoutButton = document.getElementById('logoutButton');
+
+    if (token) {
+        // Если токен существует, показываем кнопку "Выход"
+        authButton.style.display = 'none'; 
+        logoutButton.style.display = 'inline-block';
+        loadCartFromLocalStorage();  // Загружаем корзину
+    } else {
+        // Если нет токена, показываем кнопку "Вход"
+        authButton.style.display = 'inline-block';
+        logoutButton.style.display = 'none';
+    }
+}
+
+// Логика для входа
+function handleAuthClick() {
+    window.location.href = '/login';  // Переход на страницу логина (если у вас такая страница есть)
+}
+
+// Логика для выхода
+function logout() {
+    localStorage.removeItem('token');  // Удаляем токен
+    localStorage.removeItem('username');  // Удаляем данные пользователя
+    cart = {}; // Очистить корзину
+    checkAuthStatus();  // Обновляем интерфейс
+    window.location.href = '/';  // Переход на главную страницу
 }
 
 // Увеличение количества товара
@@ -113,7 +127,6 @@ function updateCartDisplay() {
         const itemTotal = cart[item].price * cart[item].quantity;
         totalAmount += itemTotal;
 
-        // Обновляем количество товара на карточке
         const quantityDisplay = document.getElementById(`quantity_${item}`);
         if (quantityDisplay) {
             quantityDisplay.textContent = cart[item].quantity;
@@ -135,6 +148,7 @@ function updateCartDisplay() {
     document.getElementById("totalAmount").textContent = `Итого: ${totalAmount} ₽`;
 }
 
+
 // Сохранение корзины в localStorage
 function saveCartToLocalStorage() {
     const username = localStorage.getItem("username");
@@ -152,7 +166,9 @@ function checkout() {
     saveCartToLocalStorage();
     toggleCart();
 }
-
+document.addEventListener("DOMContentLoaded", () => {
+    checkAuthStatus();
+});
 // Сброс всех кнопок на исходное состояние "Добавить"
 function resetAddToCartButtons() {
     for (const itemName in cart) {
@@ -204,8 +220,14 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // Открытие личного кабинета
+let cabinetIsOpen = false; // Флаг, указывающий, открыт ли кабинет
+
 function openCabinet(username) {
-    closeCabinet(); // Закрыть, если уже открыто
+    if (cabinetIsOpen) {
+        closeCabinet(); // Закрыть, если уже открыто
+        return;
+    }
+
     const authButton = document.getElementById("authButton");
     const rect = authButton.getBoundingClientRect();
 
@@ -215,14 +237,12 @@ function openCabinet(username) {
                 Личный кабинет 
                 <span onclick="closeCabinet()" style="cursor: pointer; font-size: 0.75em; color: black; padding: 0 5px;">✖</span>
             </h2>
-            <p>Пользователь: ${username}</p>
-            <h3>Баланс:</h3>
-            <p id="balanceAmount">${calculateBalance()} ₽</p>
             <button onclick="logout()">Выйти</button>
         </div>
     `;
     
     document.body.insertAdjacentHTML("beforeend", cabinetContent);
+    cabinetIsOpen = true; // Устанавливаем флаг, что кабинет открыт
 
     // Проверка на выход за границы окна
     const cabinetDropdown = document.getElementById("cabinetDropdown");
@@ -234,6 +254,22 @@ function openCabinet(username) {
 
     // Закрытие окна при клике вне его
     document.addEventListener("click", closeCabinetOnOutsideClick);
+}
+
+function closeCabinet() {
+    const cabinetDropdown = document.getElementById("cabinetDropdown");
+    if (cabinetDropdown) {
+        cabinetDropdown.remove();
+        cabinetIsOpen = false; // Устанавливаем флаг, что кабинет закрыт
+        document.removeEventListener("click", closeCabinetOnOutsideClick);
+    }
+}
+
+function closeCabinetOnOutsideClick(event) {
+    const cabinetDropdown = document.getElementById("cabinetDropdown");
+    if (cabinetDropdown && !cabinetDropdown.contains(event.target)) {
+        closeCabinet();
+    }
 }
 // Функция выхода из аккаунта
 function logout() {
@@ -276,4 +312,3 @@ function goToCheckoutPage() {
     saveCartToLocalStorage();
     window.location.href = "checkout.html";
 }
-
