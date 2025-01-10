@@ -95,7 +95,9 @@ function checkAuthStatus() {
     }
 }
 
-
+function handleAuthClick() {
+    window.location.href = '/login.html'; // Переход на login.html
+}
 
 // Логика для выхода
 function logout() {
@@ -215,50 +217,35 @@ function loadCartFromLocalStorage() {
     }
 }
 
-function checkAuthStatus() {
-    const token = localStorage.getItem('token');  // Проверка наличия токена в localStorage
-    const authButton = document.getElementById('authButton');
-    const logoutButton = document.getElementById('logoutButton');
-
-    if (token) {
-        // Если токен существует, показываем кнопку "Выход"
-        authButton.style.display = 'none';
-        logoutButton.style.display = 'inline-block';
-        loadCartFromLocalStorage();  // Загружаем корзину
-    } else {
-        // Если нет токена, показываем кнопку "Вход"
-        authButton.style.display = 'inline-block';
-        logoutButton.style.display = 'none';
-    }
-}
-
-// Логика для входа
-function handleAuthClick() {
-    window.location.href = '/login.html';  // Переход на login.html
-}
-
-// Логика для выхода
-function logout() {
-    localStorage.removeItem('token');  // Удаляем токен
-    localStorage.removeItem('username');  // Удаляем данные пользователя
-    cart = {}; // Очистить корзину
-    checkAuthStatus();  // Обновляем интерфейс
-    window.location.href = '/';  // Переход на главную страницу
-}
 
 // Переход на страницу личного кабинета
 function openCabinet() {
-    const username = localStorage.getItem("username");
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem('token');
+    const username = localStorage.getItem('username');
 
     if (!token || !username) {
-        // Если пользователь не авторизован, перенаправляем на страницу входа
-        window.location.href = "/login";
+        // Если токен отсутствует, перенаправляем на страницу входа
+        window.location.href = "/login.html";
     } else {
-        // Перенаправляем на страницу личного кабинета
+        // Переход на страницу личного кабинета
         window.location.href = "/account.html";
     }
 }
+document.addEventListener("DOMContentLoaded", function () {
+    const logoutButton = document.getElementById('logoutButton'); // Кнопка "Выход"
+    const isAccountPage = window.location.pathname === '/account.html'; // Проверяем, находится ли пользователь на странице личного кабинета
+
+    if (isAccountPage) {
+        // Если пользователь находится на странице личного кабинета
+        logoutButton.style.display = 'inline-block'; // Показываем "Выход"
+    } else {
+        // Если пользователь не на странице личного кабинета
+        logoutButton.style.display = 'none'; // Скрываем "Выход"
+    }
+
+    // Проверяем статус авторизации на всех страницах
+    checkAuthStatus();
+});
 
 // Расчет баланса на основе корзины
 function calculateBalance() {
