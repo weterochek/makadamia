@@ -1,20 +1,29 @@
 // Переключение между формами
 function showRegister() {
+    // Переключаем видимость форм
     document.getElementById("registerForm").classList.remove("hidden");
     document.getElementById("loginForm").classList.add("hidden");
+
+    // Переключаем активные кнопки
     document.getElementById("toggleRegister").classList.add("active");
     document.getElementById("toggleLogin").classList.remove("active");
 }
 
 function showLogin() {
+    // Переключаем видимость форм
     document.getElementById("loginForm").classList.remove("hidden");
     document.getElementById("registerForm").classList.add("hidden");
+
+    // Переключаем активные кнопки
     document.getElementById("toggleLogin").classList.add("active");
     document.getElementById("toggleRegister").classList.remove("active");
 }
 
-// Показ формы входа по умолчанию
-showLogin();
+// Устанавливаем начальный вид (форма входа по умолчанию)
+document.addEventListener("DOMContentLoaded", () => {
+    showLogin();
+});
+
 
 // Обработчик регистрации
 const registerForm = document.querySelector("#registerForm form");
