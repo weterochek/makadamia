@@ -37,7 +37,6 @@ mongoose.connect(mongoURI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
   ssl: false, // Включено SSL
-  authSource: "admin", // Если используется авторизация
 })
   .then(() => console.log("MongoDB connected"))
   .catch((error) => console.error("MongoDB connection error:", error));
