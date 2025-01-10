@@ -244,8 +244,11 @@ function openCabinet() {
         window.location.href = "/account.html";
     }
 }
+
+// Инициализация авторизации при загрузке страницы
 document.addEventListener("DOMContentLoaded", function () {
     checkAuthStatus();
+});
 
     // Убеждаемся, что кнопка "Выход" отображается только в личном кабинете
     const logoutButton = document.getElementById('logoutButton');
