@@ -233,7 +233,7 @@ function checkAuthStatus() {
 
 // Логика для входа
 function handleAuthClick() {
-    window.location.href = '/login';  // Переход на страницу логина (если у вас такая страница есть)
+    window.location.href = '/login.html';  // Переход на login.html
 }
 
 // Логика для выхода
