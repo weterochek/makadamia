@@ -109,9 +109,9 @@ function checkAuthStatus() {
 }
 
 function handleAuthClick() {
-    window.location.href = '/login.html'; // Переход на страницу входа
+    // Перенаправление на страницу входа
+    window.location.href = '/login.html';
 }
-
 // Логика для выхода
 function logout() {
     localStorage.removeItem('token'); // Удаляем токен
