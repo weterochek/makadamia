@@ -38,7 +38,7 @@ const mongoURI = process.env.MONGO_URI || "mongodb://11_ifelephant:ee590bdf579c7
 mongoose.connect(mongoURI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-  ssl: true, // Включено SSL
+  ssl: false, // Включено SSL
 })
   .then(() => console.log("MongoDB connected"))
   .catch((error) => console.error("MongoDB connection error:", error));
