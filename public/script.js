@@ -78,7 +78,36 @@ function decrementItem(itemName) {
     }
 }
 
+function decodeToken(token) {
+  const payload = token.split(".")[1]; // Получаем payload из токена
+  const decodedPayload = atob(payload); // Декодируем Base64
+  return JSON.parse(decodedPayload); // Парсим JSON и возвращаем объект
+}
+document.addEventListener("DOMContentLoaded", () => {
+  const token = localStorage.getItem("token");
 
+  if (token) {
+    try {
+      const userData = decodeToken(token);
+   const currentTime = Math.floor(Date.now() / 3600); // Текущее время в секундах
+      if (userData.exp < currentTime) {
+        alert("Срок действия токена истек. Пожалуйста, войдите снова.");
+        logout();
+        return;
+      }
+        document.getElementById("usernameDisplay").textContent =
+        userData.username || "Имя неизвестно";
+
+    } catch (error) {
+      console.error("Ошибка при декодировании токена:", error);
+      alert("Ошибка при проверке токена. Войдите снова.");
+      logout();
+    }
+  } else {
+    // Если токен отсутствует, перенаправляем на страницу входа
+    window.location.href = "login.html";
+  }
+});
 // Проверка состояния авторизации
 function checkAuthStatus() {
     const token = localStorage.getItem('token'); // Проверяем наличие токена
