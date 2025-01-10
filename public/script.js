@@ -99,10 +99,6 @@ function checkAuthStatus() {
 }
 
 
-// Логика для входа
-app.get('/login', (req, res) => {
-    res.sendFile(__dirname + '/login.html'); // Убедитесь, что файл login.html существует
-});
 
 // Логика для выхода
 function logout() {
