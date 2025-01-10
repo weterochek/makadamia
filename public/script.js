@@ -47,7 +47,12 @@ document.addEventListener("DOMContentLoaded", function() {
     cartDropdown.prepend(closeCartButton); // Добавляем крестик в начало содержимого
     checkAuthStatus();
 });
-
+function handleLoginSuccess(token, username) {
+    localStorage.setItem('token', token);
+    localStorage.setItem('username', username);
+    checkAuthStatus();
+    window.location.href = '/index.html'; // Переход на гламное меню
+}
 // Добавление товара в корзину
 function addToCart(itemName, itemPrice) {
     if (cart[itemName]) {
