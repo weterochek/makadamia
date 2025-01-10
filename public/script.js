@@ -205,10 +205,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // Открытие личного кабинета
 function openCabinet(username) {
-    if (cabinetIsOpen) {
-        closeCabinet(); // Закрыть, если уже открыто
-        return;
-    }
+    closeCabinet(); // Закрыть, если уже открыто
     const authButton = document.getElementById("authButton");
     const rect = authButton.getBoundingClientRect();
 
