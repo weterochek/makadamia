@@ -5,14 +5,26 @@ const bcrypt = require("bcryptjs");
 const cors = require("cors");
 const path = require("path");
 const jwt = require("jsonwebtoken");
+const Joi = require("joi");
 const app = express();
 
 // Настройка CORS
+const allowedOrigins = [
+  'https://makadamia.onrender.com',
+  'https://mobile-site.onrender.com',
+];
+
 const corsOptions = {
-  origin: 'https://makadamia.onrender.com',  // Укажите точный URL вашего фронтенда
-  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Разрешаем основные методы
-  allowedHeaders: ['Content-Type', 'Authorization'], // Разрешаем эти заголовки
-  credentials: true,  // Разрешить использование cookies/сессий
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
 };
 
 // Используем CORS с настройками
@@ -24,12 +36,22 @@ const mongoURI = process.env.MONGO_URI || "mongodb://11_ifelephant:ee590bdf579c7
 mongoose.connect(mongoURI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
+  ssl: true, // Включено SSL
+  authSource: "admin", // Если используется авторизация
 })
   .then(() => console.log("MongoDB connected"))
   .catch((error) => console.error("MongoDB connection error:", error));
 
 // Middleware для обработки JSON
 app.use(express.json());
+
+// Перенаправление HTTP на HTTPS
+app.use((req, res, next) => {
+  if (req.headers["x-forwarded-proto"] !== "https") {
+    return res.redirect(`https://${req.headers.host}${req.url}`);
+  }
+  next();
+});
 
 // Указание папки со статическими файлами
 app.use(express.static(path.join(__dirname, "public")));
@@ -42,8 +64,34 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model("User", userSchema);
 
+// Мидлвар для проверки токена
+const authMiddleware = (req, res, next) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) {
+    return res.status(401).json({ message: "Токен не предоставлен" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    return res.status(401).json({ message: "Недействительный токен" });
+  }
+};
+
 // Регистрация пользователя
 app.post('/register', async (req, res) => {
+  const schema = Joi.object({
+    username: Joi.string().min(3).max(30).required(),
+    password: Joi.string().min(8).required(),
+  });
+
+  const { error } = schema.validate(req.body);
+  if (error) {
+    return res.status(400).json({ message: error.details[0].message });
+  }
+
   const { username, password } = req.body;
   
   try {
@@ -52,7 +100,7 @@ app.post('/register', async (req, res) => {
       return res.status(409).json({ message: 'Пользователь с таким именем уже существует' });
     }
     
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 12); // Увеличено количество раундов
     const newUser = new User({ username, password: hashedPassword });
     await newUser.save();
     
@@ -80,11 +128,34 @@ app.post('/login', async (req, res) => {
     }
     
     const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '1h' });
-    res.status(200).json({ token });
+    const refreshToken = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '7d' });
+    res.status(200).json({ token, refreshToken });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Ошибка входа', error: err.message });
   }
+});
+
+// Обновление токена
+app.post('/refresh-token', (req, res) => {
+  const { token: refreshToken } = req.body;
+
+  if (!refreshToken) {
+    return res.status(403).json({ message: 'Токен обновления не предоставлен' });
+  }
+
+  try {
+    const user = jwt.verify(refreshToken, JWT_SECRET);
+    const newAccessToken = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '1h' });
+    res.status(200).json({ token: newAccessToken });
+  } catch (err) {
+    res.status(403).json({ message: 'Недействительный токен обновления' });
+  }
+});
+
+// Приватный маршрут
+app.get('/private-route', authMiddleware, (req, res) => {
+  res.json({ message: `Добро пожаловать, пользователь ${req.user.id}` });
 });
 
 // Обработка корневого маршрута
