@@ -30,8 +30,8 @@
                     <button onclick="goToCheckoutPage()">К Оформлению заказа</button>
                 </div>
             </li>
-            <li><a href="#cabinet" class="nav-item" id="authButton" onclick="handleAuthClick()">Вход</a></li>
-            <li><a href="#cabinet" class="nav-item"id="logoutButton" onclick="logout()" style="display: none;">Выход</a></li>
+            <a href="#cabinet" class="nav-item" id="authButton" onclick="handleAuthClick()">Вход</a>
+            <a id="cabinetButton" class="nav-item" onclick="openCabinet()" style="display: none;">Личный кабинет</a>
         </div>
         </ul>
     </nav>
@@ -39,8 +39,8 @@
 
 <div class="account-container">
     <h1>Личный кабинет</h1>
-    <p id="usernameDisplay">Загрузка данных...</p>
-    <button id="logoutButton">Выйти</button>
+    <p>Пользователь: ${username}</p>
+    <button onclick="logout()">Выйти</button>
 </div>
 <script src="script.js"></script>
 </body>
