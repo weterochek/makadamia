@@ -114,30 +114,30 @@ app.post('/register', async (req, res) => {
 
 // Авторизация пользователя
 app.post('/login', async (req, res) => {
-  const { username, password } = req.body;
+    const { username, password } = req.body;
 
-  try {
-    console.log("Попытка входа пользователя:", req.body);
+    console.log("Попытка входа пользователя:", { username });
+
+    // Находим пользователя в базе данных
     const user = await User.findOne({ username });
-
     if (!user) {
-      return res.status(401).json({ message: 'Неверное имя пользователя или пароль' });
+        return res.status(401).json({ message: 'Неверные имя пользователя или пароль' });
     }
 
+    // Проверяем зашифрованный пароль
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      return res.status(401).json({ message: 'Неверное имя пользователя или пароль' });
+        return res.status(401).json({ message: 'Неверные имя пользователя или пароль' });
     }
-
-    const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '1h' });
-    const refreshToken = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '7d' });
-    res.status(200).json({ token, refreshToken });
-  } catch (err) {
+    catch (err){
     console.error("Ошибка входа:", err);
-    res.status(500).json({ message: 'Ошибка входа', error: err.message });
-  }
-});
+    res.status(500).json({ message: 'Ошибка входа', error: err.message });}
+  
+    // Генерируем токен
+    const token = jwt.sign({ id: user._id, username: user.username }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
+    res.json({ token });
+});
 // Обновление токена
 app.post('/refresh-token', (req, res) => {
   const { token: refreshToken } = req.body;
