@@ -128,11 +128,7 @@ app.post('/login', async (req, res) => {
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
         return res.status(401).json({ message: 'Неверные имя пользователя или пароль' });
-    }
-    catch (err){
-    console.error("Ошибка входа:", err);
-    res.status(500).json({ message: 'Ошибка входа', error: err.message });}
-  
+    }  
     // Генерируем токен
     const token = jwt.sign({ id: user._id, username: user.username }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
