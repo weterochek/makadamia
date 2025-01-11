@@ -223,7 +223,30 @@ function logout() {
     checkAuthStatus(); // Обновляем интерфейс
     window.location.href = '/'; // Переход на главную страницу
 }
+// Переход на страницу личного кабинета
+function openCabinet() {
+    const token = localStorage.getItem('token');
+    const username = localStorage.getItem('username');
 
+    if (!token || !username) {
+        // Если токен отсутствует, перенаправляем на страницу входа
+        window.location.href = "/login.html";
+    } else {
+        // Переход на страницу личного кабинета
+        window.location.href = "/account.html";
+    }
+}
+
+// Инициализация авторизации и кнопок при загрузке страницы
+document.addEventListener("DOMContentLoaded", function () {
+    checkAuthStatus();
+
+    // Убеждаемся, что кнопка "Выход" отображается только в личном кабинете
+    const logoutButton = document.getElementById('logoutButton');
+    if (logoutButton && window.location.pathname !== '/account.html') {
+        logoutButton.style.display = 'none';
+    }
+});
 
 // Расчет баланса на основе корзины
 function calculateBalance() {
