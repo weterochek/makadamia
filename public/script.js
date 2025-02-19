@@ -262,3 +262,39 @@ function goToCheckoutPage() {
     window.location.href = "checkout.html";
 }
 
+document.addEventListener("DOMContentLoaded", () => {
+    const token = localStorage.getItem('token'); // Получаем токен из localStorage
+    if (!token) {
+        document.getElementById('usernameDisplay').innerText = "Гость";
+        return;
+    }
+
+    fetch('/account', {
+        headers: { Authorization: `Bearer ${token}` }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.username) {
+            document.getElementById('usernameDisplay').innerText = data.username;
+            document.getElementById('authButton').style.display = 'none'; // Скрываем "Вход"
+            document.getElementById('cabinetButton').style.display = 'inline-block'; // Показываем "Личный кабинет"
+        } else {
+            document.getElementById('usernameDisplay').innerText = "Ошибка загрузки";
+        }
+    })
+    .catch(() => {
+        document.getElementById('usernameDisplay').innerText = "Ошибка загрузки";
+    });
+});
+function logout() {
+    localStorage.removeItem('token'); // Удаляем токен
+    window.location.href = 'index.html'; // Перенаправляем на главную
+}
+function handleAuthClick() {
+    const token = localStorage.getItem('token');
+    if (token) {
+        window.location.href = 'account.html'; // Если пользователь авторизован, переходим в личный кабинет
+    } else {
+        window.location.href = 'login.html'; // Если нет, перенаправляем на страницу входа
+    }
+}
