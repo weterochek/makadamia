@@ -70,18 +70,15 @@ const userSchema = new mongoose.Schema({
 });
 
 const User = mongoose.model("User", userSchema);
-app.get('/account', (req, res) => {
-    const token = req.headers.authorization?.split(' ')[1];
-
-    if (!token) {
-        return res.status(401).json({ message: 'Нет доступа' });
-    }
-
+app.get('/account', authMiddleware, async (req, res) => {
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        res.json({ username: decoded.username });
+        const user = await User.findById(req.user.id).select("username name city");
+        if (!user) {
+            return res.status(404).json({ message: "Пользователь не найден" });
+        }
+        res.json({ username: user.username, name: user.name, city: user.city });
     } catch (error) {
-        res.status(401).json({ message: 'Неверный токен' });
+        res.status(500).json({ message: "Ошибка сервера" });
     }
 });
 const authMiddleware = (req, res, next) => {
@@ -97,6 +94,15 @@ try {
       res.status(401).json({ message: 'Неверный токен' });
   }
 };
+app.put('/account', authMiddleware, async (req, res) => {
+  try {
+    const { name, city } = req.body;
+    const updatedUser = await User.findByIdAndUpdate(req.user.id, { name, city }, { new: true });
+    res.json(updatedUser);
+  } catch (error) {
+    res.status(500).json({ message: "Ошибка обновления профиля" });
+  }
+});
 // Регистрация пользователя
 app.post('/register', async (req, res) => {
   const schema = Joi.object({
