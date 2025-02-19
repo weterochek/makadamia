@@ -123,3 +123,14 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 });
+document.addEventListener("DOMContentLoaded", () => {
+    fetch("/account", {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById("orderName").value = data.name || "";
+        document.getElementById("orderCity").value = data.city || "";
+    })
+    .catch(() => console.log("Ошибка загрузки профиля"));
+});
