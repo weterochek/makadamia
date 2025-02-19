@@ -63,7 +63,10 @@ app.use(express.static(path.join(__dirname, "public")));
 app.get('/account', authMiddleware, async (req, res) => {
     try {
         const user = await User.findById(req.user.id).select("username name city");
-        res.json(user);
+        if (!user) {
+            return res.status(404).json({ message: "Пользователь не найден" });
+        }
+        res.json({ username: user.username, name: user.name, city: user.city });
     } catch (error) {
         res.status(500).json({ message: "Ошибка сервера" });
     }
@@ -77,20 +80,6 @@ const userSchema = new mongoose.Schema({
 });
 
 const User = mongoose.model("User", userSchema);
-app.get('/account', (req, res) => {
-    const token = req.headers.authorization?.split(' ')[1];
-
-    if (!token) {
-        return res.status(401).json({ message: 'Нет доступа' });
-    }
-
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        res.json({ username: decoded.username });
-    } catch (error) {
-        res.status(401).json({ message: 'Неверный токен' });
-    }
-});
 
 app.put('/account', authMiddleware, async (req, res) => {
     try {
