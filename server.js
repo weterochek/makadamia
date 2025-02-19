@@ -8,7 +8,6 @@ const jwt = require("jsonwebtoken");
 const Joi = require("joi");
 const app = express();
 
-
 // Настройка CORS
 const allowedOrigins = [
   'https://makadamia.onrender.com',
@@ -56,6 +55,7 @@ app.use((req, res, next) => {
 
 // Указание папки со статическими файлами
 app.use(express.static(path.join(__dirname, "public")));
+
 // Мидлвар для проверки токена
 const authMiddleware = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
@@ -78,40 +78,12 @@ const authMiddleware = (req, res, next) => {
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  name: { type: String, default: ""},
-  city: { type: String, default: ""}
+  name: { type: String, default: "" },
+  city: { type: String, default: "" }
 });
 
 const User = mongoose.model("User", userSchema);
-app.get('/account', authMiddleware, async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id).select("username name city");
-    if (!user) {
-      return res.status(404).json({ message: "Пользователь не найден" });
-    }
-    res.json(user);
-  } catch (error) {
-    res.status(500).json({ message: "Ошибка сервера" });
-  }
-});
 
-// Обновление профиля
-app.put('/account', authMiddleware, async (req, res) => {
-  try {
-    const { name, city } = req.body;
-    const updatedUser = await User.findByIdAndUpdate(
-      req.user.id,
-      { name, city },
-      { new: true, runValidators: true }
-    );
-    if (!updatedUser) {
-      return res.status(404).json({ message: "Пользователь не найден" });
-    }
-    res.json(updatedUser);
-  } catch (error) {
-    res.status(500).json({ message: "Ошибка обновления профиля" });
-  }
-});
 // Регистрация пользователя
 app.post('/register', async (req, res) => {
   const schema = Joi.object({
@@ -145,63 +117,58 @@ app.post('/register', async (req, res) => {
 
 // Авторизация пользователя
 app.post('/login', async (req, res) => {
-    const { username, password } = req.body;
+  const { username, password } = req.body;
 
-    // Находим пользователя в базе данных
-    const user = await User.findOne({ username });
-    if (!user) {
-        return res.status(401).json({ message: 'Неверные имя пользователя или пароль' });
-    }
-
-    // Проверяем зашифрованный пароль
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-        return res.status(401).json({ message: 'Неверные имя пользователя или пароль' });
-    }  
-    // Генерируем токен
-    const token = jwt.sign({ id: user._id, username: user.username }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-    res.json({ token });
-});
-// Обновление токена
-app.post('/refresh-token', (req, res) => {
-  const { token: refreshToken } = req.body;
-
-  if (!refreshToken) {
-    return res.status(403).json({ message: 'Токен обновления не предоставлен' });
+  // Находим пользователя в базе данных
+  const user = await User.findOne({ username });
+  if (!user) {
+    return res.status(401).json({ message: 'Неверные имя пользователя или пароль' });
   }
 
+  // Проверяем зашифрованный пароль
+  const isPasswordValid = await bcrypt.compare(password, user.password);
+  if (!isPasswordValid) {
+    return res.status(401).json({ message: 'Неверные имя пользователя или пароль' });
+  }
+
+  // Генерируем токен
+  const token = jwt.sign({ id: user._id, username: user.username }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+  res.json({ token });
+});
+
+// Получение данных аккаунта
+app.get('/account', authMiddleware, async (req, res) => {
   try {
-    const user = jwt.verify(refreshToken, JWT_SECRET);
-    const newAccessToken = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '1h' });
-    res.status(200).json({ token: newAccessToken });
-  } catch (err) {
-    res.status(403).json({ message: 'Недействительный токен обновления' });
+    const user = await User.findById(req.user.id).select("username name city");
+    if (!user) {
+      return res.status(404).json({ message: "Пользователь не найден" });
+    }
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: "Ошибка сервера" });
   }
 });
 
-// Приватный маршрут
-app.get('/private-route', authMiddleware, (req, res) => {
-  res.json({ message: `Добро пожаловать, пользователь ${req.user.id}` });
+// Обновление профиля
+app.put('/account', authMiddleware, async (req, res) => {
+  try {
+    const { name, city } = req.body;
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user.id,
+      { name, city },
+      { new: true, runValidators: true }
+    );
+    if (!updatedUser) {
+      return res.status(404).json({ message: "Пользователь не найден" });
+    }
+    res.json(updatedUser);
+  } catch (error) {
+    res.status(500).json({ message: "Ошибка обновления профиля" });
+  }
 });
 
-// Обработка корневого маршрута
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
-});
-
-// Проверка соединения
-app.get("/connect", (req, res) => {
-  res.send("Соединение с сервером успешно!");
-});
-
-// Обработчик ошибок
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: 'Что-то пошло не так!', error: err.message });
-});
-
-// Обработка 404 ошибок
+// Обработчик 404 ошибок
 app.use((req, res) => {
   res.status(404).json({ message: "Ресурс не найден" });
 });
