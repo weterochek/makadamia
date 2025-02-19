@@ -139,8 +139,11 @@ app.post('/login', async (req, res) => {
   // Генерируем токен
   const token = jwt.sign({ id: user._id, username: user.username }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
+  console.log("Generated token:", token); // Логирование сгенерированного токена
+
   res.json({ token });
 });
+
 
 // Получение данных аккаунта
 app.get('/account', authMiddleware, async (req, res) => {
