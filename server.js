@@ -8,6 +8,10 @@ const jwt = require("jsonwebtoken");
 const Joi = require("joi");
 const app = express();
 
+app.use((req, res, next) => {
+    console.log(`Получен запрос: ${req.method} ${req.url}`);
+    next();
+});
 // Настройка CORS
 const allowedOrigins = [
   'https://makadamia.onrender.com',
