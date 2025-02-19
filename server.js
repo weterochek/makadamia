@@ -64,6 +64,8 @@ app.use(express.static(path.join(__dirname, "public")));
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   password: { type: String, required: true },
+  name: { type: String, default: ""},
+  city: { type: String, default: ""}
 });
 
 const User = mongoose.model("User", userSchema);
@@ -81,7 +83,27 @@ app.get('/account', (req, res) => {
         res.status(401).json({ message: 'Неверный токен' });
     }
 });
-
+app.get('/account', authMiddleware, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).select("username name city");
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ message: "Ошибка сервера" });
+    }
+});
+app.put('/account', authMiddleware, async (req, res) => {
+    try {
+        const { name, city } = req.body;
+        const updatedUser = await User.findByIdAndUpdate(
+            req.user.id,
+            { name, city },
+            { new: true }
+        );
+        res.json(updatedUser);
+    } catch (error) {
+        res.status(500).json({ message: "Ошибка обновления профиля" });
+    }
+});
 
 // Мидлвар для проверки токена
 const authMiddleware = (req, res, next) => {
