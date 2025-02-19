@@ -62,17 +62,21 @@ app.use(express.static(path.join(__dirname, "public")));
 // Мидлвар для проверки токена
 const authMiddleware = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
+
   if (!token) {
     return res.status(401).json({ message: "Токен не предоставлен" });
   }
 
-try {
-      const decoded = jwt.verify(token, 'SECRET_KEY'); // Укажите ваш секретный ключ
-      res.json({ username: decoded.username }); // Отправляем имя пользователя
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET); // ✅ Используем правильный ключ
+    req.user = decoded; // ✅ Передаём пользователя в запрос
+    next(); // ✅ Переход к следующему обработчику
   } catch (error) {
-      res.status(401).json({ message: 'Неверный токен' });
+    console.error("Ошибка проверки токена:", error.message);
+    return res.status(401).json({ message: "Неверный токен" });
   }
 };
+
 // Схема и модель пользователя
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
@@ -83,6 +87,7 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model("User", userSchema);
 app.get('/account', authMiddleware, async (req, res) => {
+  console.log("ID пользователя:", req.user?.id); // Логируем, передаётся ли ID
   try {
     const user = await User.findById(req.user.id).select("username name city");
     if (!user) {
