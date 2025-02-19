@@ -182,3 +182,16 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
+app.get('/account', (req, res) => {
+  const token = req.headers.authorization?.split(' ')[1]; // Получаем токен из заголовка
+  if (!token) {
+      return res.status(401).json({ message: 'Нет доступа' });
+  }
+
+  try {
+      const decoded = jwt.verify(token, 'SECRET_KEY'); // Укажите ваш секретный ключ
+      res.json({ username: decoded.username }); // Отправляем имя пользователя
+  } catch (error) {
+      res.status(401).json({ message: 'Неверный токен' });
+  }
+});
