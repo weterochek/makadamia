@@ -60,6 +60,14 @@ app.use((req, res, next) => {
 // Указание папки со статическими файлами
 app.use(express.static(path.join(__dirname, "public")));
 
+app.get('/account', authMiddleware, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).select("username name city");
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ message: "Ошибка сервера" });
+    }
+});
 // Схема и модель пользователя
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
@@ -83,14 +91,7 @@ app.get('/account', (req, res) => {
         res.status(401).json({ message: 'Неверный токен' });
     }
 });
-app.get('/account', authMiddleware, async (req, res) => {
-    try {
-        const user = await User.findById(req.user.id).select("username name city");
-        res.json(user);
-    } catch (error) {
-        res.status(500).json({ message: "Ошибка сервера" });
-    }
-});
+
 app.put('/account', authMiddleware, async (req, res) => {
     try {
         const { name, city } = req.body;
