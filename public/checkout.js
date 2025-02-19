@@ -72,39 +72,36 @@ function saveCartToLocalStorage() {
     localStorage.setItem(`cart_${username}`, JSON.stringify(cart));
 }
 
-// Загрузка данных пользователя
-async function loadUserData() {
-    const token = localStorage.getItem("token");
-    if (!token) {
-        alert("Вы не авторизованы! Пожалуйста, войдите в аккаунт.");
-        window.location.href = "login.html";
-        return;
-    }
+const token = localStorage.getItem("token");
+
+    const orderData = {
+        username,
+        customerName,
+        customerAddress,
+        additionalInfo,
+        cart
+    };
+
     try {
-        const response = await fetch("https://makadamia.onrender.com/account", {
-            method: "GET",
+        const response = await fetch("/order", {
+            method: "POST",
             headers: {
-                "Authorization": `Bearer ${token}`,
-                "Content-Type": "application/json"
-            }
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify(orderData)
         });
-        if (!response.ok) {
-            throw new Error("Ошибка при загрузке данных профиля");
+
+        const data = await response.json();
+        if (data.success) {
+            alert("Заказ оформлен успешно!");
+        } else {
+            alert(`Ошибка при оформлении заказа: ${data.message}`);
         }
-        const userData = await response.json();
-        document.getElementById("customerName").value = userData.name || "";
-        document.getElementById("customerAddress").value = userData.city || "";
     } catch (error) {
-        console.error("Ошибка загрузки данных профиля:", error);
-        alert("Не удалось загрузить данные профиля.");
+        alert("Произошла ошибка при оформлении заказа.");
     }
 }
-
-document.addEventListener("DOMContentLoaded", () => {
-    loadCartFromLocalStorage();
-    renderCheckoutCart();
-    loadUserData();
-
     // Кнопка "Вернуться к покупкам"
     const backToShoppingButton = document.getElementById("backToShopping");
     if (backToShoppingButton) {
