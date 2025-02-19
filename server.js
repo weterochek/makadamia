@@ -67,6 +67,21 @@ const userSchema = new mongoose.Schema({
 });
 
 const User = mongoose.model("User", userSchema);
+app.get('/account', (req, res) => {
+    const token = req.headers.authorization?.split(' ')[1];
+
+    if (!token) {
+        return res.status(401).json({ message: 'Нет доступа' });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        res.json({ username: decoded.username });
+    } catch (error) {
+        res.status(401).json({ message: 'Неверный токен' });
+    }
+});
+
 
 // Мидлвар для проверки токена
 const authMiddleware = (req, res, next) => {
@@ -185,18 +200,4 @@ app.use((req, res) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
-});
-app.get('/account', (req, res) => {
-    const token = req.headers.authorization?.split(' ')[1];
-
-    if (!token) {
-        return res.status(401).json({ message: 'Нет доступа' });
-    }
-
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        res.json({ username: decoded.username });
-    } catch (error) {
-        res.status(401).json({ message: 'Неверный токен' });
-    }
 });
