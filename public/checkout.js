@@ -56,56 +56,118 @@ function decrementItem(itemName) {
 }
 
 // Увеличение количества товара
-function incrementItem(itemName, price) {
-    if (!cart[itemName]) {
-        cart[itemName] = { price, quantity: 0 };
+function incrementItem(itemName, itemPrice) {
+    if (cart[itemName]) {
+        cart[itemName].quantity += 1;
+    } else {
+        cart[itemName] = { price: itemPrice, quantity: 1 };
     }
-    cart[itemName].quantity += 1;
     saveCartToLocalStorage();
     renderCheckoutCart();
 }
 
 // Сохранение корзины в localStorage
 function saveCartToLocalStorage() {
-    const username = localStorage.getItem("username") || "guest"; // Используем имя пользователя или guest
+    const username = localStorage.getItem("username") || "guest";
     localStorage.setItem(`cart_${username}`, JSON.stringify(cart));
 }
 
-// Функция для оформления заказа
-async function checkoutOrder() {
-    const username = localStorage.getItem('username');
-    const customerName = document.getElementById('customerName').value;
-    const customerAddress = document.getElementById('customerAddress').value;
-    const additionalInfo = document.getElementById('additionalInfo').value;
-
-    // Получаем токен из localStorage
+// Загрузка данных пользователя
+async function loadUserData() {
     const token = localStorage.getItem("token");
-
-    const orderData = {
-        username,
-        customerName,
-        customerAddress,
-        additionalInfo,
-        cart
-    };
-
+    if (!token) {
+        alert("Вы не авторизованы! Пожалуйста, войдите в аккаунт.");
+        window.location.href = "login.html";
+        return;
+    }
     try {
-        const response = await fetch("/order", {
-            method: "POST",
+        const response = await fetch("https://makadamia.onrender.com/account", {
+            method: "GET",
             headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
-            },
-            body: JSON.stringify(orderData)
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            }
         });
-
-        const data = await response.json();
-        if (data.success) {
-            alert("Заказ оформлен успешно!");
-        } else {
-            alert(`Ошибка при оформлении заказа: ${data.message}`);
+        if (!response.ok) {
+            throw new Error("Ошибка при загрузке данных профиля");
         }
+        const userData = await response.json();
+        document.getElementById("customerName").value = userData.name || "";
+        document.getElementById("customerAddress").value = userData.city || "";
     } catch (error) {
-        alert("Произошла ошибка при оформлении заказа.");
+        console.error("Ошибка загрузки данных профиля:", error);
+        alert("Не удалось загрузить данные профиля.");
     }
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+    loadCartFromLocalStorage();
+    renderCheckoutCart();
+    loadUserData();
+
+    // Кнопка "Вернуться к покупкам"
+    const backToShoppingButton = document.getElementById("backToShopping");
+    if (backToShoppingButton) {
+        backToShoppingButton.addEventListener("click", function () {
+            saveCartToLocalStorage();
+            window.location.href = "index.html";
+        });
+    }
+
+    // Кнопка "Оформить заказ"
+    const checkoutForm = document.getElementById("checkoutForm");
+    if (checkoutForm) {
+        checkoutForm.addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const token = localStorage.getItem("token");
+            if (!token) {
+                alert("Вы не авторизованы!");
+                return;
+            }
+            const orderData = {
+                name: document.getElementById("customerName").value,
+                address: document.getElementById("customerAddress").value,
+                additionalInfo: document.getElementById("additionalInfo").value
+            };
+            try {
+                const response = await fetch("https://makadamia.onrender.com/order", {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(orderData)
+                });
+                if (!response.ok) {
+                    throw new Error("Ошибка при оформлении заказа");
+                }
+                alert("Заказ успешно оформлен!");
+                cart = {};
+                saveCartToLocalStorage();
+                window.location.href = "thankyou.html";
+            } catch (error) {
+                console.error("Ошибка отправки заказа:", error);
+                alert("Ошибка при оформлении заказа.");
+            }
+        });
+    }
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    const additionalInfoField = document.getElementById("additionalInfo");
+    additionalInfoField.addEventListener("input", function () {
+        if (!this.value.trim()) {
+            this.placeholder = "(необязательно)";
+        }
+    });
+    additionalInfoField.addEventListener("focus", function () {
+        if (this.placeholder === "(необязательно)") {
+            this.placeholder = "";
+        }
+    });
+    additionalInfoField.addEventListener("blur", function () {
+        if (!this.value.trim()) {
+            this.placeholder = "(необязательно)";
+        }
+    });
+});
