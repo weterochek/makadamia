@@ -83,21 +83,29 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model("User", userSchema);
 app.get('/account', authMiddleware, async (req, res) => {
-    try {
-        const user = await User.findById(req.user.id).select("username name city");
-        if (!user) {
-            return res.status(404).json({ message: "Пользователь не найден" });
-        }
-        res.json({ username: user.username, name: user.name, city: user.city });
-    } catch (error) {
-        res.status(500).json({ message: "Ошибка сервера" });
+  try {
+    const user = await User.findById(req.user.id).select("username name city");
+    if (!user) {
+      return res.status(404).json({ message: "Пользователь не найден" });
     }
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: "Ошибка сервера" });
+  }
 });
 
+// Обновление профиля
 app.put('/account', authMiddleware, async (req, res) => {
   try {
     const { name, city } = req.body;
-    const updatedUser = await User.findByIdAndUpdate(req.user.id, { name, city }, { new: true });
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user.id,
+      { name, city },
+      { new: true, runValidators: true }
+    );
+    if (!updatedUser) {
+      return res.status(404).json({ message: "Пользователь не найден" });
+    }
     res.json(updatedUser);
   } catch (error) {
     res.status(500).json({ message: "Ошибка обновления профиля" });
