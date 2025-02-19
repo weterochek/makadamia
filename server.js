@@ -60,6 +60,16 @@ app.use((req, res, next) => {
 // Указание папки со статическими файлами
 app.use(express.static(path.join(__dirname, "public")));
 
+
+// Схема и модель пользователя
+const userSchema = new mongoose.Schema({
+  username: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  name: { type: String, default: ""},
+  city: { type: String, default: ""}
+});
+
+const User = mongoose.model("User", userSchema);
 app.get('/account', authMiddleware, async (req, res) => {
     try {
         const user = await User.findById(req.user.id).select("username name city");
@@ -71,15 +81,6 @@ app.get('/account', authMiddleware, async (req, res) => {
         res.status(500).json({ message: "Ошибка сервера" });
     }
 });
-// Схема и модель пользователя
-const userSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  name: { type: String, default: ""},
-  city: { type: String, default: ""}
-});
-
-const User = mongoose.model("User", userSchema);
 
 app.put('/account', authMiddleware, async (req, res) => {
     try {
