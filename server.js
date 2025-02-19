@@ -58,22 +58,23 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // Мидлвар для проверки токена
 const authMiddleware = (req, res, next) => {
-  const token = req.headers.authorization?.split(" ")[1];
+  const token = req.headers.authorization?.split(" ")[1]; // Получаем токен из заголовка
 
   if (!token) {
     return res.status(401).json({ message: "Токен не предоставлен" });
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET); // ✅ Используем правильный ключ
-    req.user = decoded; // ✅ Передаём пользователя в запрос
-    next(); // ✅ Переход к следующему обработчику
+    const decoded = jwt.decode(token); // Используем decode вместо verify для получения данных без проверки
+    console.log("Decoded token:", decoded); // Логирование декодированного токена
+    jwt.verify(token, process.env.JWT_SECRET); // Проверка токена
+    req.user = decoded;
+    next(); // Переход к следующему обработчику
   } catch (error) {
     console.error("Ошибка проверки токена:", error.message);
     return res.status(401).json({ message: "Неверный токен" });
   }
 };
-
 // Схема и модель пользователя
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
