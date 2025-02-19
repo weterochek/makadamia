@@ -84,7 +84,6 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model("User", userSchema);
 app.get('/account', authMiddleware, async (req, res) => {
-  console.log("ID пользователя:", req.user?.id); // Логируем, передаётся ли ID
   try {
     const user = await User.findById(req.user.id).select("username name city");
     if (!user) {
@@ -128,7 +127,6 @@ app.post('/register', async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    console.log("Регистрация пользователя:", req.body);
     const existingUser = await User.findOne({ username });
     if (existingUser) {
       return res.status(409).json({ message: 'Пользователь с таким именем уже существует' });
@@ -148,8 +146,6 @@ app.post('/register', async (req, res) => {
 // Авторизация пользователя
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
-
-    console.log("Попытка входа пользователя:", { username });
 
     // Находим пользователя в базе данных
     const user = await User.findOne({ username });
