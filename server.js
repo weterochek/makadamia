@@ -60,20 +60,6 @@ app.use((req, res, next) => {
 // Указание папки со статическими файлами
 app.use(express.static(path.join(__dirname, "public")));
 // Мидлвар для проверки токена
-const authMiddleware = (req, res, next) => {
-  const token = req.headers.authorization?.split(" ")[1];
-  if (!token) {
-    return res.status(401).json({ message: "Токен не предоставлен" });
-  }
-
-try {
-      const decoded = jwt.verify(token, 'SECRET_KEY'); // Укажите ваш секретный ключ
-      res.json({ username: decoded.username }); // Отправляем имя пользователя
-  } catch (error) {
-      res.status(401).json({ message: 'Неверный токен' });
-  }
-};
-
 
 // Схема и модель пользователя
 const userSchema = new mongoose.Schema({
@@ -98,7 +84,19 @@ app.get('/account', (req, res) => {
         res.status(401).json({ message: 'Неверный токен' });
     }
 });
+const authMiddleware = (req, res, next) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) {
+    return res.status(401).json({ message: "Токен не предоставлен" });
+  }
 
+try {
+      const decoded = jwt.verify(token, 'SECRET_KEY'); // Укажите ваш секретный ключ
+      res.json({ username: decoded.username }); // Отправляем имя пользователя
+  } catch (error) {
+      res.status(401).json({ message: 'Неверный токен' });
+  }
+};
 // Регистрация пользователя
 app.post('/register', async (req, res) => {
   const schema = Joi.object({
