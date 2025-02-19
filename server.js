@@ -66,12 +66,11 @@ const authMiddleware = (req, res, next) => {
     return res.status(401).json({ message: "Токен не предоставлен" });
   }
 
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded;
-    next();
-  } catch (err) {
-    return res.status(401).json({ message: "Недействительный токен" });
+try {
+      const decoded = jwt.verify(token, 'SECRET_KEY'); // Укажите ваш секретный ключ
+      res.json({ username: decoded.username }); // Отправляем имя пользователя
+  } catch (error) {
+      res.status(401).json({ message: 'Неверный токен' });
   }
 };
 
