@@ -298,3 +298,33 @@ function handleAuthClick() {
         window.location.href = 'login.html'; // Если нет, перенаправляем на страницу входа
     }
 }
+document.addEventListener("DOMContentLoaded", () => {
+    fetch("/account", {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById("nameInput").value = data.name || "";
+        document.getElementById("cityInput").value = data.city || "";
+    })
+    .catch(() => console.log("Ошибка загрузки профиля"));
+});
+
+function editField(field) {
+    const input = document.getElementById(field + "Input");
+    if (input.disabled) {
+        input.disabled = false;
+        input.focus();
+    } else {
+        fetch("/account", {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${localStorage.getItem("token")}`
+            },
+            body: JSON.stringify({ [field]: input.value })
+        })
+        .then(() => input.disabled = true)
+        .catch(() => console.log("Ошибка обновления профиля"));
+    }
+}
