@@ -129,6 +129,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 address: document.getElementById("customerAddress").value,
                 additionalInfo: document.getElementById("additionalInfo").value
             };
+
+            console.log("Отправка данных заказа:", orderData); // Логирование данных перед отправкой
+
             try {
                 const response = await fetch("https://makadamia.onrender.com/order", {
                     method: "POST",
@@ -138,9 +141,14 @@ document.addEventListener("DOMContentLoaded", () => {
                     },
                     body: JSON.stringify(orderData)
                 });
+                
                 if (!response.ok) {
-                    throw new Error("Ошибка при оформлении заказа");
+                    const errorData = await response.json(); // Получаем ошибку с сервера
+                    console.error("Ошибка при оформлении заказа:", errorData);
+                    alert("Ошибка при оформлении заказа: " + (errorData.message || "Неизвестная ошибка"));
+                    return;
                 }
+
                 alert("Заказ успешно оформлен!");
                 cart = {};
                 saveCartToLocalStorage();
@@ -151,9 +159,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
-});
 
-document.addEventListener("DOMContentLoaded", () => {
     const additionalInfoField = document.getElementById("additionalInfo");
     additionalInfoField.addEventListener("input", function () {
         if (!this.value.trim()) {
