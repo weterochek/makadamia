@@ -59,6 +59,21 @@ app.use((req, res, next) => {
 
 // Указание папки со статическими файлами
 app.use(express.static(path.join(__dirname, "public")));
+// Мидлвар для проверки токена
+const authMiddleware = (req, res, next) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) {
+    return res.status(401).json({ message: "Токен не предоставлен" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    return res.status(401).json({ message: "Недействительный токен" });
+  }
+};
 
 
 // Схема и модель пользователя
@@ -96,21 +111,6 @@ app.put('/account', authMiddleware, async (req, res) => {
     }
 });
 
-// Мидлвар для проверки токена
-const authMiddleware = (req, res, next) => {
-  const token = req.headers.authorization?.split(" ")[1];
-  if (!token) {
-    return res.status(401).json({ message: "Токен не предоставлен" });
-  }
-
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded;
-    next();
-  } catch (err) {
-    return res.status(401).json({ message: "Недействительный токен" });
-  }
-};
 
 // Регистрация пользователя
 app.post('/register', async (req, res) => {
