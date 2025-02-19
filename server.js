@@ -57,13 +57,14 @@ app.use((req, res, next) => {
 app.use(express.static(path.join(__dirname, "public")));
 
 // Мидлвар для проверки токена
-// Мидлвар для проверки токена
 const authMiddleware = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1]; // Получаем токен из заголовка
 
   if (!token) {
     return res.status(401).json({ message: "Токен не предоставлен" });
   }
+
+  console.log("Received token:", token); // Логируем токен для отладки
 
   let decoded;
   try {
