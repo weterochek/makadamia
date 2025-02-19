@@ -70,7 +70,6 @@ const authMiddleware = (req, res, next) => {
     decoded = jwt.verify(token, process.env.JWT_SECRET); // Верификация токена с проверкой
     console.log("Decoded token:", decoded); // Логирование декодированного токена
   } catch (error) {
-    console.error("Ошибка проверки токена:", error.message);
     return res.status(401).json({ message: "Неверный токен" });
   }
 
