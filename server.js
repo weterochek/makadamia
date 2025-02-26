@@ -60,8 +60,10 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // Схема и модель пользователя
 const userSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
+    username: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    name: { type: String }, 
+    city: { type: String }  
 });
 
 const User = mongoose.model("User", userSchema);
@@ -188,18 +190,21 @@ app.get('/account', (req, res) => {
   }
 });
 app.put('/account', authMiddleware, async (req, res) => {
-    const { username, password } = req.body;
+    const { name, city, username, password } = req.body; // Получаем данные из запроса
+
     try {
         const user = await User.findById(req.user.id);
         if (!user) {
             return res.status(404).json({ message: 'Пользователь не найден' });
         }
 
-        if (username) user.username = username;
-        if (password) user.password = await bcrypt.hash(password, 12);
+        if (name) user.name = name;  // Обновляем имя
+        if (city) user.city = city;  // Обновляем город
+        if (username) user.username = username;  // Обновляем username
+        if (password) user.password = await bcrypt.hash(password, 12);  // Обновляем пароль
 
-        await user.save();
-        res.json({ message: 'Аккаунт обновлен' });
+        await user.save(); // Сохраняем обновлённые данные
+        res.json({ message: 'Аккаунт обновлён', user });
     } catch (error) {
         res.status(500).json({ message: 'Ошибка при обновлении аккаунта', error: error.message });
     }
