@@ -67,7 +67,7 @@ app.use((req, res, next) => {
   }
   next();
 });
-const Cart = require("./public/models/Cart"); // Подключаем модель
+const Cart = require("./models/Cart"); // Подключаем модель
 
 app.post('/cart/add', authMiddleware, async (req, res) => {
   try {
