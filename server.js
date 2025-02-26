@@ -210,6 +210,30 @@ app.use((req, res) => {
 
 // Порт, на котором будет работать сервер
 const PORT = process.env.PORT || 3000;
+app.put('/account', authMiddleware, async (req, res) => {
+  const { username, password } = req.body;
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'Пользователь не найден' });
+    }
+
+    // Обновляем имя пользователя
+    if (username) {
+      user.username = username;
+    }
+
+    // Обновляем пароль (если передан)
+    if (password) {
+      user.password = await bcrypt.hash(password, 12);
+    }
+
+    await user.save();
+    res.json({ message: 'Аккаунт обновлен' });
+  } catch (error) {
+    res.status(500).json({ message: 'Ошибка при обновлении аккаунта', error: error.message });
+  }
+});
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
