@@ -82,7 +82,7 @@ async function addToCart(productId, quantity) {
 
     if (!token) {
         alert("Пожалуйста, войдите в аккаунт, чтобы добавить товар в корзину.");
-        window.location.href = "/login.html"; // Перенаправляем на страницу входа
+        window.location.href = "/login.html";
         return;
     }
 
@@ -99,7 +99,7 @@ async function addToCart(productId, quantity) {
         const data = await response.json();
 
         if (response.status === 401) {
-            alert("Авторизуйтесь, чтобы добавить товар в корзину.");
+            alert("Вы не авторизованы!");
             window.location.href = "/login.html";
             return;
         }
