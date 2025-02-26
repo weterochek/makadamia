@@ -5,6 +5,7 @@ const bcrypt = require("bcryptjs");
 const cors = require("cors");
 const path = require("path");
 const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
 const Joi = require("joi");
 const app = express();
 
@@ -29,11 +30,12 @@ const corsOptions = {
 
 // Используем CORS с настройками
 app.use(cors(corsOptions));
+app.use(cookieParser());
 
 // Подключение к MongoDB
 const JWT_SECRET = process.env.JWT_SECRET || "ai3ohPh3Aiy9eeThoh8caaM9voh5Aezaenai0Fae2Pahsh2Iexu7Qu/";
 const mongoURI = process.env.MONGO_URI || "mongodb://11_ifelephant:ee590bdf579c7404d12fd8cf0990314242d56e62@axs-h.h.filess.io:27018/11_ifelephant";
-
+const REFRESH_SECRET = process.env.REFRESH_SECRET || "J8$GzP1d&KxT^m4YvNcR";
 mongoose.connect(mongoURI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -56,38 +58,29 @@ app.use((req, res, next) => {
 // Указание папки со статическими файлами
 app.use(express.static(path.join(__dirname, "public")));
 
-// Мидлвар для проверки токена
-const authMiddleware = (req, res, next) => {
-  const token = req.headers.authorization?.split(" ")[1]; // Получаем токен из заголовка
-
-  if (!token) {
-    return res.status(401).json({ message: "Токен не предоставлен" });
-  }
-
-  console.log("Received token:", token); // Логируем токен для отладки
-
-  let decoded;
-  try {
-    decoded = jwt.verify(token, process.env.JWT_SECRET); // Верификация токена с проверкой
-    console.log("Decoded token:", decoded); // Логирование декодированного токена
-  } catch (error) {
-    console.error("Ошибка проверки токена:", error.message);
-    return res.status(401).json({ message: "Неверный токен" });
-  }
-
-  req.user = decoded; // Сохраняем данные пользователя в запрос
-  next(); // Переход к следующему обработчику
-};
-
 // Схема и модель пользователя
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  name: { type: String, default: "" },
-  city: { type: String, default: "" }
 });
 
 const User = mongoose.model("User", userSchema);
+
+// Мидлвар для проверки токена
+const authMiddleware = (req, res, next) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) {
+    return res.status(401).json({ message: "Токен не предоставлен" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    return res.status(401).json({ message: "Недействительный токен" });
+  }
+};
 
 // Регистрация пользователя
 app.post('/register', async (req, res) => {
@@ -104,6 +97,7 @@ app.post('/register', async (req, res) => {
   const { username, password } = req.body;
 
   try {
+    console.log("Регистрация пользователя:", req.body);
     const existingUser = await User.findOne({ username });
     if (existingUser) {
       return res.status(409).json({ message: 'Пользователь с таким именем уже существует' });
@@ -122,61 +116,73 @@ app.post('/register', async (req, res) => {
 
 // Авторизация пользователя
 app.post('/login', async (req, res) => {
-  const { username, password } = req.body;
+    const { username, password } = req.body;
 
-  // Находим пользователя в базе данных
-  const user = await User.findOne({ username });
-  if (!user) {
-    return res.status(401).json({ message: 'Неверные имя пользователя или пароль' });
-  }
+    console.log("Попытка входа пользователя:", { username });
 
-  // Проверяем зашифрованный пароль
-  const isPasswordValid = await bcrypt.compare(password, user.password);
-  if (!isPasswordValid) {
-    return res.status(401).json({ message: 'Неверные имя пользователя или пароль' });
-  }
-
-  // Генерируем токен
-  const token = jwt.sign({ id: user._id, username: user.username }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-  console.log("Generated token:", token); // Логирование сгенерированного токена
-
-  res.json({ token });
-});
-
-
-// Получение данных аккаунта
-app.get('/account', authMiddleware, async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id).select("username name city");
+    // Находим пользователя в базе данных
+    const user = await User.findOne({ username });
     if (!user) {
-      return res.status(404).json({ message: "Пользователь не найден" });
+        return res.status(401).json({ message: 'Неверные имя пользователя или пароль' });
     }
-    res.json(user);
-  } catch (error) {
-    res.status(500).json({ message: "Ошибка сервера" });
-  }
-});
+    app.post('/refresh', (req, res) => {
+      const refreshToken = req.cookies.refreshToken;
+      if (!refreshToken) return res.status(401).json({ message: 'Не авторизован' });
+      jwt.verify(refreshToken, REFRESH_SECRET, (err, user) => {
+        if (err) return res.status(403).json({ message: 'Недействительный refresh-токен' });
+        const accessToken = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '30m' });
+        res.json({ accessToken });
+      });
+    });
+    // Проверяем зашифрованный пароль
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+        return res.status(401).json({ message: 'Неверные имя пользователя или пароль' });
+    }  
+    // Генерируем токен
+    const token = jwt.sign({ id: user._id, username: user.username }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-// Обновление профиля
-app.put('/account', authMiddleware, async (req, res) => {
+    res.json({ token });
+});
+// Обновление токена
+app.post('/refresh-token', (req, res) => {
+  const { token: refreshToken } = req.body;
+
+  if (!refreshToken) {
+    return res.status(403).json({ message: 'Токен обновления не предоставлен' });
+  }
+
   try {
-    const { name, city } = req.body;
-    const updatedUser = await User.findByIdAndUpdate(
-      req.user.id,
-      { name, city },
-      { new: true, runValidators: true }
-    );
-    if (!updatedUser) {
-      return res.status(404).json({ message: "Пользователь не найден" });
-    }
-    res.json(updatedUser);
-  } catch (error) {
-    res.status(500).json({ message: "Ошибка обновления профиля" });
+    const user = jwt.verify(refreshToken, JWT_SECRET);
+    const newAccessToken = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '1h' });
+    res.status(200).json({ token: newAccessToken });
+  } catch (err) {
+    res.status(403).json({ message: 'Недействительный токен обновления' });
   }
 });
 
-// Обработчик 404 ошибок
+// Приватный маршрут
+app.get('/private-route', authMiddleware, (req, res) => {
+  res.json({ message: `Добро пожаловать, пользователь ${req.user.id}` });
+});
+
+// Обработка корневого маршрута
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+// Проверка соединения
+app.get("/connect", (req, res) => {
+  res.send("Соединение с сервером успешно!");
+});
+
+// Обработчик ошибок
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: 'Что-то пошло не так!', error: err.message });
+});
+
+// Обработка 404 ошибок
 app.use((req, res) => {
   res.status(404).json({ message: "Ресурс не найден" });
 });
@@ -185,4 +191,17 @@ app.use((req, res) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
+});
+app.get('/account', (req, res) => {
+  const token = req.headers.authorization?.split(' ')[1]; // Получаем токен из заголовка
+  if (!token) {
+      return res.status(401).json({ message: 'Нет доступа' });
+  }
+
+  try {
+      const decoded = jwt.verify(token, 'SECRET_KEY'); // Укажите ваш секретный ключ
+      res.json({ username: decoded.username }); // Отправляем имя пользователя
+  } catch (error) {
+      res.status(401).json({ message: 'Неверный токен' });
+  }
 });
