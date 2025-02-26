@@ -31,20 +31,7 @@ const corsOptions = {
 // Используем CORS с настройками
 app.use(cors(corsOptions));
 app.use(cookieParser());
-const authMiddleware = (req, res, next) => {
-  const token = req.headers.authorization?.split(" ")[1];
-  if (!token) {
-    return res.status(401).json({ message: "Токен не предоставлен" });
-  }
 
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded;
-    next();
-  } catch (err) {
-    return res.status(401).json({ message: "Недействительный токен" });
-  }
-};
 // Подключение к MongoDB
 const JWT_SECRET = process.env.JWT_SECRET || "ai3ohPh3Aiy9eeThoh8caaM9voh5Aezaenai0Fae2Pahsh2Iexu7Qu/";
 const mongoURI = process.env.MONGO_URI || "mongodb://11_ifelephant:ee590bdf579c7404d12fd8cf0990314242d56e62@axs-h.h.filess.io:27018/11_ifelephant";
@@ -59,7 +46,20 @@ mongoose.connect(mongoURI, {
 
 // Middleware для обработки JSON
 app.use(express.json());
+const authMiddleware = (req, res, next) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) {
+    return res.status(401).json({ message: "Токен не предоставлен" });
+  }
 
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    return res.status(401).json({ message: "Недействительный токен" });
+  }
+};
 // Перенаправление HTTP на HTTPS
 app.use((req, res, next) => {
   if (process.env.NODE_ENV === "production" && req.headers["x-forwarded-proto"] !== "https") {
@@ -183,7 +183,7 @@ app.post('/refresh', (req, res) => {
     res.json({ accessToken });
   });
 });
-app.post('/logout', async (req, res) => {
+app.post('/logout', authMiddleware, async (req, res) => {
   try {
     if (!req.user || !req.user.id) {
       return res.status(401).json({ message: 'Пользователь не найден' });
