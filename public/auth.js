@@ -98,6 +98,12 @@ async function addToCart(productId, quantity) {
 
         const data = await response.json();
 
+        if (response.status === 401) {
+            alert("Авторизуйтесь, чтобы добавить товар в корзину.");
+            window.location.href = "/login.html";
+            return;
+        }
+
         if (response.ok) {
             alert("Товар добавлен в корзину!");
         } else {
@@ -108,7 +114,6 @@ async function addToCart(productId, quantity) {
         alert("Произошла ошибка. Попробуйте снова.");
     }
 }
-
 // Функция обновления токена
 async function refreshAccessToken() {
     try {
