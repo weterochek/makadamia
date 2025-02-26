@@ -191,29 +191,26 @@ function editField(field) {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${localStorage.getItem("token")}`
             },
-            body: JSON.stringify({ [field]: input.value })
+            body: JSON.stringify({ [field]: input.value }) // Отправляем любое поле (name, city)
         })
-        .then(() => input.disabled = true)
+        .then(response => response.json())
+        .then(data => {
+            console.log("Ответ сервера:", data);
+            input.disabled = true;
+        })
         .catch(() => console.log("Ошибка обновления профиля"));
     }
 }
 document.addEventListener("DOMContentLoaded", () => {
-    console.log("Страница загружена");
-
-    const editNameBtn = document.getElementById("editName");
-    const editCityBtn = document.getElementById("editCity");
-
-    if (editNameBtn) {
-        editNameBtn.addEventListener("click", () => editField("name"));
-    } else {
-        console.warn("Кнопка editName не найдена!");
-    }
-
-    if (editCityBtn) {
-        editCityBtn.addEventListener("click", () => editField("city"));
-    } else {
-        console.warn("Кнопка editCity не найдена!");
-    }
+    fetch("https://makadamia.onrender.com/account", {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.name) document.getElementById("nameInput").value = data.name;
+        if (data.city) document.getElementById("cityInput").value = data.city;
+    })
+    .catch(() => console.log("Ошибка загрузки профиля"));
 });
 
 // Проверка состояния авторизации
