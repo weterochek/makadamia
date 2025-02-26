@@ -71,12 +71,11 @@ const Cart = require("./models/Cart"); // Подключаем модель
 
 app.post('/cart/add', authMiddleware, async (req, res) => {
   try {
-    const { productId, quantity } = req.body;
-
     if (!req.user || !req.user.id) {
       return res.status(401).json({ message: 'Авторизуйтесь, чтобы добавить товар в корзину' });
     }
 
+    const { productId, quantity } = req.body;
     const userId = req.user.id;
 
     let cart = await Cart.findOne({ userId });
@@ -86,7 +85,7 @@ app.post('/cart/add', authMiddleware, async (req, res) => {
     }
 
     const existingItem = cart.items.find(item => item.productId.toString() === productId);
-    
+
     if (existingItem) {
       existingItem.quantity += quantity;
     } else {
