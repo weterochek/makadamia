@@ -286,6 +286,21 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById('usernameDisplay').innerText = "Ошибка загрузки";
     });
 });
+async function updateAccount(newUsername, newPassword) {
+  const token = localStorage.getItem("accessToken");
+
+  const response = await fetch("https://makadamia.onrender.com/account", {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}` // Без этого сервер отклонит запрос
+    },
+    body: JSON.stringify({ username: newUsername, password: newPassword }),
+  });
+
+  const data = await response.json();
+  console.log("Ответ от сервера:", data);
+}
 function logout() {
     localStorage.removeItem('token'); // Удаляем токен
     window.location.href = 'index.html'; // Перенаправляем на главную
