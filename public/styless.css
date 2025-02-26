@@ -10,9 +10,6 @@ body {
     color: #333;
     background-color: #fdfdfd;
 }
-html {
-    scroll-behavior: smooth;
-}
   
   .account-container {
     max-width: 400px;
