@@ -1,24 +1,22 @@
 // Переключение между формами
-
 function showRegister() {
-  document.getElementById("registerForm").classList.add("active");
-  document.getElementById("loginForm").classList.remove("active");
+    document.getElementById("registerForm").classList.add("active");
+    document.getElementById("loginForm").classList.remove("active");
 
-  document.getElementById("toggleRegister").classList.add("active");
-  document.getElementById("toggleLogin").classList.remove("active");
+    document.getElementById("toggleRegister").classList.add("active");
+    document.getElementById("toggleLogin").classList.remove("active");
 }
 
 function showLogin() {
-  document.getElementById("loginForm").classList.add("active");
-  document.getElementById("registerForm").classList.remove("active");
+    document.getElementById("loginForm").classList.add("active");
+    document.getElementById("registerForm").classList.remove("active");
 
-  document.getElementById("toggleLogin").classList.add("active");
-  document.getElementById("toggleRegister").classList.remove("active");
+    document.getElementById("toggleLogin").classList.add("active");
+    document.getElementById("toggleRegister").classList.remove("active");
 }
 
 // Показ формы авторизации по умолчанию
 showLogin();
-
 
 // Обработчик регистрации
 const registerForm = document.querySelector("#registerForm form");
@@ -51,13 +49,6 @@ registerForm.addEventListener("submit", async (e) => {
 // Обработчик входа
 const loginForm = document.querySelector("#loginForm form");
 loginForm.addEventListener("submit", async (e) => {
-    e.preventDefault(); // Останавливаем отправку формы по умолчанию
-
-    const username = document.getElementById("loginUsername").value;
-    const password = document.getElementById("loginPassword").value;
-
-    try {
-        loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const username = document.getElementById("loginUsername").value;
@@ -86,6 +77,29 @@ loginForm.addEventListener("submit", async (e) => {
         alert("Произошла ошибка. Попробуйте снова.");
     }
 });
+
+// Функция обновления токена
+async function refreshAccessToken() {
+    try {
+        const response = await fetch("https://makadamia.onrender.com/refresh", {
+            method: "POST",
+            credentials: "include",
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+            localStorage.setItem("token", data.accessToken);
+            return data.accessToken;
+        } else {
+            logout();
+        }
+    } catch (error) {
+        console.error("Ошибка обновления токена:", error);
+        logout();
+    }
+}
+
+// Функция запроса с авторизацией
 async function fetchWithAuth(url, options = {}) {
     let token = localStorage.getItem("token");
 
@@ -106,9 +120,12 @@ async function fetchWithAuth(url, options = {}) {
             headers: { ...options.headers, Authorization: `Bearer ${token}` },
         });
     }
+
     return response;
 }
-            function logout() {
+
+// Функция выхода
+function logout() {
     fetch("https://makadamia.onrender.com/logout", { method: "POST", credentials: "include" })
         .then(() => {
             localStorage.clear();
@@ -116,14 +133,3 @@ async function fetchWithAuth(url, options = {}) {
         })
         .catch((error) => console.error("Ошибка выхода:", error));
 }
-            alert("Вы успешно вошли в систему!");
-            window.location.href = "/index.html"; // Переход на главную страницу
-        } else {
-            alert(data.message || "Ошибка входа.");
-        }
-    } catch (error) {
-        console.error("Ошибка входа:", error);
-        alert("Произошла ошибка. Попробуйте снова.");
-    }
-});
-
