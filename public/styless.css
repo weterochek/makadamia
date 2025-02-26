@@ -1,12 +1,22 @@
-body {
-    font-family: Arial, sans-serif;
+/* Основные стили */
+* {
     margin: 0;
     padding: 0;
+    box-sizing: border-box;
+}
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #fdfdfd;
+}
+html {
+    scroll-behavior: smooth;
 }
   
   .account-container {
     max-width: 400px;
-    margin: 100px auto;
+    margin: 150px auto;
     border: 1px solid #ddd;
     border-radius: 8px;
     padding: 20px;
@@ -118,7 +128,8 @@ body {
 }
 
 .cart-item {
-font-size: 0.9em;
+
+
 }
 
 
