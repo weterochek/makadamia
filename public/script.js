@@ -215,7 +215,24 @@ document.addEventListener("DOMContentLoaded", () => {
     })
     .catch(() => console.log("Ошибка загрузки профиля"));
 });
+document.addEventListener("DOMContentLoaded", () => {
+    console.log("Страница загружена");
 
+    const editNameBtn = document.getElementById("editName");
+    const editCityBtn = document.getElementById("editCity");
+
+    if (editNameBtn) {
+        editNameBtn.addEventListener("click", () => editField("name"));
+    } else {
+        console.warn("Кнопка editName не найдена!");
+    }
+
+    if (editCityBtn) {
+        editCityBtn.addEventListener("click", () => editField("city"));
+    } else {
+        console.warn("Кнопка editCity не найдена!");
+    }
+});
 // Проверка состояния авторизации
 function checkAuthStatus() {
     const token = localStorage.getItem('token'); // Проверяем наличие токена
