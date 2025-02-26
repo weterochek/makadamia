@@ -174,7 +174,19 @@ app.post('/refresh-token', (req, res) => {
 app.get('/private-route', authMiddleware, (req, res) => {
   res.json({ message: `Добро пожаловать, пользователь ${req.user.id}` });
 });
+app.get('/account', (req, res) => {
+  const token = req.headers.authorization?.split(' ')[1]; // Получаем токен из заголовка
+  if (!token) {
+      return res.status(401).json({ message: 'Нет доступа' });
+  }
 
+  try {
+      const decoded = jwt.verify(token, JWT_SECRET); // Укажите ваш секретный ключ
+      res.json({ username: decoded.username }); // Отправляем имя пользователя
+  } catch (error) {
+      res.status(401).json({ message: 'Неверный токен' });
+  }
+});
 // Обработка корневого маршрута
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
@@ -201,16 +213,4 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
-app.get('/account', (req, res) => {
-  const token = req.headers.authorization?.split(' ')[1]; // Получаем токен из заголовка
-  if (!token) {
-      return res.status(401).json({ message: 'Нет доступа' });
-  }
 
-  try {
-      const decoded = jwt.verify(token, 'JWT_SECRET'); // Укажите ваш секретный ключ
-      res.json({ username: decoded.username }); // Отправляем имя пользователя
-  } catch (error) {
-      res.status(401).json({ message: 'Неверный токен' });
-  }
-});
