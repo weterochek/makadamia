@@ -179,8 +179,36 @@ function loadCartFromLocalStorage() {
     }
 }
 
+function editField(field) {
+    const input = document.getElementById(field + "Input");
+    if (input.disabled) {
+        input.disabled = false;
+        input.focus();
+    } else {
+        fetch("https://makadamia.onrender.com/account", {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${localStorage.getItem("token")}`
+            },
+            body: JSON.stringify({ [field]: input.value })
+        })
+        .then(() => input.disabled = true)
+        .catch(() => console.log("Ошибка обновления профиля"));
+    }
+}
 
+// Оставляем `DOMContentLoaded`, но без `editField()`
+document.addEventListener("DOMContentLoaded", () => {
+    console.log("Страница загружена");
+});
+document.addEventListener("DOMContentLoaded", () => {
+    console.log("Страница загружена");
 
+    // Добавляем обработчики событий для кнопок редактирования
+    document.getElementById("editName").addEventListener("click", () => editField("name"));
+    document.getElementById("editCity").addEventListener("click", () => editField("city"));
+});
 
 // Проверка состояния авторизации
 function checkAuthStatus() {
@@ -262,31 +290,13 @@ function goToCheckoutPage() {
     window.location.href = "checkout.html";
 }
 
+
 document.addEventListener("DOMContentLoaded", () => {
     const token = localStorage.getItem('token'); // Получаем токен из localStorage
     if (!token) {
         document.getElementById('usernameDisplay').innerText = "Гость";
         return;
     }
-function editField(field) {
-    const input = document.getElementById(field + "Input");
-    if (input.disabled) {
-        input.disabled = false;
-        input.focus();
-    } else {
-        fetch("https://makadamia.onrender.com/account", {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${localStorage.getItem("token")}`
-            },
-            body: JSON.stringify({ [field]: input.value })
-        })
-        .then(() => input.disabled = true)
-        .catch(() => console.log("Ошибка обновления профиля"));
-    }
-}
-
     fetch('/account', {
         headers: { Authorization: `Bearer ${token}` }
     })
