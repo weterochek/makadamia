@@ -197,17 +197,23 @@ function editField(field) {
         .catch(() => console.log("Ошибка обновления профиля"));
     }
 }
-
-// Оставляем `DOMContentLoaded`, но без `editField()`
-document.addEventListener("DOMContentLoaded", () => {
-    console.log("Страница загружена");
-});
 document.addEventListener("DOMContentLoaded", () => {
     console.log("Страница загружена");
 
-    // Добавляем обработчики событий для кнопок редактирования
-    document.getElementById("editName").addEventListener("click", () => editField("name"));
-    document.getElementById("editCity").addEventListener("click", () => editField("city"));
+    const editNameBtn = document.getElementById("editName");
+    const editCityBtn = document.getElementById("editCity");
+
+    if (editNameBtn) {
+        editNameBtn.addEventListener("click", () => editField("name"));
+    } else {
+        console.warn("Кнопка editName не найдена!");
+    }
+
+    if (editCityBtn) {
+        editCityBtn.addEventListener("click", () => editField("city"));
+    } else {
+        console.warn("Кнопка editCity не найдена!");
+    }
 });
 
 // Проверка состояния авторизации
