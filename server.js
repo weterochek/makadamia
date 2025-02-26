@@ -154,6 +154,17 @@ app.post('/logout', (req, res) => {
   res.clearCookie('refreshToken');
   res.json({ message: 'Вы вышли из системы' });
 });
+const logout = () => {
+  // Удаление токена или данных авторизации
+  localStorage.removeItem('token'); // если используется токен
+  localStorage.removeItem('cart'); // удаление корзины
+
+  // Очистка sessionStorage (если используется)
+  sessionStorage.removeItem('cart');
+
+  // Перенаправление на страницу входа
+  window.location.href = '/login';
+};
 // Обновление токена
 app.post('/refresh-token', (req, res) => {
   const { token: refreshToken } = req.body;
