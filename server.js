@@ -47,18 +47,22 @@ mongoose.connect(mongoURI, {
 // Middleware для обработки JSON
 app.use(express.json());
 const authMiddleware = (req, res, next) => {
-  const token = req.headers.authorization?.split(" ")[1];
-  if (!token) {
-    return res.status(401).json({ message: "Токен не предоставлен" });
-  }
+    const token = req.headers.authorization?.split(" ")[1];
 
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded;
-    next();
-  } catch (err) {
-    return res.status(401).json({ message: "Недействительный токен" });
-  }
+    if (!token) {
+        console.warn("Ошибка 401: Токен отсутствует в заголовках");
+        return res.status(401).json({ message: "Токен не предоставлен" });
+    }
+
+    try {
+        console.log("Проверяем токен:", token); // Лог для отладки
+        const decoded = jwt.verify(token, JWT_SECRET);
+        req.user = decoded;
+        next();
+    } catch (err) {
+        console.warn("Ошибка 401: Недействительный токен", err.message);
+        return res.status(401).json({ message: "Недействительный токен" });
+    }
 };
 // Перенаправление HTTP на HTTPS
 app.use((req, res, next) => {
