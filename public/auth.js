@@ -1,56 +1,59 @@
-// Переключение между формами
-function showRegister() {
-  document.getElementById("registerForm").classList.add("active");
-  document.getElementById("loginForm").classList.remove("active");
-
-  document.getElementById("toggleRegister").classList.add("active");
-  document.getElementById("toggleLogin").classList.remove("active");
-}
-
-function showLogin() {
-  document.getElementById("loginForm").classList.add("active");
-  document.getElementById("registerForm").classList.remove("active");
-
-  document.getElementById("toggleLogin").classList.add("active");
-  document.getElementById("toggleRegister").classList.remove("active");
-}
-
-// Показ формы авторизации по умолчанию
-showLogin();
-
-
-// Обработчик регистрации
-const registerForm = document.querySelector("#registerForm form");
-registerForm.addEventListener("submit", async (e) => {
-    e.preventDefault(); // Останавливаем отправку формы по умолчанию
-
-    const username = document.getElementById("registerUsername").value;
-    const password = document.getElementById("registerPassword").value;
-
+async function refreshAccessToken() {
     try {
-        const response = await fetch("https://makadamia.onrender.com/register", {
+        const response = await fetch("https://makadamia.onrender.com/refresh", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username, password }),
+            credentials: "include",
         });
 
         const data = await response.json();
         if (response.ok) {
-            alert("Регистрация прошла успешно! Вы можете войти.");
-            showLogin(); // Переключаемся на форму входа
+            localStorage.setItem("token", data.accessToken);
+            return data.accessToken;
         } else {
-            alert(data.message || "Ошибка регистрации.");
+            logout();
         }
     } catch (error) {
-        console.error("Ошибка регистрации:", error);
-        alert("Произошла ошибка. Попробуйте снова.");
+        console.error("Ошибка обновления токена:", error);
+        logout();
     }
-});
+}
 
-// Обработчик входа
-const loginForm = document.querySelector("#loginForm form");
+async function fetchWithAuth(url, options = {}) {
+    let token = localStorage.getItem("token");
+
+    let response = await fetch(url, {
+        ...options,
+        headers: {
+            ...options.headers,
+            Authorization: `Bearer ${token}`,
+        },
+    });
+
+    if (response.status === 401) {
+        token = await refreshAccessToken();
+        if (!token) return response;
+
+        response = await fetch(url, {
+            ...options,
+            headers: { ...options.headers, Authorization: `Bearer ${token}` },
+        });
+    }
+
+    return response;
+}
+
+function logout() {
+    fetch("https://makadamia.onrender.com/logout", { method: "POST", credentials: "include" })
+        .then(() => {
+            localStorage.clear();
+            window.location.href = "/login.html";
+        })
+        .catch((error) => console.error("Ошибка выхода:", error));
+}
+
+// Обновлённый обработчик входа
 loginForm.addEventListener("submit", async (e) => {
-    e.preventDefault(); // Останавливаем отправку формы по умолчанию
+    e.preventDefault();
 
     const username = document.getElementById("loginUsername").value;
     const password = document.getElementById("loginPassword").value;
@@ -60,16 +63,16 @@ loginForm.addEventListener("submit", async (e) => {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username, password }),
+            credentials: "include", // Включаем куки
         });
 
         const data = await response.json();
         if (response.ok) {
-            // Сохраняем токен и имя пользователя в localStorage
-            localStorage.setItem("token", data.token);
+            localStorage.setItem("token", data.accessToken);
             localStorage.setItem("username", username);
 
             alert("Вы успешно вошли в систему!");
-            window.location.href = "/index.html"; // Переход на главную страницу
+            window.location.href = "/index.html";
         } else {
             alert(data.message || "Ошибка входа.");
         }
