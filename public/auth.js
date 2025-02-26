@@ -134,7 +134,17 @@ async function refreshAccessToken() {
         logout();
     }
 }
-
+function logout() {
+    fetch("https://makadamia.onrender.com/logout", { method: "POST", credentials: "include" })
+        .then(() => {
+            localStorage.removeItem("token"); // Удаляем токен
+            localStorage.removeItem("cart");  // Удаляем корзину
+            sessionStorage.clear(); // Очищаем сессию
+            document.cookie = "refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            window.location.href = "/login.html"; // Перенаправляем на страницу входа
+        })
+        .catch((error) => console.error("Ошибка выхода:", error));
+}
 // Функция запроса с авторизацией
 async function fetchWithAuth(url, options = {}) {
     let token = localStorage.getItem("token");
@@ -160,14 +170,3 @@ async function fetchWithAuth(url, options = {}) {
     return response;
 }
 
-function logout() {
-    fetch("https://makadamia.onrender.com/logout", { method: "POST", credentials: "include" })
-        .then(() => {
-            localStorage.removeItem("token"); // Удаляем токен
-            localStorage.removeItem("cart");  // Удаляем корзину
-            sessionStorage.clear(); // Очищаем сессию
-            document.cookie = "refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-            window.location.href = "/login.html"; // Перенаправляем на страницу входа
-        })
-        .catch((error) => console.error("Ошибка выхода:", error));
-}
