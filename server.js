@@ -81,7 +81,21 @@ const authMiddleware = (req, res, next) => {
     return res.status(401).json({ message: "Недействительный токен" });
   }
 };
+function generateTokens(user) {
+    const accessToken = jwt.sign(
+        { id: user._id, username: user.username }, 
+        JWT_SECRET, 
+        { expiresIn: "30m" }
+    );
 
+    const refreshToken = jwt.sign(
+        { id: user._id, username: user.username }, 
+        REFRESH_SECRET, 
+        { expiresIn: "7d" }
+    );
+
+    return { accessToken, refreshToken };
+}
 // Регистрация пользователя
 app.post('/register', async (req, res) => {
   const schema = Joi.object({
