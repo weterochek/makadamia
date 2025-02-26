@@ -181,6 +181,8 @@ function loadCartFromLocalStorage() {
 
 function editField(field) {
     const input = document.getElementById(field + "Input");
+    console.log("Редактируем поле:", field, "Значение:", input.value);
+
     if (input.disabled) {
         input.disabled = false;
         input.focus();
@@ -191,16 +193,17 @@ function editField(field) {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${localStorage.getItem("token")}`
             },
-            body: JSON.stringify({ [field]: input.value }) // Отправляем любое поле (name, city)
+            body: JSON.stringify({ [field]: input.value }) // Отправляем данные на сервер
         })
         .then(response => response.json())
         .then(data => {
             console.log("Ответ сервера:", data);
             input.disabled = true;
         })
-        .catch(() => console.log("Ошибка обновления профиля"));
+        .catch(error => console.log("Ошибка обновления профиля:", error));
     }
 }
+
 document.addEventListener("DOMContentLoaded", () => {
     fetch("https://makadamia.onrender.com/account", {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
