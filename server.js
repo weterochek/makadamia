@@ -208,7 +208,7 @@ app.get('/account', (req, res) => {
   }
 
   try {
-      const decoded = jwt.verify(token, 'SECRET_KEY'); // Укажите ваш секретный ключ
+      const decoded = jwt.verify(token, 'JWT_SECRET'); // Укажите ваш секретный ключ
       res.json({ username: decoded.username }); // Отправляем имя пользователя
   } catch (error) {
       res.status(401).json({ message: 'Неверный токен' });
