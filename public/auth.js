@@ -124,10 +124,10 @@ async function fetchWithAuth(url, options = {}) {
     return response;
 }
 
-// Функция выхода
 function logout() {
     fetch("https://makadamia.onrender.com/logout", { method: "POST", credentials: "include" })
         .then(() => {
+            localStorage.removeItem("cart"); // Очистка корзины
             localStorage.clear();
             window.location.href = "/login.html";
         })
