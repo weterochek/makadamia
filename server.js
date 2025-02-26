@@ -60,12 +60,11 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // Схема и модель пользователя
 const userSchema = new mongoose.Schema({
-    username: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    name: { type: String }, 
-    city: { type: String }  
+  username: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  name: { type: String, default: "" },
+  city: { type: String, default: "" }
 });
-
 const User = mongoose.model("User", userSchema);
 
 // Мидлвар для проверки токена
@@ -176,18 +175,16 @@ app.post('/refresh-token', (req, res) => {
 app.get('/private-route', authMiddleware, (req, res) => {
   res.json({ message: `Добро пожаловать, пользователь ${req.user.id}` });
 });
-app.get('/account', (req, res) => {
-  const token = req.headers.authorization?.split(' ')[1]; // Получаем токен из заголовка
-  if (!token) {
-      return res.status(401).json({ message: 'Нет доступа' });
-  }
-
-  try {
-      const decoded = jwt.verify(token, JWT_SECRET); // Укажите ваш секретный ключ
-      res.json({ username: decoded.username }); // Отправляем имя пользователя
-  } catch (error) {
-      res.status(401).json({ message: 'Неверный токен' });
-  }
+app.get('/account', authMiddleware, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).select("username name city");
+        if (!user) {
+            return res.status(404).json({ message: "Пользователь не найден" });
+        }
+        res.json({ username: user.username, name: user.name, city: user.city });
+    } catch (error) {
+        res.status(500).json({ message: "Ошибка сервера" });
+    }
 });
 app.put('/account', authMiddleware, async (req, res) => {
     const { name, city, username, password } = req.body; // Получаем данные из запроса
