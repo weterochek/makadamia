@@ -99,7 +99,8 @@ async function addToCart(productId, quantity) {
         const data = await response.json();
 
         if (response.status === 401) {
-            alert("Вы не авторизованы!");
+            alert("Вы не авторизованы! Войдите, чтобы добавить товар.");
+            localStorage.removeItem("token"); // Очищаем токен, если он недействителен
             window.location.href = "/login.html";
             return;
         }
@@ -127,11 +128,13 @@ async function refreshAccessToken() {
             localStorage.setItem("token", data.accessToken);
             return data.accessToken;
         } else {
-            logout();
+            logout(); // Если refreshToken недействителен, выходим из аккаунта
+            return null;
         }
     } catch (error) {
         console.error("Ошибка обновления токена:", error);
-        logout();
+        logout(); // Если произошла ошибка, выходим
+        return null;
     }
 }
 function logout() {
@@ -140,11 +143,15 @@ function logout() {
             localStorage.removeItem("token"); // Удаляем токен
             localStorage.removeItem("cart");  // Удаляем корзину
             sessionStorage.clear(); // Очищаем сессию
-            document.cookie = "refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+
+            // Очищаем refreshToken
+            document.cookie = "refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; max-age=0;";
+
             window.location.href = "/login.html"; // Перенаправляем на страницу входа
         })
         .catch((error) => console.error("Ошибка выхода:", error));
 }
+
 // Функция запроса с авторизацией
 async function fetchWithAuth(url, options = {}) {
     let token = localStorage.getItem("token");
