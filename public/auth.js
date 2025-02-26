@@ -1,3 +1,23 @@
+function showRegister() {
+    document.getElementById("registerForm").classList.add("active");
+    document.getElementById("loginForm").classList.remove("active");
+
+    document.getElementById("toggleRegister").classList.add("active");
+    document.getElementById("toggleLogin").classList.remove("active");
+}
+
+function showLogin() {
+    document.getElementById("loginForm").classList.add("active");
+    document.getElementById("registerForm").classList.remove("active");
+
+    document.getElementById("toggleLogin").classList.add("active");
+    document.getElementById("toggleRegister").classList.remove("active");
+}
+
+// Показ формы авторизации по умолчанию
+showLogin();
+
+// Функция обновления токена
 async function refreshAccessToken() {
     try {
         const response = await fetch("https://makadamia.onrender.com/refresh", {
@@ -18,6 +38,7 @@ async function refreshAccessToken() {
     }
 }
 
+// Функция с авторизацией
 async function fetchWithAuth(url, options = {}) {
     let token = localStorage.getItem("token");
 
@@ -27,6 +48,7 @@ async function fetchWithAuth(url, options = {}) {
             ...options.headers,
             Authorization: `Bearer ${token}`,
         },
+        credentials: "include",
     });
 
     if (response.status === 401) {
@@ -36,23 +58,42 @@ async function fetchWithAuth(url, options = {}) {
         response = await fetch(url, {
             ...options,
             headers: { ...options.headers, Authorization: `Bearer ${token}` },
+            credentials: "include",
         });
     }
 
     return response;
 }
 
-function logout() {
-    fetch("https://makadamia.onrender.com/logout", { method: "POST", credentials: "include" })
-        .then(() => {
-            localStorage.clear();
-            window.location.href = "/login.html";
-        })
-        .catch((error) => console.error("Ошибка выхода:", error));
-}
+// Обработчик регистрации
+document.querySelector("#registerForm form").addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-// Обновлённый обработчик входа
-loginForm.addEventListener("submit", async (e) => {
+    const username = document.getElementById("registerUsername").value;
+    const password = document.getElementById("registerPassword").value;
+
+    try {
+        const response = await fetch("https://makadamia.onrender.com/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password }),
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+            alert("Регистрация прошла успешно! Вы можете войти.");
+            showLogin();
+        } else {
+            alert(data.message || "Ошибка регистрации.");
+        }
+    } catch (error) {
+        console.error("Ошибка регистрации:", error);
+        alert("Произошла ошибка. Попробуйте снова.");
+    }
+});
+
+// Обработчик входа
+document.querySelector("#loginForm form").addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const username = document.getElementById("loginUsername").value;
@@ -63,7 +104,7 @@ loginForm.addEventListener("submit", async (e) => {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username, password }),
-            credentials: "include", // Включаем куки
+            credentials: "include",
         });
 
         const data = await response.json();
@@ -81,3 +122,16 @@ loginForm.addEventListener("submit", async (e) => {
         alert("Произошла ошибка. Попробуйте снова.");
     }
 });
+
+// Функция выхода
+function logout() {
+    fetch("https://makadamia.onrender.com/logout", {
+        method: "POST",
+        credentials: "include",
+    })
+        .then(() => {
+            localStorage.clear();
+            window.location.href = "/login.html";
+        })
+        .catch((error) => console.error("Ошибка выхода:", error));
+}
