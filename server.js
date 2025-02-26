@@ -150,10 +150,25 @@ app.post('/refresh', (req, res) => {
     res.json({ accessToken });
   });
 });
-app.post('/logout', (req, res) => {
-  res.clearCookie('refreshToken');
-  res.json({ message: 'Вы вышли из системы' });
+app.post('/logout', async (req, res) => {
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: 'Пользователь не найден' });
+    }
+
+    // Удаляем корзину пользователя
+    await mongoose.connection.collection('carts').deleteOne({ userId: req.user.id });
+
+    // Удаляем refreshToken из куки
+    res.clearCookie('refreshToken');
+    res.json({ message: 'Вы вышли из системы, корзина очищена' });
+
+  } catch (error) {
+    console.error("Ошибка при выходе:", error);
+    res.status(500).json({ message: 'Ошибка сервера' });
+  }
 });
+
 const logout = () => {
   // Удаление токена или данных авторизации
   localStorage.removeItem('token'); // если используется токен
