@@ -77,6 +77,37 @@ loginForm.addEventListener("submit", async (e) => {
         alert("Произошла ошибка. Попробуйте снова.");
     }
 });
+async function addToCart(productId, quantity) {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+        alert("Пожалуйста, войдите в аккаунт, чтобы добавить товар в корзину.");
+        window.location.href = "/login.html"; // Перенаправляем на страницу входа
+        return;
+    }
+
+    try {
+        const response = await fetch("https://makadamia.onrender.com/cart/add", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify({ productId, quantity }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            alert("Товар добавлен в корзину!");
+        } else {
+            alert(data.message);
+        }
+    } catch (error) {
+        console.error("Ошибка добавления в корзину:", error);
+        alert("Произошла ошибка. Попробуйте снова.");
+    }
+}
 
 // Функция обновления токена
 async function refreshAccessToken() {
