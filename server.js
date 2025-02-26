@@ -116,33 +116,28 @@ app.post('/register', async (req, res) => {
 
 // Авторизация пользователя
 app.post('/login', async (req, res) => {
-    const { username, password } = req.body;
+  const { username, password } = req.body;
+  const user = await User.findOne({ username });
+  if (!user || !(await bcrypt.compare(password, user.password))) {
+    return res.status(401).json({ message: 'Неверные данные' });
+  }
+  const { accessToken, refreshToken } = generateTokens(user);
+  res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: true, sameSite: 'Strict', maxAge: 30 * 24 * 60 * 60 * 1000 });
+  res.json({ accessToken });
+});
 
-    console.log("Попытка входа пользователя:", { username });
-
-    // Находим пользователя в базе данных
-    const user = await User.findOne({ username });
-    if (!user) {
-        return res.status(401).json({ message: 'Неверные имя пользователя или пароль' });
-    }
-    app.post('/refresh', (req, res) => {
-      const refreshToken = req.cookies.refreshToken;
-      if (!refreshToken) return res.status(401).json({ message: 'Не авторизован' });
-      jwt.verify(refreshToken, REFRESH_SECRET, (err, user) => {
-        if (err) return res.status(403).json({ message: 'Недействительный refresh-токен' });
-        const accessToken = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '30m' });
-        res.json({ accessToken });
-      });
-    });
-    // Проверяем зашифрованный пароль
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-        return res.status(401).json({ message: 'Неверные имя пользователя или пароль' });
-    }  
-    // Генерируем токен
-    const token = jwt.sign({ id: user._id, username: user.username }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-    res.json({ token });
+app.post('/refresh', (req, res) => {
+  const refreshToken = req.cookies.refreshToken;
+  if (!refreshToken) return res.status(401).json({ message: 'Не авторизован' });
+  jwt.verify(refreshToken, REFRESH_SECRET, (err, user) => {
+    if (err) return res.status(403).json({ message: 'Недействительный refresh-токен' });
+    const accessToken = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '30m' });
+    res.json({ accessToken });
+  });
+});
+app.post('/logout', (req, res) => {
+  res.clearCookie('refreshToken');
+  res.json({ message: 'Вы вышли из системы' });
 });
 // Обновление токена
 app.post('/refresh-token', (req, res) => {
