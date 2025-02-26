@@ -316,15 +316,17 @@ function editField(field) {
         input.disabled = false;
         input.focus();
     } else {
-        fetch("/account", {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${localStorage.getItem("token")}`
-            },
-            body: JSON.stringify({ [field]: input.value })
-        })
-        .then(() => input.disabled = true)
-        .catch(() => console.log("Ошибка обновления профиля"));
-    }
-}
+        fetch("https://makadamia.onrender.com/account", { // Добавил полный URL
+    method: "PUT",
+    headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`
+    },
+    body: JSON.stringify({ [field]: input.value })
+})
+.then(response => response.json())
+.then(data => {
+    console.log("Ответ сервера:", data);
+    input.disabled = true;
+})
+.catch(error => console.error("Ошибка обновления профиля:", error));
