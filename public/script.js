@@ -269,7 +269,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    fetch('https://makadamia.onrender.com/account', {
+    fetch(/account', {
         headers: { Authorization: `Bearer ${token}` }
     })
     .then(res => res.json())
