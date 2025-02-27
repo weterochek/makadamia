@@ -178,6 +178,38 @@ function loadCartFromLocalStorage() {
         updateCartDisplay();
     }
 }
+async function fetchWithAuth(url, options = {}) {
+    let token = localStorage.getItem("token");
+
+    if (!token) {
+        console.warn("Нет токена, перенаправляем на вход.");
+        logout();
+        return;
+    }
+
+    let response = await fetch(url, {
+        ...options,
+        headers: {
+            ...options.headers,
+            Authorization: `Bearer ${token}`,
+        },
+        credentials: "include",
+    });
+
+    if (response.status === 401) {
+        console.warn("Ошибка 401: Токен истёк, пробуем обновить.");
+        token = await refreshAccessToken();
+        if (!token) return response;
+
+        response = await fetch(url, {
+            ...options,
+            headers: { Authorization: `Bearer ${token}` },
+            credentials: "include",
+        });
+    }
+
+    return response;
+}
 
 function editField(field) {
     const input = document.getElementById(field + "Input");
