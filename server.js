@@ -229,24 +229,36 @@ app.post('/refresh', (req, res) => {
         res.json({ accessToken });
     });
 });
+async function refreshAccessToken() {
+    try {
+        const response = await fetch("https://makadamia.onrender.com/refresh", {
+            method: "POST",
+            credentials: "include", // Это важно, чтобы отправлять cookies
+        });
 
-app.post('/logout', authMiddleware, async (req, res) => {
-  try {
-    if (!req.user || !req.user.id) {
-      return res.status(401).json({ message: 'Пользователь не найден' });
+        if (!response.ok) {
+            console.warn("Не удалось обновить токен, требуется повторный вход.");
+            logout();
+            return null;
+        }
+
+        const data = await response.json();
+        localStorage.setItem("token", data.accessToken); // Сохраняем новый токен
+        return data.accessToken;
+    } catch (error) {
+        console.error("Ошибка при обновлении токена:", error);
+        logout();
+        return null;
     }
+}
+app.post('/logout', authMiddleware, (req, res) => {
+    res.clearCookie('refreshToken', {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'Strict'
+    });
 
-    // Удаляем корзину пользователя
-    await mongoose.connection.collection('carts').deleteOne({ userId: req.user.id });
-
-    // Удаляем refreshToken из куки
-    res.clearCookie('refreshToken');
-    res.json({ message: 'Вы вышли из системы, корзина очищена' });
-
-  } catch (error) {
-    console.error("Ошибка при выходе:", error);
-    res.status(500).json({ message: 'Ошибка сервера' });
-  }
+    res.json({ message: 'Вы вышли из системы' });
 });
 
 const logout = () => {
