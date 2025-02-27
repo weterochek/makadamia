@@ -68,9 +68,11 @@ async function fetchWithAuth(url, options = {}) {
     let token = localStorage.getItem("token");
 
     if (!token) {
-        console.warn("Нет токена, перенаправляем на вход.");
-        logout();
-        return;
+        console.warn("Нет токена, пробуем обновить...");
+        token = await refreshAccessToken();
+        if (!token) return logout(); // Если обновление не удалось — разлогиним
+
+        console.log("Токен обновлен, повторяем запрос...");
     }
 
     let response = await fetch(url, {
@@ -82,9 +84,9 @@ async function fetchWithAuth(url, options = {}) {
     });
 
     if (response.status === 401) {
-        console.warn("Ошибка 401: Токен истёк, пробуем обновить.");
+        console.warn("Токен истек, обновляем...");
         token = await refreshAccessToken();
-        if (!token) return response;
+        if (!token) return logout();
 
         response = await fetch(url, {
             ...options,
@@ -209,14 +211,19 @@ app.post('/login', async (req, res) => {
 });
 
 app.post('/refresh', (req, res) => {
-    const refreshToken = req.cookies.refreshToken;
-    if (!refreshToken) return res.status(401).json({ message: 'Не авторизован' });
+    const refreshToken = req.cookies.refreshToken; // Берем из cookies
+    if (!refreshToken) {
+        return res.status(401).json({ message: 'Не авторизован' });
+    }
 
-    jwt.verify(refreshToken, REFRESH_SECRET, (err, user) => {
+    jwt.verify(refreshToken, REFRESH_SECRET, async (err, user) => {
         if (err) return res.status(403).json({ message: 'Недействительный refresh-токен' });
 
-        // Создаем новые токены
-        const { accessToken, refreshToken: newRefreshToken } = generateTokens(user);
+        const dbUser = await User.findById(user.id);
+        if (!dbUser) return res.status(404).json({ message: 'Пользователь не найден' });
+
+        // Генерируем новые токены
+        const { accessToken, refreshToken: newRefreshToken } = generateTokens(dbUser);
 
         // Обновляем refreshToken в cookies
         res.cookie('refreshToken', newRefreshToken, {
@@ -233,7 +240,7 @@ async function refreshAccessToken() {
     try {
         const response = await fetch("https://makadamia.onrender.com/refresh", {
             method: "POST",
-            credentials: "include", // Это важно, чтобы отправлять cookies
+            credentials: "include", // Важно, чтобы cookies передавались!
         });
 
         if (!response.ok) {
@@ -293,6 +300,7 @@ app.post('/refresh-token', (req, res) => {
 app.get('/private-route', authMiddleware, (req, res) => {
   res.json({ message: `Добро пожаловать, пользователь ${req.user.id}` });
 });
+
 app.get('/account', authMiddleware, async (req, res) => {
     try {
         const user = await User.findById(req.user.id).select("username name city");
