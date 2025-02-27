@@ -209,14 +209,27 @@ app.post('/login', async (req, res) => {
 });
 
 app.post('/refresh', (req, res) => {
-  const refreshToken = req.cookies.refreshToken;
-  if (!refreshToken) return res.status(401).json({ message: 'Не авторизован' });
-  jwt.verify(refreshToken, REFRESH_SECRET, (err, user) => {
-    if (err) return res.status(403).json({ message: 'Недействительный refresh-токен' });
-    const accessToken = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '30m' });
-    res.json({ accessToken });
-  });
+    const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken) return res.status(401).json({ message: 'Не авторизован' });
+
+    jwt.verify(refreshToken, REFRESH_SECRET, (err, user) => {
+        if (err) return res.status(403).json({ message: 'Недействительный refresh-токен' });
+
+        // Создаем новые токены
+        const { accessToken, refreshToken: newRefreshToken } = generateTokens(user);
+
+        // Обновляем refreshToken в cookies
+        res.cookie('refreshToken', newRefreshToken, {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'Strict',
+            maxAge: 30 * 24 * 60 * 60 * 1000 // 30 дней
+        });
+
+        res.json({ accessToken });
+    });
 });
+
 app.post('/logout', authMiddleware, async (req, res) => {
   try {
     if (!req.user || !req.user.id) {
