@@ -14,7 +14,7 @@ const allowedOrigins = [
   'https://makadamia.onrender.com',
   'http://localhost:3000', // Для локальной разработки
 ];
-
+console.log("Отправка запроса на /refresh");
 const corsOptions = {
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {
