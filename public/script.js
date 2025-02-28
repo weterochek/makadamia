@@ -169,23 +169,17 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // Функция загрузки корзины
-function loadCartFromLocalStorage() {
-    const username = localStorage.getItem("username");
-    if (username) {
-        const storedCart = JSON.parse(localStorage.getItem(`cart_${username}`));
-        if (storedCart) {
-            cart = storedCart;
-        }
-        updateCartDisplay();
-    }
-}
 async function fetchWithAuth(url, options = {}) {
     let token = localStorage.getItem("token");
 
     if (!token || isTokenExpired(token)) {
         console.log("🔄 Токен истёк, обновляем...");
         token = await refreshAccessToken();
-        if (!token) return; // Если не удалось обновить токен — выходим
+        if (!token) {
+            console.error("❌ Не удалось обновить токен, разлогиниваемся.");
+            logout();
+            return null;
+        }
     }
 
     let response = await fetch(url, {
