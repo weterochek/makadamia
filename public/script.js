@@ -17,6 +17,7 @@ window.onload = function() {
     }
   }
 };
+console.log("📢 Новый accessToken перед запросом:", localStorage.getItem("token"));
 console.log("Отправка запроса на /refresh");
 // Функция для показа/скрытия выпадающего окна корзины под кнопкой "Корзина"
 document.addEventListener("DOMContentLoaded", function() {
@@ -185,10 +186,14 @@ async function fetchWithAuth(url, options = {}) {
     if (!token || isTokenExpired(token)) {
         console.log("🔄 Токен истёк, обновляем...");
         token = await refreshAccessToken();
-        if (!token) return; // Если не удалось обновить токен — выходим
+        if (!token) {
+            console.error("❌ Не удалось обновить токен, разлогиниваемся.");
+            logout();
+            return;
+        }
     }
 
-    let response = await fetch(url, {
+    const response = await fetch(url, {
         ...options,
         headers: {
             ...options.headers,
@@ -196,6 +201,9 @@ async function fetchWithAuth(url, options = {}) {
         },
         credentials: "include",
     });
+
+    return response;
+}
 
     if (response.status === 401) {
         console.warn("🚨 Ошибка 401: Пробуем обновить токен.");
@@ -269,25 +277,24 @@ async function refreshAccessToken() {
 
 
 function isTokenExpired(token) {
+    if (!token) return true; // Если токена нет, считаем его истёкшим
     try {
-        const payload = JSON.parse(atob(token.split(".")[1])); // Декодируем токен
-        return (Date.now() / 1000) >= payload.exp; // Проверяем срок действия
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        return (Date.now() / 1000) >= payload.exp;
     } catch (e) {
         return true; // Если ошибка — считаем токен недействительным
     }
 }
 
 
+
 // Запускаем проверку токена раз в минуту
 setInterval(() => {
-    if (isTokenExpired()) {
-        console.log("🔄 Токен истёк, обновляем...");
-        refreshAccessToken().then(newToken => {
-            console.log("✅ Новый токен после автообновления:", newToken);
-        }).catch(err => console.error("❌ Ошибка обновления:", err));
+    console.log("🔍 Проверяем необходимость обновления токена...");
+    if (isTokenExpired(localStorage.getItem("token"))) {
+        refreshAccessToken();
     }
-}, 60000); // 1 раз в минуту
-
+}, 60000); // Проверяем раз в минуту
 
 function editField(field) {
     const input = document.getElementById(field + "Input");
