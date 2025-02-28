@@ -187,20 +187,23 @@ const User = mongoose.model("User", userSchema);
 // Мидлвар для проверки токена
 
 function generateTokens(user) {
+    const issuedAt = Math.floor(Date.now() / 1000); // Добавляем время генерации токена
+
     const accessToken = jwt.sign(
-        { id: user._id, username: user.username }, 
+        { id: user._id, username: user.username, iat: issuedAt }, 
         JWT_SECRET, 
         { expiresIn: "30m" }
     );
 
     const refreshToken = jwt.sign(
-        { id: user._id, username: user.username }, 
+        { id: user._id, username: user.username, iat: issuedAt }, 
         REFRESH_SECRET, 
         { expiresIn: "7d" }
     );
 
     return { accessToken, refreshToken };
 }
+
 // Регистрация пользователя
 app.post('/register', async (req, res) => {
   const schema = Joi.object({
