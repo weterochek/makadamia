@@ -185,11 +185,7 @@ async function fetchWithAuth(url, options = {}) {
     if (!token || isTokenExpired(token)) {
         console.log("🔄 Токен истёк, обновляем...");
         token = await refreshAccessToken();
-        if (!token) {
-            console.error("❌ Не удалось обновить токен, разлогиниваемся.");
-            logout();
-            return null;
-        }
+        if (!token) return; // Если не удалось обновить токен — выходим
     }
 
     let response = await fetch(url, {
@@ -200,21 +196,6 @@ async function fetchWithAuth(url, options = {}) {
         },
         credentials: "include",
     });
-
-    if (response.status === 401) {
-        console.warn("🚨 Ошибка 401: Пробуем обновить токен.");
-        token = await refreshAccessToken();
-        if (!token) return response; // Если не удалось обновить — выходим
-
-        response = await fetch(url, {
-            ...options,
-            headers: { Authorization: `Bearer ${token}` },
-            credentials: "include",
-        });
-    }
-
-    return response;
-}
 
     if (response.status === 401) {
         console.warn("🚨 Ошибка 401: Пробуем обновить токен.");
@@ -266,7 +247,8 @@ async function refreshAccessToken() {
             return null;
         }
 
-        const data = await response.json(); // ❗️Объявляем локальную переменную
+        data = await response.json(); // Обновляем глобальную переменную
+        console.log("Ответ сервера:", data);
 
         if (data.accessToken) {
             localStorage.setItem("token", data.accessToken);
@@ -287,24 +269,25 @@ async function refreshAccessToken() {
 
 
 function isTokenExpired(token) {
-    if (!token) return true; // Если токена нет, считаем его истёкшим
     try {
-        const payload = JSON.parse(atob(token.split(".")[1]));
-        return (Date.now() / 1000) >= payload.exp;
+        const payload = JSON.parse(atob(token.split(".")[1])); // Декодируем токен
+        return (Date.now() / 1000) >= payload.exp; // Проверяем срок действия
     } catch (e) {
         return true; // Если ошибка — считаем токен недействительным
     }
 }
 
 
-
 // Запускаем проверку токена раз в минуту
 setInterval(() => {
-    console.log("🔍 Проверяем необходимость обновления токена...");
-    if (isTokenExpired(localStorage.getItem("token"))) {
-        refreshAccessToken();
+    if (isTokenExpired()) {
+        console.log("🔄 Токен истёк, обновляем...");
+        refreshAccessToken().then(newToken => {
+            console.log("✅ Новый токен после автообновления:", newToken);
+        }).catch(err => console.error("❌ Ошибка обновления:", err));
     }
-}, 60000); // Проверяем раз в минуту
+}, 60000); // 1 раз в минуту
+
 
 function editField(field) {
     const input = document.getElementById(field + "Input");
@@ -394,7 +377,13 @@ function handleAuthClick() {
 
 
 // Логика для выхода
-
+function logout() {
+    localStorage.removeItem('token'); // Удаляем токен
+    localStorage.removeItem('username'); // Удаляем имя пользователя
+    cart = {}; // Очищаем корзину
+    checkAuthStatus(); // Обновляем интерфейс
+    window.location.href = '/'; // Переход на главную страницу
+}
 // Переход на страницу личного кабинета
 function openCabinet() {
     const token = localStorage.getItem('token');
@@ -480,8 +469,8 @@ function logout() {
 function handleAuthClick() {
     const token = localStorage.getItem('token');
     if (token) {
-        window.location.href = 'account.html'; // Если авторизован, идём в личный кабинет
+        window.location.href = 'account.html'; // Если пользователь авторизован, переходим в личный кабинет
     } else {
-        window.location.href = 'login.html'; // Если нет, перенаправляем на вход
+        window.location.href = 'login.html'; // Если нет, перенаправляем на страницу входа
     }
 }
