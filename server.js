@@ -16,6 +16,7 @@ const allowedOrigins = [
 ];
 
 console.log("Отправка запроса на /refresh");
+console.log("📢 Refresh-токен в куках после обновления:", document.cookie);
 const corsOptions = {
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {
