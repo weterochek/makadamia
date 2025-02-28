@@ -211,6 +211,20 @@ async function fetchWithAuth(url, options = {}) {
 
     return response;
 }
+function getTokenExp(token) {
+    try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        return payload.exp;
+    } catch (e) {
+        return null;
+    }
+}
+
+const oldExp = getTokenExp(localStorage.getItem("token"));
+const newExp = getTokenExp(data.accessToken);
+
+console.log(`⏳ Старый exp: ${oldExp}, Новый exp: ${newExp}`);
+
 function startTokenRefresh() {
     setInterval(async () => {
         const token = localStorage.getItem("token");
