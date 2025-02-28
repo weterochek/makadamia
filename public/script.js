@@ -220,10 +220,6 @@ function getTokenExp(token) {
     }
 }
 
-const oldExp = getTokenExp(localStorage.getItem("token"));
-const newExp = getTokenExp(data.accessToken);
-
-console.log(`⏳ Старый exp: ${oldExp}, Новый exp: ${newExp}`);
 
 function startTokenRefresh() {
     setInterval(async () => {
@@ -247,17 +243,16 @@ async function refreshAccessToken() {
 
         if (!response.ok) {
             console.warn("❌ Ошибка обновления токена, требуется повторный вход.");
-            logout(); // Разлогиним пользователя
+            logout();
             return null;
         }
 
-        const data = await response.json();
-        console.log("Ответ сервера:", data); // ✅ Теперь data объявлена
+        data = await response.json(); // Обновляем глобальную переменную
+        console.log("Ответ сервера:", data);
 
         if (data.accessToken) {
             localStorage.setItem("token", data.accessToken);
             console.log("✅ Новый accessToken получен и сохранён.");
-            console.log("🔍 Проверка localStorage:", localStorage.getItem("token")); // Проверяем сохранение
             return data.accessToken;
         } else {
             console.error("❌ Сервер не вернул accessToken!");
@@ -270,6 +265,7 @@ async function refreshAccessToken() {
         return null;
     }
 }
+
 
 
 function isTokenExpired(token) {
