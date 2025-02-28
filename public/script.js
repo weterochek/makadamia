@@ -17,7 +17,6 @@ window.onload = function() {
     }
   }
 };
-console.log("📢 Новый accessToken перед запросом:", localStorage.getItem("token"));
 console.log("Отправка запроса на /refresh");
 // Функция для показа/скрытия выпадающего окна корзины под кнопкой "Корзина"
 document.addEventListener("DOMContentLoaded", function() {
