@@ -211,6 +211,19 @@ async function fetchWithAuth(url, options = {}) {
 
     return response;
 }
+function startTokenRefresh() {
+    setInterval(async () => {
+        const token = localStorage.getItem("token");
+        if (!token || isTokenExpired(token)) {
+            console.log("🔄 Токен устарел, обновляем...");
+            await refreshAccessToken();
+        }
+    }, 5 * 60 * 1000); // Проверка каждые 5 минут
+}
+
+// Запускаем обновление при загрузке страницы
+startTokenRefresh();
+
 async function refreshAccessToken() {
     try {
         const response = await fetch("https://makadamia.onrender.com/refresh", {
@@ -245,19 +258,15 @@ async function refreshAccessToken() {
 }
 
 
-function isTokenExpired() {
-    const token = localStorage.getItem("token");
-    if (!token) return true;
-
+function isTokenExpired(token) {
     try {
-        const payload = JSON.parse(atob(token.split(".")[1])); // Раскодируем JWT
-        const expTime = payload.exp * 1000; // Преобразуем в миллисекунды
-        return Date.now() >= expTime;
+        const payload = JSON.parse(atob(token.split(".")[1])); // Декодируем токен
+        return (Date.now() / 1000) >= payload.exp; // Проверяем срок действия
     } catch (e) {
-        console.error("❌ Ошибка при проверке токена:", e);
-        return true;
+        return true; // Если ошибка — считаем токен недействительным
     }
 }
+
 
 // Запускаем проверку токена раз в минуту
 setInterval(() => {
