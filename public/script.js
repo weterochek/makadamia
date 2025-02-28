@@ -181,10 +181,10 @@ function loadCartFromLocalStorage() {
 async function fetchWithAuth(url, options = {}) {
     let token = localStorage.getItem("token");
 
-    if (!token) {
-        console.warn("Нет токена, перенаправляем на вход.");
-        logout();
-        return;
+    if (!token || isTokenExpired(token)) {
+        console.log("🔄 Токен истёк, обновляем...");
+        token = await refreshAccessToken();
+        if (!token) return; // Если не удалось обновить токен — выходим
     }
 
     let response = await fetch(url, {
@@ -197,9 +197,9 @@ async function fetchWithAuth(url, options = {}) {
     });
 
     if (response.status === 401) {
-        console.warn("Ошибка 401: Токен истёк, пробуем обновить.");
+        console.warn("🚨 Ошибка 401: Пробуем обновить токен.");
         token = await refreshAccessToken();
-        if (!token) return response;
+        if (!token) return response; // Если не удалось обновить — выходим
 
         response = await fetch(url, {
             ...options,
@@ -209,6 +209,43 @@ async function fetchWithAuth(url, options = {}) {
     }
 
     return response;
+}
+async function refreshAccessToken() {
+    try {
+        const response = await fetch("https://makadamia.onrender.com/refresh", {
+            method: "POST",
+            credentials: "include",
+        });
+
+        if (!response.ok) {
+            console.warn("❌ Ошибка обновления токена, требуется повторный вход.");
+            logout(); // Разлогиним пользователя
+            return null;
+        }
+
+        const data = await response.json();
+        if (data.accessToken) {
+            localStorage.setItem("token", data.accessToken);
+            console.log("✅ Новый accessToken получен и сохранён.");
+            return data.accessToken;
+        } else {
+            console.error("❌ Сервер не вернул accessToken!");
+            logout();
+            return null;
+        }
+    } catch (error) {
+        console.error("❌ Ошибка при обновлении токена:", error);
+        logout();
+        return null;
+    }
+}
+function isTokenExpired(token) {
+    try {
+        const payload = JSON.parse(atob(token.split(".")[1])); // Декодируем токен
+        return payload.exp * 1000 < Date.now(); // Если exp в прошлом — токен истёк
+    } catch (e) {
+        return true; // Если ошибка — токен недействителен
+    }
 }
 
 function editField(field) {
