@@ -188,11 +188,11 @@ async function fetchWithAuth(url, options = {}) {
         if (!token) {
             console.error("❌ Не удалось обновить токен, разлогиниваемся.");
             logout();
-            return;
+            return null;
         }
     }
 
-    const response = await fetch(url, {
+    let response = await fetch(url, {
         ...options,
         headers: {
             ...options.headers,
@@ -200,6 +200,18 @@ async function fetchWithAuth(url, options = {}) {
         },
         credentials: "include",
     });
+
+    if (response.status === 401) {
+        console.warn("🚨 Ошибка 401: Пробуем обновить токен.");
+        token = await refreshAccessToken();
+        if (!token) return response; // Если не удалось обновить — выходим
+
+        response = await fetch(url, {
+            ...options,
+            headers: { Authorization: `Bearer ${token}` },
+            credentials: "include",
+        });
+    }
 
     return response;
 }
@@ -254,8 +266,7 @@ async function refreshAccessToken() {
             return null;
         }
 
-        data = await response.json(); // Обновляем глобальную переменную
-        console.log("Ответ сервера:", data);
+        const data = await response.json(); // ❗️Объявляем локальную переменную
 
         if (data.accessToken) {
             localStorage.setItem("token", data.accessToken);
@@ -383,13 +394,7 @@ function handleAuthClick() {
 
 
 // Логика для выхода
-function logout() {
-    localStorage.removeItem('token'); // Удаляем токен
-    localStorage.removeItem('username'); // Удаляем имя пользователя
-    cart = {}; // Очищаем корзину
-    checkAuthStatus(); // Обновляем интерфейс
-    window.location.href = '/'; // Переход на главную страницу
-}
+
 // Переход на страницу личного кабинета
 function openCabinet() {
     const token = localStorage.getItem('token');
