@@ -32,7 +32,6 @@ const corsOptions = {
 // Используем CORS с настройками
 app.use(cors(corsOptions));
 app.use(cookieParser());
-app.use(cors({ origin: "*" }));
 // Подключение к MongoDB
 const JWT_SECRET = process.env.JWT_SECRET || "ai3ohPh3Aiy9eeThoh8caaM9voh5Aezaenai0Fae2Pahsh2Iexu7Qu/";
 const mongoURI = process.env.MONGO_URI || "mongodb://11_ifelephant:ee590bdf579c7404d12fd8cf0990314242d56e62@axs-h.h.filess.io:27018/11_ifelephant";
@@ -49,7 +48,7 @@ mongoose.connect(mongoURI, {
 app.use(express.json());
 const authMiddleware = (req, res, next) => {
     const token = req.headers.authorization?.split(" ")[1];
-
+    console.log(req.headers.authorization);
     if (!token) {
         console.warn("Ошибка 401: Токен отсутствует в заголовках");
         return res.status(401).json({ message: "Токен не предоставлен" });
@@ -68,14 +67,12 @@ const authMiddleware = (req, res, next) => {
 async function fetchWithAuth(url, options = {}) {
     let accessToken = localStorage.getItem("accessToken");
 
-    // Проверяем, не истёк ли токен
     if (!accessToken || isTokenExpired(accessToken)) {
         console.log("Токен устарел, обновляем...");
-        await refreshAccessToken();
-        accessToken = localStorage.getItem("accessToken");
+        accessToken = await refreshAccessToken();
     }
 
-    let res = await fetch(url, {
+    const res = await fetch(url, {
         ...options,
         headers: {
             ...options.headers,
@@ -83,13 +80,11 @@ async function fetchWithAuth(url, options = {}) {
         }
     });
 
-    // Если получили 401 — пробуем обновить токен и повторить запрос
     if (res.status === 401) {
         console.log("Ошибка 401: Токен недействителен, пробуем обновить...");
-        await refreshAccessToken();
-        accessToken = localStorage.getItem("accessToken");
+        accessToken = await refreshAccessToken();
 
-        res = await fetch(url, {
+        return fetch(url, {
             ...options,
             headers: {
                 ...options.headers,
@@ -132,11 +127,16 @@ async function refreshAccessToken() {
 
 // Перенаправление HTTP на HTTPS
 app.use((req, res, next) => {
-  if (process.env.NODE_ENV === "production" && req.headers["x-forwarded-proto"] !== "https") {
-    return res.redirect(`https://${req.headers.host}${req.url}`);
-  }
-  next();
+    if (process.env.NODE_ENV === "production") {
+        console.log("Проверка протокола:", req.headers["x-forwarded-proto"]);
+        if (req.headers["x-forwarded-proto"] !== "https") {
+            console.log("🔄 Перенаправление на HTTPS...");
+            return res.redirect(`https://${req.headers.host}${req.url}`);
+        }
+    }
+    next();
 });
+
 const Cart = require("./models/Cart"); // Подключаем модель
 
 app.post('/cart/add', authMiddleware, async (req, res) => {
@@ -244,7 +244,7 @@ app.post('/login', async (req, res) => {
   res.json({ accessToken });
 });
 
-app.post('/refresh', (req, res) => {
+app.post('/refresh', async (req, res) => {
     console.log("🔄 Запрос на обновление токена получен.");
     console.log("🍪 Cookies:", req.cookies);
 
@@ -254,15 +254,19 @@ app.post('/refresh', (req, res) => {
         return res.status(401).json({ message: "Не авторизован" });
     }
 
-    jwt.verify(refreshToken, process.env.REFRESH_SECRET, async (err, user) => {
+    jwt.verify(refreshToken, REFRESH_SECRET, async (err, decodedUser) => {
         if (err) {
             console.warn("❌ Недействительный refresh-токен, отправляем 403.");
             return res.status(403).json({ message: "Недействительный refresh-токен" });
         }
 
-        console.log("✅ Refresh-токен действителен, создаём новые токены.");
+        // Ищем пользователя в базе данных
+        const user = await User.findById(decodedUser.id);
+        if (!user) {
+            return res.status(404).json({ message: "Пользователь не найден" });
+        }
 
-        // Генерация новых токенов
+        console.log("✅ Refresh-токен действителен, создаём новые токены.");
         const { accessToken, refreshToken: newRefreshToken } = generateTokens(user);
 
         console.log("🔄 Новый refreshToken:", newRefreshToken);
