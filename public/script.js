@@ -240,6 +240,8 @@ async function refreshAccessToken() {
         return null;
     }
 }
+localStorage.setItem("token", data.accessToken);
+console.log("🔍 Проверка localStorage:", localStorage.getItem("token"));
 function isTokenExpired(token) {
     try {
         const payload = JSON.parse(atob(token.split(".")[1])); // Декодируем токен
