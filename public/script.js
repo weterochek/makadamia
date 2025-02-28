@@ -18,8 +18,6 @@ window.onload = function() {
   }
 };
 console.log("Отправка запроса на /refresh");
-localStorage.setItem("token", data.accessToken);
-console.log("🔍 Проверка localStorage:", localStorage.getItem("token"));
 // Функция для показа/скрытия выпадающего окна корзины под кнопкой "Корзина"
 document.addEventListener("DOMContentLoaded", function() {
     const cartButton = document.getElementById('cartButton');
@@ -227,9 +225,12 @@ async function refreshAccessToken() {
         }
 
         const data = await response.json();
+        console.log("Ответ сервера:", data); // ✅ Теперь data объявлена
+
         if (data.accessToken) {
             localStorage.setItem("token", data.accessToken);
             console.log("✅ Новый accessToken получен и сохранён.");
+            console.log("🔍 Проверка localStorage:", localStorage.getItem("token")); // Проверяем сохранение
             return data.accessToken;
         } else {
             console.error("❌ Сервер не вернул accessToken!");
@@ -242,6 +243,7 @@ async function refreshAccessToken() {
         return null;
     }
 }
+
 
 function isTokenExpired(token) {
     try {
