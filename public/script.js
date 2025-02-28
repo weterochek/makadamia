@@ -245,14 +245,30 @@ async function refreshAccessToken() {
 }
 
 
-function isTokenExpired(token) {
+function isTokenExpired() {
+    const token = localStorage.getItem("token");
+    if (!token) return true;
+
     try {
-        const payload = JSON.parse(atob(token.split(".")[1])); // Декодируем токен
-        return payload.exp * 1000 < Date.now(); // Если exp в прошлом — токен истёк
+        const payload = JSON.parse(atob(token.split(".")[1])); // Раскодируем JWT
+        const expTime = payload.exp * 1000; // Преобразуем в миллисекунды
+        return Date.now() >= expTime;
     } catch (e) {
-        return true; // Если ошибка — токен недействителен
+        console.error("❌ Ошибка при проверке токена:", e);
+        return true;
     }
 }
+
+// Запускаем проверку токена раз в минуту
+setInterval(() => {
+    if (isTokenExpired()) {
+        console.log("🔄 Токен истёк, обновляем...");
+        refreshAccessToken().then(newToken => {
+            console.log("✅ Новый токен после автообновления:", newToken);
+        }).catch(err => console.error("❌ Ошибка обновления:", err));
+    }
+}, 60000); // 1 раз в минуту
+
 
 function editField(field) {
     const input = document.getElementById(field + "Input");
