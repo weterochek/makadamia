@@ -244,33 +244,34 @@ app.post('/login', async (req, res) => {
 });
 
 app.post('/refresh', (req, res) => {
-    console.log("Получен refresh-запрос");
-    console.log("Cookies:", req.cookies);
-    
+    console.log("🔄 Запрос на обновление токена получен.");
+    console.log("🍪 Cookies:", req.cookies);
+
     const refreshToken = req.cookies.refreshToken;
-    
     if (!refreshToken) {
-        console.warn("❌ Нет refresh-токена, отправляем 401");
-        return res.status(401).json({ message: 'Не авторизован' });
+        console.warn("❌ Нет refresh-токена, отправляем 401.");
+        return res.status(401).json({ message: "Не авторизован" });
     }
 
-    jwt.verify(refreshToken, REFRESH_SECRET, (err, user) => {
+    jwt.verify(refreshToken, REFRESH_SECRET, async (err, user) => {
         if (err) {
-            console.warn("❌ Refresh-токен недействителен, отправляем 403");
-            return res.status(403).json({ message: 'Недействительный refresh-токен' });
+            console.warn("❌ Недействительный refresh-токен, отправляем 403.");
+            return res.status(403).json({ message: "Недействительный refresh-токен" });
         }
 
-        console.log("✅ Refresh-токен действителен, создаём новый");
+        console.log("✅ Refresh-токен действителен, создаём новые токены.");
 
+        // Генерация новых токенов
         const { accessToken, refreshToken: newRefreshToken } = generateTokens(user);
 
-        console.log("🔄 Новый refresh-токен:", newRefreshToken);
+        console.log("🔄 Новый refreshToken:", newRefreshToken);
 
-        res.cookie('refreshToken', newRefreshToken, {
+        // Отправляем новый refreshToken в куках
+        res.cookie("refreshToken", newRefreshToken, {
             httpOnly: true,
             secure: true,
-            sameSite: 'Strict',
-            maxAge: 30 * 24 * 60 * 60 * 1000 // 30 дней
+            sameSite: "Strict",
+            maxAge: 30 * 24 * 60 * 60 * 1000, // 30 дней
         });
 
         res.json({ accessToken });
