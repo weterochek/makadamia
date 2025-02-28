@@ -211,21 +211,28 @@ app.post('/login', async (req, res) => {
 });
 
 app.post('/refresh', (req, res) => {
-    const refreshToken = req.cookies.refreshToken; // Берем из cookies
+    console.log("Получен refresh-запрос");
+    console.log("Cookies:", req.cookies);
+    
+    const refreshToken = req.cookies.refreshToken;
+    
     if (!refreshToken) {
+        console.warn("❌ Нет refresh-токена, отправляем 401");
         return res.status(401).json({ message: 'Не авторизован' });
     }
 
-    jwt.verify(refreshToken, REFRESH_SECRET, async (err, user) => {
-        if (err) return res.status(403).json({ message: 'Недействительный refresh-токен' });
+    jwt.verify(refreshToken, REFRESH_SECRET, (err, user) => {
+        if (err) {
+            console.warn("❌ Refresh-токен недействителен, отправляем 403");
+            return res.status(403).json({ message: 'Недействительный refresh-токен' });
+        }
 
-        const dbUser = await User.findById(user.id);
-        if (!dbUser) return res.status(404).json({ message: 'Пользователь не найден' });
+        console.log("✅ Refresh-токен действителен, создаём новый");
 
-        // Генерируем новые токены
-        const { accessToken, refreshToken: newRefreshToken } = generateTokens(dbUser);
+        const { accessToken, refreshToken: newRefreshToken } = generateTokens(user);
 
-        // Обновляем refreshToken в cookies
+        console.log("🔄 Новый refresh-токен:", newRefreshToken);
+
         res.cookie('refreshToken', newRefreshToken, {
             httpOnly: true,
             secure: true,
