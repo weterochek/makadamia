@@ -475,8 +475,8 @@ function logout() {
 function handleAuthClick() {
     const token = localStorage.getItem('token');
     if (token) {
-        window.location.href = 'account.html'; // Если пользователь авторизован, переходим в личный кабинет
+        window.location.href = 'account.html'; // Если авторизован, идём в личный кабинет
     } else {
-        window.location.href = 'login.html'; // Если нет, перенаправляем на страницу входа
+        window.location.href = 'login.html'; // Если нет, перенаправляем на вход
     }
 }
