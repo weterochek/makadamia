@@ -254,7 +254,7 @@ app.post('/refresh', (req, res) => {
         return res.status(401).json({ message: "Не авторизован" });
     }
 
-    jwt.verify(refreshToken, REFRESH_SECRET, async (err, user) => {
+    jwt.verify(refreshToken, process.env.REFRESH_SECRET, async (err, user) => {
         if (err) {
             console.warn("❌ Недействительный refresh-токен, отправляем 403.");
             return res.status(403).json({ message: "Недействительный refresh-токен" });
@@ -278,6 +278,7 @@ app.post('/refresh', (req, res) => {
         res.json({ accessToken });
     });
 });
+
 async function refreshAccessToken() {
     try {
         const response = await fetch("https://makadamia.onrender.com/refresh", {
