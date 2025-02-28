@@ -160,7 +160,16 @@ function resetAddToCartButtons() {
         revertControlsToAddButton(itemName);
     }
 }
-
+function loadCartFromLocalStorage() {
+    const username = localStorage.getItem("username");
+    if (username) {
+        const storedCart = JSON.parse(localStorage.getItem(`cart_${username}`));
+        if (storedCart) {
+            cart = storedCart;
+        }
+        updateCartDisplay();
+    }
+}
 // Загрузка корзины из localStorage при загрузке страницы
 document.addEventListener("DOMContentLoaded", () => {
     loadCartFromLocalStorage();
