@@ -18,6 +18,8 @@ window.onload = function() {
   }
 };
 console.log("Отправка запроса на /refresh");
+localStorage.setItem("token", data.accessToken);
+console.log("🔍 Проверка localStorage:", localStorage.getItem("token"));
 // Функция для показа/скрытия выпадающего окна корзины под кнопкой "Корзина"
 document.addEventListener("DOMContentLoaded", function() {
     const cartButton = document.getElementById('cartButton');
@@ -240,8 +242,7 @@ async function refreshAccessToken() {
         return null;
     }
 }
-localStorage.setItem("token", data.accessToken);
-console.log("🔍 Проверка localStorage:", localStorage.getItem("token"));
+
 function isTokenExpired(token) {
     try {
         const payload = JSON.parse(atob(token.split(".")[1])); // Декодируем токен
