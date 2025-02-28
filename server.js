@@ -65,37 +65,70 @@ const authMiddleware = (req, res, next) => {
     }
 };
 async function fetchWithAuth(url, options = {}) {
-    let token = localStorage.getItem("token");
+    let accessToken = localStorage.getItem("accessToken");
 
-    if (!token) {
-        console.warn("Нет токена, пробуем обновить...");
-        token = await refreshAccessToken();
-        if (!token) return logout(); // Если обновление не удалось — разлогиним
-
-        console.log("Токен обновлен, повторяем запрос...");
+    // Проверяем, не истёк ли токен
+    if (!accessToken || isTokenExpired(accessToken)) {
+        console.log("Токен устарел, обновляем...");
+        await refreshAccessToken();
+        accessToken = localStorage.getItem("accessToken");
     }
 
-    let response = await fetch(url, {
+    let res = await fetch(url, {
         ...options,
         headers: {
             ...options.headers,
-            Authorization: `Bearer ${token}`,
-        },
+            Authorization: `Bearer ${accessToken}`
+        }
     });
 
-    if (response.status === 401) {
-        console.warn("Токен истек, обновляем...");
-        token = await refreshAccessToken();
-        if (!token) return logout();
+    // Если получили 401 — пробуем обновить токен и повторить запрос
+    if (res.status === 401) {
+        console.log("Ошибка 401: Токен недействителен, пробуем обновить...");
+        await refreshAccessToken();
+        accessToken = localStorage.getItem("accessToken");
 
-        response = await fetch(url, {
+        res = await fetch(url, {
             ...options,
-            headers: { ...options.headers, Authorization: `Bearer ${token}` },
+            headers: {
+                ...options.headers,
+                Authorization: `Bearer ${accessToken}`
+            }
         });
     }
 
-    return response;
+    return res;
 }
+
+// Функция проверки срока жизни токена
+function isTokenExpired(token) {
+    try {
+        const payload = JSON.parse(atob(token.split(".")[1])); // Декодируем токен
+        return payload.exp * 1000 < Date.now(); // Если exp в прошлом — токен истёк
+    } catch (e) {
+        return true; // Если ошибка — токен недействителен
+    }
+}
+
+// Функция обновления accessToken через refreshToken
+async function refreshAccessToken() {
+    const res = await fetch("https://makadamia.onrender.com/refresh", {
+        method: "POST",
+        credentials: "include",
+    });
+
+    if (res.ok) {
+        const data = await res.json();
+        localStorage.setItem("accessToken", data.accessToken);
+        console.log("Токен успешно обновлён");
+    } else {
+        console.error("Ошибка обновления токена, требуется повторный вход");
+        // Очистка локального хранилища и редирект на страницу входа
+        localStorage.removeItem("accessToken");
+        window.location.href = "/login.html"; // Или своя страница входа
+    }
+}
+
 // Перенаправление HTTP на HTTPS
 app.use((req, res, next) => {
   if (process.env.NODE_ENV === "production" && req.headers["x-forwarded-proto"] !== "https") {
