@@ -115,6 +115,7 @@ async function addToCart(productId, quantity) {
         alert("Произошла ошибка. Попробуйте снова.");
     }
 }
+
 // Функция обновления токена
 async function refreshAccessToken() {
     try {
@@ -176,4 +177,12 @@ async function fetchWithAuth(url, options = {}) {
 
     return response;
 }
-
+window.addEventListener("storage", (event) => {
+    if (event.key === "sharedAccessTokenUpdate") {
+        const newToken = localStorage.getItem("sharedAccessToken");
+        if (newToken) {
+            localStorage.setItem("token", newToken);
+            console.log("Токен обновлён через localStorage:", newToken);
+        }
+    }
+});
