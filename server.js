@@ -239,10 +239,12 @@ app.post('/login', async (req, res) => {
     const { accessToken, refreshToken } = generateTokens(user, origin);
 
     res.cookie(cookieName, refreshToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: "None",
-        maxAge: 30 * 24 * 60 * 60 * 1000,
+         httpOnly: true,
+            secure: true,
+            sameSite: "None",
+            domain: ".onrender.com",
+            path: "/",
+            maxAge: 30 * 24 * 60 * 60 * 1000,
     });
 
     res.json({ accessToken });
@@ -294,6 +296,8 @@ app.post('/refresh', async (req, res) => {
             httpOnly: true,
             secure: true,
             sameSite: "None",
+            domain: ".onrender.com",
+            path: "/",
             maxAge: 30 * 24 * 60 * 60 * 1000,
         });
 
@@ -338,7 +342,9 @@ app.post('/logout', authMiddleware, (req, res) => {
     res.clearCookie(cookieName, {
         httpOnly: true,
         secure: true,
-        sameSite: 'None'
+        sameSite: 'None',
+        domain: ".onrender.com",
+        path: "/",
     });
 
     res.json({ message: 'Вы вышли из системы' });
