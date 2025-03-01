@@ -346,7 +346,19 @@ app.post('/refresh-token', (req, res) => {
 app.get('/private-route', authMiddleware, (req, res) => {
   res.json({ message: `Добро пожаловать, пользователь ${req.user.id}` });
 });
+app.get('/refresh', async (req, res) => {
+    const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken) return res.status(401).json({ error: "Нет refreshToken" });
 
+    try {
+        const payload = jwt.verify(refreshToken, REFRESH_SECRET);
+        const newAccessToken = jwt.sign({ id: payload.id, username: payload.username }, ACCESS_SECRET, { expiresIn: '15m' });
+
+        res.json({ accessToken: newAccessToken });
+    } catch (error) {
+        res.status(403).json({ error: "RefreshToken недействителен" });
+    }
+});
 app.get('/account', authMiddleware, async (req, res) => {
     try {
         const user = await User.findById(req.user.id).select("username name city");
