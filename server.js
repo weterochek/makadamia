@@ -271,12 +271,13 @@ app.post('/refresh', async (req, res) => {
         console.log("🔄 Новый refreshToken:", newRefreshToken);
 
         // Отправляем новый refreshToken в куках
-        res.cookie("refreshToken", newRefreshToken, {
-            httpOnly: true,
-            secure: true,
-            sameSite: "none",
-            maxAge: 30 * 24 * 60 * 60 * 1000, // 30 дней
-        });
+       res.cookie('refreshToken', refreshToken, {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'None',
+    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 дней
+});
+
 
         res.json({ accessToken });
     });
