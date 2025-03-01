@@ -180,40 +180,32 @@ document.addEventListener("DOMContentLoaded", () => {
 // Функция загрузки корзины
 async function fetchWithAuth(url, options = {}) {
     let token = localStorage.getItem("token");
+    console.log("📡 Запрос с авторизацией:", url);
 
-    if (!token || isTokenExpired(token)) {
-        console.log("🔄 Токен истёк, обновляем...");
-        token = await refreshAccessToken();
-        if (!token) {
-            console.error("❌ Ошибка авторизации, выход из системы.");
-            logout();
-            return null;
-        }
-    }
-
-    const response = await fetch(url, {
+    let response = await fetch(url, {
         ...options,
+        credentials: "include", // 🔹 ОБЯЗАТЕЛЬНО!
         headers: {
             ...options.headers,
             Authorization: `Bearer ${token}`,
         },
-        credentials: "include", // 🔹 ОБЯЗАТЕЛЬНО для передачи refreshToken
     });
 
     if (response.status === 401) {
-        console.warn("🔄 Повторная авторизация...");
+        console.warn("🔄 Токен недействителен, пробуем обновить...");
         token = await refreshAccessToken();
         if (!token) return response;
 
         return await fetch(url, {
             ...options,
-            headers: { Authorization: `Bearer ${token}` },
             credentials: "include",
+            headers: { ...options.headers, Authorization: `Bearer ${token}` },
         });
     }
 
     return response;
 }
+
 
 function getTokenExp(token) {
     try {
@@ -238,10 +230,12 @@ startTokenRefresh();
 
 
 async function refreshAccessToken() {
+    console.log("🔄 Попытка обновления токена..."); // 👈 Проверяем, вызывается ли функция
+
     try {
         const response = await fetch("https://makadamia.onrender.com/refresh", {
             method: "POST",
-            credentials: "include",
+            credentials: "include", // 🔹 Передаёт куки!
         });
 
         if (!response.ok) {
@@ -250,12 +244,11 @@ async function refreshAccessToken() {
             return null;
         }
 
-        data = await response.json(); // Обновляем глобальную переменную
-        console.log("Ответ сервера:", data);
+        const data = await response.json();
+        console.log("✅ Новый accessToken:", data.accessToken); // 👈 Проверяем, получаем ли токен
 
         if (data.accessToken) {
             localStorage.setItem("token", data.accessToken);
-            console.log("✅ Новый accessToken получен и сохранён.");
             return data.accessToken;
         } else {
             console.error("❌ Сервер не вернул accessToken!");
@@ -268,6 +261,7 @@ async function refreshAccessToken() {
         return null;
     }
 }
+
 
 
 
@@ -284,6 +278,7 @@ function isTokenExpired(token) {
 // Запускаем проверку токена раз в минуту
 setInterval(() => {
     if (isTokenExpired()) {
+        console.log("⏳ Проверяем обновление токена...");
         console.log("🔄 Токен истёк, обновляем...");
         refreshAccessToken().then(newToken => {
             console.log("✅ Новый токен после автообновления:", newToken);
