@@ -227,7 +227,7 @@ app.post('/login', async (req, res) => {
         return res.status(401).json({ message: 'Неверные данные' });
     }
 
-    let cookieName;
+    let Name;
     if (origin === "https://makadamia.onrender.com") {
         cookieName = "refreshTokenDesktop";
     } else if (origin === "https://mobile-site.onrender.com") {
