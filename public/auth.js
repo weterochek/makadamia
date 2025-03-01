@@ -67,7 +67,7 @@ loginForm.addEventListener("submit", async (e) => {
             localStorage.setItem("token", data.accessToken);
             localStorage.setItem("username", username);
 
-            alert("Вы успешно вошли в систему!");
+            // Редирект без всплывающего окна
             window.location.href = "/index.html";
         } else {
             alert(data.message || "Ошибка входа.");
@@ -77,6 +77,7 @@ loginForm.addEventListener("submit", async (e) => {
         alert("Произошла ошибка. Попробуйте снова.");
     }
 });
+
 async function addToCart(productId, quantity) {
     const token = localStorage.getItem("token");
 
@@ -138,6 +139,7 @@ async function refreshAccessToken() {
         return null;
     }
 }
+
 function logout() {
     fetch("https://makadamia.onrender.com/logout", { method: "POST", credentials: "include" })
         .then(() => {
@@ -177,6 +179,7 @@ async function fetchWithAuth(url, options = {}) {
 
     return response;
 }
+
 window.addEventListener("storage", (event) => {
     if (event.key === "sharedAccessTokenUpdate") {
         const newToken = localStorage.getItem("sharedAccessToken");
