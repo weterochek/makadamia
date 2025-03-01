@@ -239,7 +239,7 @@ app.post('/login', async (req, res) => {
     return res.status(401).json({ message: 'Неверные данные' });
   }
   const { accessToken, refreshToken } = generateTokens(user);
-  res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: true, sameSite: 'none', maxAge: 30 * 24 * 60 * 60 * 1000 });
+  res.('refreshToken', refreshToken, { httpOnly: true, secure: true, sameSite: 'none', maxAge: 30 * 24 * 60 * 60 * 1000 });
   res.json({ accessToken });
 });
 
@@ -274,7 +274,7 @@ app.post('/refresh', async (req, res) => {
         res.cookie("refreshToken", newRefreshToken, {
             httpOnly: true,
             secure: true,
-            sameSite: "Strict",
+            sameSite: "none",
             maxAge: 30 * 24 * 60 * 60 * 1000, // 30 дней
         });
 
