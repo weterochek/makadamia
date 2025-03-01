@@ -477,3 +477,12 @@ function handleAuthClick() {
         window.location.href = 'login.html'; // Если нет, перенаправляем на страницу входа
     }
 }
+window.addEventListener("storage", (event) => {
+    if (event.key === "sharedAccessTokenUpdate") {
+        const newToken = localStorage.getItem("sharedAccessToken");
+        if (newToken) {
+            localStorage.setItem("token", newToken);
+            console.log("Токен обновлён через localStorage:", newToken);
+        }
+    }
+});
