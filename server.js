@@ -11,8 +11,9 @@ const app = express();
 
 // Настройка CORS
 const allowedOrigins = [
-  'https://makadamia.onrender.com',
-  'http://localhost:3000', // Для локальной разработки
+  'https://makadamia.onrender.com', // Первый сайт
+  'https://mobile-site.onrender.com', // Второй сайт
+  'http://localhost:3000' // Для локальной разработки
 ];
 
 console.log("Отправка запроса на /refresh");
@@ -238,7 +239,7 @@ app.post('/login', async (req, res) => {
     return res.status(401).json({ message: 'Неверные данные' });
   }
   const { accessToken, refreshToken } = generateTokens(user);
-  res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: true, sameSite: 'Strict', maxAge: 30 * 24 * 60 * 60 * 1000 });
+  res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: true, sameSite: 'none', maxAge: 30 * 24 * 60 * 60 * 1000 });
   res.json({ accessToken });
 });
 
