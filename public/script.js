@@ -185,27 +185,27 @@ async function fetchWithAuth(url, options = {}) {
         console.log("🔄 Токен истёк, обновляем...");
         token = await refreshAccessToken();
         if (!token) {
-            console.error("❌ Не удалось обновить токен, разлогиниваемся.");
+            console.error("❌ Ошибка авторизации, выход из системы.");
             logout();
             return null;
         }
     }
 
-    let response = await fetch(url, {
+    const response = await fetch(url, {
         ...options,
         headers: {
             ...options.headers,
             Authorization: `Bearer ${token}`,
         },
-        credentials: "include",
+        credentials: "include", // 🔹 ОБЯЗАТЕЛЬНО для передачи refreshToken
     });
 
     if (response.status === 401) {
-        console.warn("🚨 Ошибка 401: Пробуем обновить токен.");
+        console.warn("🔄 Повторная авторизация...");
         token = await refreshAccessToken();
-        if (!token) return response; // Если не удалось обновить — выходим
+        if (!token) return response;
 
-        response = await fetch(url, {
+        return await fetch(url, {
             ...options,
             headers: { Authorization: `Bearer ${token}` },
             credentials: "include",
@@ -214,6 +214,7 @@ async function fetchWithAuth(url, options = {}) {
 
     return response;
 }
+
 function getTokenExp(token) {
     try {
         const payload = JSON.parse(atob(token.split(".")[1]));
@@ -233,9 +234,8 @@ function startTokenRefresh() {
         }
     }, 5 * 60 * 1000); // Проверка каждые 5 минут
 }
-
-// Запускаем обновление при загрузке страницы
 startTokenRefresh();
+
 
 async function refreshAccessToken() {
     try {
