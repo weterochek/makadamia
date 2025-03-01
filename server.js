@@ -104,7 +104,7 @@ function isTokenExpired(token) {
 
 // Функция обновления accessToken через refreshToken
 async function refreshAccessToken() {
-    const res = await fetch("https://makadamia.onrender.com/refresh", {
+    const res = await fetch("https://makadamia.onrender.com", {
         method: "POST",
         credentials: "include",
     });
@@ -248,11 +248,11 @@ app.post('/login', async (req, res) => {
   res.json({ accessToken });
 });
 
-app.post('/refresh', async (req, res) => {
-    console.log("🔄 Запрос на обновление токена получен.");
-    console.log("🍪 Cookies:", req.cookies);
-
+app.post("/refresh", async (req, res) => {
     const refreshToken = req.cookies.refreshToken;
+
+    console.log("🔄 Получен refresh-токен:", refreshToken);
+
     if (!refreshToken) {
         console.warn("❌ Нет refresh-токена, отправляем 401.");
         return res.status(401).json({ message: "Не авторизован" });
@@ -260,29 +260,23 @@ app.post('/refresh', async (req, res) => {
 
     jwt.verify(refreshToken, REFRESH_SECRET, async (err, decodedUser) => {
         if (err) {
-            console.warn("❌ Недействительный refresh-токен, отправляем 403.");
+            console.warn("❌ Недействительный refresh-токен.");
             return res.status(403).json({ message: "Недействительный refresh-токен" });
         }
 
-        // Ищем пользователя в базе данных
         const user = await User.findById(decodedUser.id);
         if (!user) {
             return res.status(404).json({ message: "Пользователь не найден" });
         }
 
-        console.log("✅ Refresh-токен действителен, создаём новые токены.");
         const { accessToken, refreshToken: newRefreshToken } = generateTokens(user);
 
-        console.log("🔄 Новый refreshToken:", newRefreshToken);
-
-        // Отправляем новый refreshToken в куках
-       res.cookie('refreshToken', refreshToken, {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'None',
-    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 дней
-});
-
+        res.cookie("refreshToken", newRefreshToken, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "None",  // 🔹 Разрешает работу между доменами!
+            maxAge: 30 * 24 * 60 * 60 * 1000
+        });
 
         res.json({ accessToken });
     });
