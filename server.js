@@ -43,15 +43,19 @@ mongoose.connect(mongoURI, {
 // Middleware для обработки JSON
 app.use(express.json());
 const authMiddleware = (req, res, next) => {
-    const token = req.headers.authorization?.split(" ")[1];
-    console.log(req.headers.authorization);
-    if (!token) {
-        console.warn("Ошибка 401: Токен отсутствует в заголовках");
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        console.warn("Ошибка 401: Токен отсутствует");
         return res.status(401).json({ message: "Токен не предоставлен" });
     }
 
+    const token = authHeader.split(" ")[1];
+    if (!token) {
+        console.warn("Ошибка 401: Некорректный формат заголовка Authorization");
+        return res.status(401).json({ message: "Некорректный формат токена" });
+    }
+
     try {
-        console.log("Проверяем токен:", token); // Лог для отладки
         const decoded = jwt.verify(token, JWT_SECRET);
         req.user = decoded;
         next();
@@ -60,6 +64,7 @@ const authMiddleware = (req, res, next) => {
         return res.status(401).json({ message: "Недействительный токен" });
     }
 };
+
 async function fetchWithAuth(url, options = {}) {
     let accessToken = localStorage.getItem("accessToken");
 
@@ -102,24 +107,6 @@ function isTokenExpired(token) {
     }
 }
 
-// Функция обновления accessToken через refreshToken
-async function refreshAccessToken() {
-    const res = await fetch("https://makadamia.onrender.com", {
-        method: "POST",
-        credentials: "include",
-    });
-
-    if (res.ok) {
-        const data = await res.json();
-        localStorage.setItem("accessToken", data.accessToken);
-        console.log("Токен успешно обновлён");
-    } else {
-        console.error("Ошибка обновления токена, требуется повторный вход");
-        // Очистка локального хранилища и редирект на страницу входа
-        localStorage.removeItem("accessToken");
-        window.location.href = "/login.html"; // Или своя страница входа
-    }
-}
 
 // Перенаправление HTTP на HTTPS
 app.use((req, res, next) => {
@@ -327,8 +314,6 @@ const logout = () => {
   // Очистка sessionStorage (если используется)
   sessionStorage.removeItem('cart');
 
-  // Перенаправление на страницу входа
-  window.location.href = '/login';
 };
 // Обновление токена
 app.post('/refresh-token', (req, res) => {
@@ -357,7 +342,7 @@ app.get('/refresh', async (req, res) => {
 
     try {
         const payload = jwt.verify(refreshToken, REFRESH_SECRET);
-        const newAccessToken = jwt.sign({ id: payload.id, username: payload.username }, ACCESS_SECRET, { expiresIn: '15m' });
+        const newAccessToken = jwt.sign({ id: payload.id, username: payload.username }, JWT_SECRET, { expiresIn: '15m' });
 
         res.json({ accessToken: newAccessToken });
     } catch (error) {
