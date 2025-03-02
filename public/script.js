@@ -125,19 +125,40 @@ function revertControlsToAddButton(itemName) {
     addButtonControl.style.display = "none";
     quantityDisplay.style.display = "none";
 }
+//ощичение корзины
 document.addEventListener('DOMContentLoaded', () => {
     const clearCartButton = document.getElementById('clear-cart');
     const cartTotal = document.querySelector('.cart-total'); // Элемент с итоговой суммой
-    const cartItemsContainer = document.querySelector('.cart-items'); // Контейнер товаров в корзине
+    const cartItemsContainer = document.getElementById('cartItems'); // Контейнер товаров в корзине
 
+    // Функция обновления отображения корзины
+    function updateCartDisplay() {
+        // Очищаем корзину на странице
+        cartItemsContainer.innerHTML = '';
+
+        // Обновляем итоговую сумму
+        const cart = JSON.parse(localStorage.getItem('cart')) || {};
+        let totalAmount = 0;
+
+        for (const item in cart) {
+            totalAmount += cart[item].price * cart[item].quantity;
+        }
+
+        cartTotal.textContent = `Итого: ${totalAmount} ₽`;
+    }
+
+    // Очищение корзины
     if (clearCartButton) {
         clearCartButton.addEventListener('click', () => {
-            localStorage.removeItem('cart'); // Удаляем корзину из локального хранилища
-            cartItemsContainer.innerHTML = ''; // Очищаем отображение товаров
-            cartTotal.textContent = 'Итого: 0 ₽'; // Обновляем итоговую сумму
+            localStorage.removeItem('cart'); // Удаляем корзину из localStorage
+            updateCartDisplay(); // Обновляем отображение корзины
         });
     }
+
+    // Инициализируем корзину при загрузке страницы
+    updateCartDisplay();
 });
+
 
 // Обновление отображения корзины и количества товара на карточке
 function updateCartDisplay() {
