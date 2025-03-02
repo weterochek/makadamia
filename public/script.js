@@ -66,6 +66,23 @@ document.addEventListener("DOMContentLoaded", function () {
         cookieBanner.style.display = "none";
     }
 });
+document.addEventListener("DOMContentLoaded", function () {
+    if (localStorage.getItem("cookiesAccepted") === "true") {
+        fetch("https://makadamia.onrender.com/account", {
+            credentials: "include" // Передаем cookies
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Ошибка HTTP: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => console.log("Данные аккаунта:", data))
+        .catch(error => console.error("Ошибка загрузки аккаунта:", error));
+    } else {
+        console.log("Пользователь не принял cookies. Запрос не отправлен.");
+    }
+});
 // Добавление товара в корзину
 function addToCart(itemName, itemPrice) {
     if (cart[itemName]) {
