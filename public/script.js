@@ -162,29 +162,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Очищение корзины
+    const clearCartButton = document.getElementById("clear-cart");
     if (clearCartButton) {
-        clearCartButton.addEventListener('click', () => {
-            // Удаляем корзину из localStorage
-            localStorage.removeItem('cart'); 
-
-            // Обновляем корзину на странице
-            updateCartDisplay(); 
-
-            // Проверяем, что корзина пустая и обновляем сумму
-            cartTotal.textContent = 'Итого: 0 ₽';
-        });
+        clearCartButton.addEventListener("click", clearCart);
     }
-
-    // Инициализируем корзину при загрузке страницы
-    updateCartDisplay();
 });
-
 // Обновление отображения корзины и количества товара на карточке
 function updateCartDisplay() {
-    const cartItems = document.getElementById("cartItems");
-    if (!cartItems) return;
+    const cartItemsContainer = document.getElementById("cartItems");
+    const totalAmountElement = document.getElementById("totalAmount");
 
-    cartItems.innerHTML = ""; // Очищаем список товаров
+    if (!cartItemsContainer || !totalAmountElement) return;
+
+    cartItemsContainer.innerHTML = ""; // Очищаем список
     let totalAmount = 0;
 
     for (const item in cart) {
@@ -193,24 +183,21 @@ function updateCartDisplay() {
 
         const cartItem = document.createElement("div");
         cartItem.className = "cart-item";
-        cartItem.setAttribute("data-name", item); // Добавляем атрибут для поиска
         cartItem.innerHTML = `
-            <div class="item-info">${item} - ${itemTotal} ₽</div>
+            <div class="item-info">
+                ${item} - ${cart[item].quantity} шт. - ${itemTotal} ₽
+            </div>
             <div class="cart-buttons">
                 <button onclick="decrementItem('${item}')">-</button>
                 <span class="quantity">${cart[item].quantity}</span>
                 <button onclick="incrementItem('${item}', ${cart[item].price})">+</button>
             </div>
         `;
-        cartItems.appendChild(cartItem);
+        cartItemsContainer.appendChild(cartItem);
+        replaceAddButtonWithControls(item);
     }
 
-    document.getElementById("totalAmount").textContent = `Итого: ${totalAmount} ₽`;
-
-    // Если корзина пуста, скрываем её
-    if (Object.keys(cart).length === 0) {
-        document.getElementById("cartDropdown").style.display = "none";
-    }
+    totalAmountElement.textContent = `Итого: ${totalAmount} ₽`;
 }
 
 // Сохранение корзины в localStorage
@@ -250,9 +237,7 @@ function loadCartFromLocalStorage() {
 // Загрузка корзины из localStorage при загрузке страницы
 document.addEventListener("DOMContentLoaded", () => {
     loadCartFromLocalStorage();
-    const cartModal = document.getElementById("cartModal");
-    if (cartModal) cartModal.style.display = "none";
-});
+    updateCartDisplay();
 
 // Функция загрузки корзины
 async function fetchWithAuth(url, options = {}) {
