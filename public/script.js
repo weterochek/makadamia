@@ -44,7 +44,28 @@ document.addEventListener("DOMContentLoaded", function() {
 
     cartDropdown.prepend(closeCartButton); // Добавляем крестик в начало содержимого
 });
+document.addEventListener("DOMContentLoaded", function () {
+    const cookieBanner = document.createElement("div");
+    cookieBanner.id = "cookie-banner";
+    cookieBanner.innerHTML = `
+        <div class="cookie-container">
+            <p>Мы используем cookies для улучшения работы сайта. Продолжая пользоваться сайтом, вы соглашаетесь с нашей <a href="/privacy-policy">политикой</a>.</p>
+            <button id="accept-cookies">Принять</button>
+        </div>
+    `;
+    document.body.appendChild(cookieBanner);
 
+    const acceptButton = document.getElementById("accept-cookies");
+
+    acceptButton.addEventListener("click", function () {
+        localStorage.setItem("cookiesAccepted", "true");
+        cookieBanner.style.display = "none";
+    });
+
+    if (localStorage.getItem("cookiesAccepted") === "true") {
+        cookieBanner.style.display = "none";
+    }
+});
 // Добавление товара в корзину
 function addToCart(itemName, itemPrice) {
     if (cart[itemName]) {
