@@ -298,7 +298,7 @@ async function fetchWithAuth(url, options = {}) {
 
     let response = await fetch(url, {
         ...options,
-        credentials: "include", // 🔹 ОБЯЗАТЕЛЬНО!
+        credentials: "include",
         headers: {
             ...options.headers,
             Authorization: `Bearer ${token}`,
@@ -310,6 +310,7 @@ async function fetchWithAuth(url, options = {}) {
         token = await refreshAccessToken();
         if (!token) return response;
 
+        localStorage.setItem("token", token); // Сохраняем новый токен
         return await fetch(url, {
             ...options,
             credentials: "include",
@@ -319,7 +320,6 @@ async function fetchWithAuth(url, options = {}) {
 
     return response;
 }
-
 
 function getTokenExp(token) {
     try {
