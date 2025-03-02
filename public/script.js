@@ -169,13 +169,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Обновляем корзину на странице
             updateCartDisplay(); 
+
+            // Проверяем, что корзина пустая и обновляем сумму
+            cartTotal.textContent = 'Итого: 0 ₽';
         });
     }
 
     // Инициализируем корзину при загрузке страницы
     updateCartDisplay();
-}); // <-- Закрывающая скобка для функции DOMContentLoaded
-
+});
 
 // Обновление отображения корзины и количества товара на карточке
 function updateCartDisplay() {
