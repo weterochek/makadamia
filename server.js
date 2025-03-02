@@ -83,6 +83,19 @@ app.post('/order', authenticate, async (req, res) => {
     res.status(201).json(order);
 });
 
+// Получение заказов пользователя
+app.get('/orders', authenticate, async (req, res) => {
+    const user = req.user;
+    const orders = await Order.find({ userId: user._id });
+
+    // Форматируем время заказов перед отправкой клиенту
+    orders.forEach(order => {
+        order.timestampFormatted = order.timestamp.toLocaleString();  // Преобразуем время в строку
+    });
+
+    res.json(orders);
+});
+
 
 async function fetchWithAuth(url, options = {}) {
     let accessToken = localStorage.getItem("accessToken");
