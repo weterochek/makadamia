@@ -129,10 +129,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // Формируем данные заказа
             const orderData = {
-                name: document.getElementById("customerName").value,
-                address: document.getElementById("customerAddress").value,
-                additionalInfo: document.getElementById("additionalInfo").value,
-                cart: cart // ✅ Добавляем корзину в заказ
+               ame: document.getElementById("customerName").value,
+               address: document.getElementById("customerAddress").value,
+               additionalInfo: document.getElementById("additionalInfo").value,
+               timestamp: document.getElementById("orderTime").value || new Date().toISOString(), // Если время не выбрано — используем текущее время
+               cart: cart // ✅ Добавляем корзину в заказ
             };
 
             console.log("📡 Отправка данных заказа:", orderData);
