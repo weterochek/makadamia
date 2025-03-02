@@ -132,6 +132,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const cartItemsContainer = document.getElementById('cartItems'); // Контейнер товаров в корзине
 
     // Функция обновления отображения корзины
+document.addEventListener('DOMContentLoaded', () => {
+    const clearCartButton = document.getElementById('clear-cart');
+    const cartTotal = document.getElementById('totalAmount'); // Элемент с итоговой суммой
+    const cartItemsContainer = document.getElementById('cartItems'); // Контейнер товаров в корзине
+
+    // Функция обновления отображения корзины
     function updateCartDisplay() {
         // Очищаем корзину на странице
         cartItemsContainer.innerHTML = '';
@@ -164,14 +170,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // Очищение корзины
     if (clearCartButton) {
         clearCartButton.addEventListener('click', () => {
-            localStorage.removeItem('cart'); // Удаляем корзину из localStorage
-            updateCartDisplay(); // Обновляем отображение корзины
+            // Удаляем корзину из localStorage
+            localStorage.removeItem('cart'); 
+
+            // Обновляем корзину на странице
+            updateCartDisplay(); 
         });
     }
 
     // Инициализируем корзину при загрузке страницы
     updateCartDisplay();
 });
+
 
 // Обновление отображения корзины и количества товара на карточке
 function updateCartDisplay() {
