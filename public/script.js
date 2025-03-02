@@ -54,7 +54,11 @@ function addToCart(itemName, itemPrice) {
 
     saveCartToLocalStorage();
     updateCartDisplay();
+
+    // ✅ Заменяем кнопку "Добавить" на `+` и `-`
+    replaceAddButtonWithControls(itemName);
 }
+
 // Уменьшение количества товара
 function decrementItem(itemName) {
     if (cart[itemName]) {
@@ -62,6 +66,7 @@ function decrementItem(itemName) {
 
         if (cart[itemName].quantity <= 0) {
             delete cart[itemName]; // Удаляем товар, если его количество 0
+            revertControlsToAddButton(itemName); // ✅ Вернуть кнопку "Добавить"
         }
 
         saveCartToLocalStorage();
