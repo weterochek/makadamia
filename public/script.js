@@ -132,12 +132,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const cartItemsContainer = document.getElementById('cartItems'); // Контейнер товаров в корзине
 
     // Функция обновления отображения корзины
-document.addEventListener('DOMContentLoaded', () => {
-    const clearCartButton = document.getElementById('clear-cart');
-    const cartTotal = document.getElementById('totalAmount'); // Элемент с итоговой суммой
-    const cartItemsContainer = document.getElementById('cartItems'); // Контейнер товаров в корзине
-
-    // Функция обновления отображения корзины
     function updateCartDisplay() {
         // Очищаем корзину на странице
         cartItemsContainer.innerHTML = '';
@@ -180,7 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Инициализируем корзину при загрузке страницы
     updateCartDisplay();
-});
+}); // <-- Закрывающая скобка для функции DOMContentLoaded
 
 
 // Обновление отображения корзины и количества товара на карточке
