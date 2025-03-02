@@ -65,6 +65,25 @@ const authMiddleware = (req, res, next) => {
     }
 };
 
+// Сохранение заказа с выбранным временем
+app.post('/order', authenticate, async (req, res) => {
+    const { name, address, additionalInfo, items, totalAmount, timestamp } = req.body;
+    const user = req.user;
+
+    const order = new Order({
+        userId: user._id,
+        items,
+        totalAmount,
+        address,
+        additionalInfo,
+        timestamp: timestamp ? new Date(timestamp) : new Date(),  // Используем переданное время
+    });
+
+    await order.save();
+    res.status(201).json(order);
+});
+
+
 async function fetchWithAuth(url, options = {}) {
     let accessToken = localStorage.getItem("accessToken");
 
