@@ -125,6 +125,19 @@ function revertControlsToAddButton(itemName) {
     addButtonControl.style.display = "none";
     quantityDisplay.style.display = "none";
 }
+document.addEventListener('DOMContentLoaded', () => {
+    const clearCartButton = document.getElementById('clear-cart');
+    const cartTotal = document.querySelector('.cart-total'); // Элемент с итоговой суммой
+    const cartItemsContainer = document.querySelector('.cart-items'); // Контейнер товаров в корзине
+
+    if (clearCartButton) {
+        clearCartButton.addEventListener('click', () => {
+            localStorage.removeItem('cart'); // Удаляем корзину из локального хранилища
+            cartItemsContainer.innerHTML = ''; // Очищаем отображение товаров
+            cartTotal.textContent = 'Итого: 0 ₽'; // Обновляем итоговую сумму
+        });
+    }
+});
 
 // Обновление отображения корзины и количества товара на карточке
 function updateCartDisplay() {
