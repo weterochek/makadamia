@@ -66,7 +66,7 @@ const authMiddleware = (req, res, next) => {
 };
 
 // Сохранение заказа с выбранным временем
-app.post('/order', authenticate, async (req, res) => {
+app.post('/order', authMiddleware, async (req, res) => {
     const { name, address, additionalInfo, items, totalAmount, timestamp } = req.body;
     const user = req.user;
 
@@ -84,7 +84,7 @@ app.post('/order', authenticate, async (req, res) => {
 });
 
 // Получение заказов пользователя
-app.get('/orders', authenticate, async (req, res) => {
+app.get('/orders', authMiddleware, async (req, res) => {
     const user = req.user;
     const orders = await Order.find({ userId: user._id });
 
