@@ -128,7 +128,7 @@ function revertControlsToAddButton(itemName) {
 //ощичение корзины
 document.addEventListener('DOMContentLoaded', () => {
     const clearCartButton = document.getElementById('clear-cart');
-    const cartTotal = document.querySelector('.cart-total'); // Элемент с итоговой суммой
+    const cartTotal = document.getElementById('totalAmount'); // Элемент с итоговой суммой
     const cartItemsContainer = document.getElementById('cartItems'); // Контейнер товаров в корзине
 
     // Функция обновления отображения корзины
@@ -136,14 +136,28 @@ document.addEventListener('DOMContentLoaded', () => {
         // Очищаем корзину на странице
         cartItemsContainer.innerHTML = '';
 
-        // Обновляем итоговую сумму
+        // Получаем корзину из localStorage
         const cart = JSON.parse(localStorage.getItem('cart')) || {};
         let totalAmount = 0;
 
+        // Перебираем все товары в корзине и рассчитываем общую сумму
         for (const item in cart) {
             totalAmount += cart[item].price * cart[item].quantity;
+
+            const cartItem = document.createElement('div');
+            cartItem.className = 'cart-item';
+            cartItem.innerHTML = `
+                <div class="item-info">${item} - ${cart[item].price * cart[item].quantity} ₽</div>
+                <div class="cart-buttons">
+                    <button onclick="decrementItem('${item}')">-</button>
+                    <span class="quantity">${cart[item].quantity}</span>
+                    <button onclick="incrementItem('${item}', ${cart[item].price})">+</button>
+                </div>
+            `;
+            cartItemsContainer.appendChild(cartItem);
         }
 
+        // Обновляем итоговую сумму
         cartTotal.textContent = `Итого: ${totalAmount} ₽`;
     }
 
@@ -158,7 +172,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Инициализируем корзину при загрузке страницы
     updateCartDisplay();
 });
-
 
 // Обновление отображения корзины и количества товара на карточке
 function updateCartDisplay() {
