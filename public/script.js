@@ -123,52 +123,57 @@ function revertControlsToAddButton(itemName) {
 //ощичение корзины
 document.addEventListener('DOMContentLoaded', () => {
     const clearCartButton = document.getElementById('clear-cart');
-    const cartTotal = document.getElementById('totalAmount');
-    const cartItemsContainer = document.getElementById('cartItems');
+    const cartTotal = document.getElementById('totalAmount'); // Элемент с итоговой суммой
+    const cartItemsContainer = document.getElementById('cartItems'); // Контейнер товаров в корзине
 
-    // 📌 Функция обновления отображения корзины
+    // Функция обновления отображения корзины
     function updateCartDisplay() {
+        // Очищаем корзину на странице
         cartItemsContainer.innerHTML = '';
 
-        let storedCart = JSON.parse(localStorage.getItem('cart')) || {};
+        // Получаем корзину из localStorage
+        const cart = JSON.parse(localStorage.getItem('cart')) || {};
         let totalAmount = 0;
 
-        for (const item in storedCart) {
-            totalAmount += storedCart[item].price * storedCart[item].quantity;
+        // Перебираем все товары в корзине и рассчитываем общую сумму
+        for (const item in cart) {
+            totalAmount += cart[item].price * cart[item].quantity;
 
             const cartItem = document.createElement('div');
             cartItem.className = 'cart-item';
             cartItem.innerHTML = `
-                <div class="item-info">${item} - ${storedCart[item].price * storedCart[item].quantity} ₽</div>
+                <div class="item-info">${item} - ${cart[item].price * cart[item].quantity} ₽</div>
                 <div class="cart-buttons">
                     <button onclick="decrementItem('${item}')">-</button>
-                    <span class="quantity">${storedCart[item].quantity}</span>
-                    <button onclick="addToCart('${item}', ${storedCart[item].price})">+</button>
+                    <span class="quantity">${cart[item].quantity}</span>
+                    <button onclick="incrementItem('${item}', ${cart[item].price})">+</button>
                 </div>
             `;
             cartItemsContainer.appendChild(cartItem);
         }
 
+        // Обновляем итоговую сумму
         cartTotal.textContent = `Итого: ${totalAmount} ₽`;
     }
 
-    // 📌 Очистка корзины
+    // Очищение корзины
     if (clearCartButton) {
         clearCartButton.addEventListener('click', () => {
-            localStorage.removeItem('cart'); // Удаляем корзину из localStorage
-            cart = {}; // Обнуляем глобальную переменную
-            updateCartDisplay(); // Обновляем интерфейс корзины
+            // Удаляем корзину из localStorage
+            localStorage.removeItem('cart'); 
+
+            // Обновляем корзину на странице
+            updateCartDisplay(); 
+
+            // Проверяем, что корзина пустая и обновляем сумму
+            cartTotal.textContent = 'Итого: 0 ₽';
         });
     }
 
-    // 📌 Загрузка корзины при загрузке страницы
-    function loadCartFromLocalStorage() {
-        cart = JSON.parse(localStorage.getItem('cart')) || {};
-        updateCartDisplay();
-    }
-
-    loadCartFromLocalStorage(); // Загружаем корзину при старте страницы
+    // Инициализируем корзину при загрузке страницы
+    updateCartDisplay();
 });
+
 // Обновление отображения корзины и количества товара на карточке
 function updateCartDisplay() {
     const cartItems = document.getElementById("cartItems");
