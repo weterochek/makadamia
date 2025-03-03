@@ -301,26 +301,35 @@ function getCookie(name) {
 }
 
 async function fetchWithAuth(url, options = {}) {
-    const accessToken = getCookie("accessToken"); // Получаем токен из куки
+    let accessToken = getCookie("accessToken");
 
-    const res = await fetch(url, {
+    if (!accessToken) {
+        console.warn("❌ Нет accessToken, пробуем обновить...");
+        accessToken = await refreshAccessToken();
+        if (!accessToken) return null; // Прерываем выполнение, если токен не удалось обновить
+    }
+
+    let res = await fetch(url, {
         ...options,
-        credentials: "include",  // Включает передачу куки
+        credentials: "include",
         headers: {
             ...options.headers,
-            Authorization: `Bearer ${accessToken}` // Добавляем accessToken в заголовок
+            Authorization: `Bearer ${accessToken}`
         }
     });
 
     if (res.status === 401) {
-        console.log("Токен истёк, обновляем...");
-        const newAccessToken = await refreshAccessToken();
+        console.warn("🔄 Токен истёк, пробуем обновить...");
+        accessToken = await refreshAccessToken();
+
+        if (!accessToken) return res; // Возвращаем ответ сервера, если обновление не удалось
+
         return fetch(url, {
             ...options,
             credentials: "include",
             headers: {
                 ...options.headers,
-                Authorization: `Bearer ${newAccessToken}`
+                Authorization: `Bearer ${accessToken}`
             }
         });
     }
@@ -353,21 +362,23 @@ startTokenRefresh();
 async function refreshAccessToken() {
     const response = await fetch("https://makadamia.onrender.com/refresh", {
         method: "POST",
-        credentials: "include",  // Важно для передачи куки
+        credentials: "include"
     });
 
     if (!response.ok) {
         console.warn("Ошибка обновления токена");
-        ();
         return null;
     }
 
     const data = await response.json();
     const newAccessToken = data.accessToken;
-    document.cookie = `accessToken=${newAccessToken}; path=/; Secure`;  // Обновляем куки
+    
+    // Сохраняем токен в localStorage
+    localStorage.setItem("token", newAccessToken);
+    
+    document.cookie = `accessToken=${newAccessToken}; path=/; Secure`;
     return newAccessToken;
 }
-
 
 
 function isTokenExpired(token) {
@@ -381,16 +392,13 @@ function isTokenExpired(token) {
 
 
 // Запускаем проверку токена раз в минуту
-setInterval(() => {
-    if (isTokenExpired()) {
-        console.log("⏳ Проверяем обновление токена...");
+setInterval(() => { 
+    const token = localStorage.getItem("token"); 
+    if (!token || isTokenExpired(token)) { 
         console.log("🔄 Токен истёк, обновляем...");
-        refreshAccessToken().then(newToken => {
-            console.log("✅ Новый токен после автообновления:", newToken);
-        }).catch(err => console.error("❌ Ошибка обновления:", err));
+        refreshAccessToken();
     }
-}, 60000); // 1 раз в минуту
-
+}, 60000);
 
 function editField(field) {
     const input = document.getElementById(field + "Input");
@@ -474,31 +482,28 @@ function checkAuthStatus() {
     }
 }
 
-function handleAuthClick() {
-    window.location.href = '/login.html'; // Переход на страницу входа
-}
-
-
 // Логика для выхода
-async function logout() {
-    try {
-        const response = await fetch("https://makadamia.onrender.com/logout", {
-            method: "POST",
-            credentials: "include" // Передаем cookies для удаления сессии
+async function logout() { 
+    try { 
+        await fetch("https://makadamia.onrender.com/logout", { 
+            method: "POST", 
+            credentials: "include" 
         });
 
-        if (!response.ok) {
-            throw new Error("Ошибка при выходе из системы");
-        }
-
-        // Удаляем токен и данные пользователя
-        document.cookie = "accessToken=; Max-Age=0; path=/"; // Очистка токена в cookies
-        localStorage.removeItem("username");
-        localStorage.removeItem("cart");
+        // Удаляем токены
+        document.cookie = "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+        document.cookie = "refreshTokenDesktop=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+        document.cookie = "refreshTokenMobile=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
         
-        window.location.href = "/login"; // Перенаправление на страницу входа
-    } catch (error) {
-        console.error("Ошибка выхода:", error);
+        // Очищаем локальное хранилище
+        localStorage.removeItem("token");
+        localStorage.removeItem("cart");
+        localStorage.removeItem("username");
+
+        // Перезагружаем страницу, чтобы очистить сессию
+        window.location.href = "/login";
+    } catch (error) { 
+        console.error("Ошибка выхода:", error); 
     }
 }
 
@@ -580,13 +585,7 @@ async function updateAccount(newUsername, newPassword) {
   const data = await response.json();
   console.log("Ответ от сервера:", data);
 }
-function logout() {
-    document.cookie = "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";  // Удаляем куки
-    document.cookie = "refreshTokenDesktop=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
-    document.cookie = "refreshTokenMobile=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
-    localStorage.removeItem('cart');  // Если нужно
-    window.location.href = "/";  // Перенаправляем на главную
-}
+
 function handleAuthClick() {
     const token = localStorage.getItem('token');
     if (token) {
