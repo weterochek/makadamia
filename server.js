@@ -271,24 +271,22 @@ app.post('/login', async (req, res) => {
     const { accessToken, refreshToken } = generateTokens(user, origin);
 
     res.cookie(cookieName, refreshToken, {
-         httpOnly: true,
-            secure: true,
-            sameSite: "Lax",
-            domain: ".onrender.com",
-            path: "/",
-            maxAge: 30 * 24 * 60 * 60 * 1000,
-    });
-
+    httpOnly: true,  // Не доступно через JavaScript
+    secure: true,    // Требует HTTPS (на `onrender.com` обязательно)
+    sameSite: "None", // Позволяет передавать куки между разными доменами
+    domain: ".onrender.com", // Домен, на который распространяются куки
+    path: "/",
+    maxAge: 30 * 24 * 60 * 60 * 1000, // Срок действия 30 дней
+});
     res.json({ accessToken });
 });
 
 
 app.post('/refresh', async (req, res) => {
-    console.log("🔄 Запрос на обновление токена получен.");
     console.log("🔄 Запрос на обновление токена:", req.cookies);
 
-    const refreshTokenDesktop = req.cookies.refreshTokenDesktop;
-    const refreshTokenMobile = req.cookies.refreshTokenMobile;
+const refreshTokenDesktop = req.cookies.refreshTokenDesktop;
+const refreshTokenMobile = req.cookies.refreshTokenMobile;
     const origin = req.headers.origin;
 
     let refreshToken;
