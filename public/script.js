@@ -18,6 +18,7 @@ window.onload = function() {
   }
 };
 console.log("Отправка запроса на /refresh");
+console.log("Токен перед запросом: ", accessToken);
 // Функция для показа/скрытия выпадающего окна корзины под кнопкой "Корзина"
 document.addEventListener("DOMContentLoaded", function() {
     const cartButton = document.getElementById('cartButton');
