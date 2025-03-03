@@ -18,7 +18,7 @@ window.onload = function() {
   }
 };
 console.log("Отправка запроса на /refresh");
-console.log("Токен перед запросом: ", accessToken);
+console.log("Токен перед запросом:", localStorage.getItem("token"));
 // Функция для показа/скрытия выпадающего окна корзины под кнопкой "Корзина"
 document.addEventListener("DOMContentLoaded", function() {
     const cartButton = document.getElementById('cartButton');
@@ -69,8 +69,19 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 document.addEventListener("DOMContentLoaded", function () {
     if (localStorage.getItem("cookiesAccepted") === "true") {
+        const token = localStorage.getItem("token"); // Получаем токен
+
+        if (!token) {
+            console.warn("❌ Нет токена, не запрашиваем /account");
+            return;
+        }
+
         fetch("https://makadamia.onrender.com/account", {
-            credentials: "include" // Передаем cookies
+            method: "GET", // ✅ Добавляем явное указание метода
+            credentials: "include", // ✅ Передаем cookies
+            headers: {
+                "Authorization": `Bearer ${token}` // ✅ Передаем токен
+            }
         })
         .then(response => {
             if (!response.ok) {
@@ -78,10 +89,10 @@ document.addEventListener("DOMContentLoaded", function () {
             }
             return response.json();
         })
-        .then(data => console.log("Данные аккаунта:", data))
-        .catch(error => console.error("Ошибка загрузки аккаунта:", error));
+        .then(data => console.log("✅ Данные аккаунта:", data))
+        .catch(error => console.error("❌ Ошибка загрузки аккаунта:", error));
     } else {
-        console.log("Пользователь не принял cookies. Запрос не отправлен.");
+        console.log("⚠️ Пользователь не принял cookies. Запрос не отправлен.");
     }
 });
 // Добавление товара в корзину
@@ -302,12 +313,12 @@ function getCookie(name) {
 }
 
 async function fetchWithAuth(url, options = {}) {
-    let accessToken = getCookie("accessToken");
+    let accessToken = localStorage.getItem("token");
 
     if (!accessToken) {
         console.warn("❌ Нет accessToken, пробуем обновить...");
         accessToken = await refreshAccessToken();
-        if (!accessToken) return null; // Прерываем выполнение, если токен не удалось обновить
+        if (!accessToken) return null;
     }
 
     let res = await fetch(url, {
@@ -322,8 +333,7 @@ async function fetchWithAuth(url, options = {}) {
     if (res.status === 401) {
         console.warn("🔄 Токен истёк, пробуем обновить...");
         accessToken = await refreshAccessToken();
-
-        if (!accessToken) return res; // Возвращаем ответ сервера, если обновление не удалось
+        if (!accessToken) return res;
 
         return fetch(url, {
             ...options,
@@ -367,30 +377,24 @@ async function refreshAccessToken() {
     });
 
     if (!response.ok) {
-        console.warn("Ошибка обновления токена");
+        console.warn("Ошибка обновления токена, требуется повторный вход.");
+        logout(); // Выход из системы при неудаче
         return null;
     }
 
     const data = await response.json();
-    const newAccessToken = data.accessToken;
-    
-    // Сохраняем токен в localStorage
-    localStorage.setItem("token", newAccessToken);
-    
-    document.cookie = `accessToken=${newAccessToken}; path=/; Secure`;
-    return newAccessToken;
+    localStorage.setItem("token", data.accessToken);
+    return data.accessToken;
 }
-
 
 function isTokenExpired(token) {
     try {
-        const payload = JSON.parse(atob(token.split(".")[1])); // Декодируем токен
-        return (Date.now() / 1000) >= payload.exp; // Проверяем срок действия
+        const payload = JSON.parse(atob(token.split(".")[1])); 
+        return (Date.now() / 1000) >= payload.exp;
     } catch (e) {
-        return true; // Если ошибка — считаем токен недействительным
+        return true;
     }
 }
-
 
 // Запускаем проверку токена раз в минуту
 setInterval(() => { 
@@ -399,7 +403,7 @@ setInterval(() => {
         console.log("🔄 Токен истёк, обновляем...");
         refreshAccessToken();
     }
-}, 60000);
+}, 300000); // 5 минут
 
 function editField(field) {
     const input = document.getElementById(field + "Input");
@@ -427,16 +431,35 @@ function editField(field) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+        console.warn("❌ Нет токена, не запрашиваем /account");
+        return;
+    }
+
     fetch("https://makadamia.onrender.com/account", {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+        method: "GET", // ✅ Добавляем явное указание метода
+        headers: { 
+            "Authorization": `Bearer ${token}` // ✅ Передаем токен
+        }
     })
-    .then(res => res.json())
+    .then(res => {
+        if (!res.ok) {
+            throw new Error(`Ошибка HTTP: ${res.status}`);
+        }
+        return res.json();
+    })
     .then(data => {
-        if (data.name) document.getElementById("nameInput").value = data.name;
-        if (data.city) document.getElementById("cityInput").value = data.city;
+        const nameInput = document.getElementById("nameInput");
+        const cityInput = document.getElementById("cityInput");
+
+        if (nameInput) nameInput.value = data.name || "";
+        if (cityInput) cityInput.value = data.city || "";
     })
-    .catch(() => console.log("Ошибка загрузки профиля"));
+    .catch(error => console.error("❌ Ошибка загрузки профиля:", error));
 });
+
 document.addEventListener("DOMContentLoaded", () => {
     console.log("Страница загружена");
 
@@ -501,13 +524,12 @@ async function logout() {
         localStorage.removeItem("cart");
         localStorage.removeItem("username");
 
-        // Перезагружаем страницу, чтобы очистить сессию
-        window.location.href = "/login";
+        // Перенаправление на страницу входа
+        window.location.href = "/index.html";
     } catch (error) { 
         console.error("Ошибка выхода:", error); 
     }
 }
-
 // Переход на страницу личного кабинета
 function openCabinet() {
     const token = localStorage.getItem('token');
@@ -554,10 +576,20 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById('usernameDisplay').innerText = "Гость";
         return;
     }
-    fetch('/account', {
-        headers: { Authorization: `Bearer ${token}` }
+
+    fetch("https://makadamia.onrender.com/account", {
+        method: "GET",
+        credentials: "include", // ✅ Добавляем передачу cookies
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
     })
-    .then(res => res.json())
+    .then(res => {
+        if (!res.ok) {
+            throw new Error(`Ошибка HTTP: ${res.status}`);
+        }
+        return res.json();
+    })
     .then(data => {
         if (data.username) {
             document.getElementById('usernameDisplay').innerText = data.username;
@@ -567,7 +599,8 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById('usernameDisplay').innerText = "Ошибка загрузки";
         }
     })
-    .catch(() => {
+    .catch(error => {
+        console.error("Ошибка загрузки аккаунта:", error);
         document.getElementById('usernameDisplay').innerText = "Ошибка загрузки";
     });
 });
