@@ -358,7 +358,7 @@ async function refreshAccessToken() {
 
     if (!response.ok) {
         console.warn("Ошибка обновления токена");
-        logout();
+        ();
         return null;
     }
 
@@ -452,7 +452,7 @@ function checkAuthStatus() {
     const username = localStorage.getItem('username'); // Получаем имя пользователя
     const authButton = document.getElementById('authButton'); // Кнопка "Вход"
     const cabinetButton = document.getElementById('cabinetButton'); // Кнопка "Личный кабинет"
-    const logoutButton = document.getElementById('logoutButton'); // Кнопка "Выход"
+    const Button = document.getElementById('Button'); // Кнопка "Выход"
 
     if (token && username) {
         // Если токен и имя пользователя существуют
@@ -460,16 +460,16 @@ function checkAuthStatus() {
         cabinetButton.style.display = 'inline-block'; // Показываем "Личный кабинет"
 
         // Логика для отображения кнопки "Выход" только на странице кабинета
-        if (window.location.pathname === '/account.html' && logoutButton) {
-            logoutButton.style.display = 'inline-block';
+        if (window.location.pathname === '/account.html' && Button) {
+            Button.style.display = 'inline-block';
         }
     } else {
         // Если токена или имени пользователя нет
         authButton.style.display = 'inline-block'; // Показываем кнопку "Вход"
         cabinetButton.style.display = 'none'; // Скрываем "Личный кабинет"
 
-        if (logoutButton) {
-            logoutButton.style.display = 'none'; // Скрываем кнопку "Выход"
+        if (Button) {
+            Button.style.display = 'none'; // Скрываем кнопку "Выход"
         }
     }
 }
@@ -482,19 +482,23 @@ function handleAuthClick() {
 // Логика для выхода
 async function logout() {
     try {
-        await fetch("https://makadamia.onrender.com/logout", {
+        const response = await fetch("https://makadamia.onrender.com/logout", {
             method: "POST",
-            credentials: "include",
+            credentials: "include" // Передаем cookies для удаления сессии
         });
 
-        // Удаляем токен из куков
-        document.cookie = "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
-        document.cookie = "refreshTokenDesktop=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
-        document.cookie = "refreshTokenMobile=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+        if (!response.ok) {
+            throw new Error("Ошибка при выходе из системы");
+        }
 
-        window.location.href = "/"; // Перенаправляем на главную
+        // Удаляем токен и данные пользователя
+        document.cookie = "accessToken=; Max-Age=0; path=/"; // Очистка токена в cookies
+        localStorage.removeItem("username");
+        localStorage.removeItem("cart");
+        
+        window.location.href = "/login"; // Перенаправление на страницу входа
     } catch (error) {
-        console.error("Ошибка при выходе:", error);
+        console.error("Ошибка выхода:", error);
     }
 }
 
