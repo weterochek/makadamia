@@ -273,7 +273,7 @@ app.post('/login', async (req, res) => {
     res.cookie(cookieName, refreshToken, {
          httpOnly: true,
             secure: true,
-            sameSite: "None",
+            sameSite: "Lax",
             domain: ".onrender.com",
             path: "/",
             maxAge: 30 * 24 * 60 * 60 * 1000,
@@ -285,6 +285,7 @@ app.post('/login', async (req, res) => {
 
 app.post('/refresh', async (req, res) => {
     console.log("🔄 Запрос на обновление токена получен.");
+    console.log("🔄 Запрос на обновление токена:", req.cookies);
 
     const refreshTokenDesktop = req.cookies.refreshTokenDesktop;
     const refreshTokenMobile = req.cookies.refreshTokenMobile;
@@ -419,7 +420,7 @@ app.get('/refresh', async (req, res) => {
 
     try {
         const payload = jwt.verify(refreshToken, REFRESH_SECRET);
-        const newAccessToken = jwt.sign({ id: payload.id, username: payload.username }, JWT_SECRET, { expiresIn: '15m' });
+        const newAccessToken = jwt.sign({ id: payload.id, username: payload.username }, JWT_SECRET, { expiresIn: '2h' });
 
         res.json({ accessToken: newAccessToken });
     } catch (error) {
