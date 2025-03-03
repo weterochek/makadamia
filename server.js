@@ -384,17 +384,22 @@ app.post('/logout', authMiddleware, (req, res) => {
 
     res.json({ message: 'Вы вышли из системы' });
 });
+async function logout() {
+    await fetch("https://makadamia.onrender.com/logout", {
+        method: "POST",
+        credentials: "include"
+    });
+
+    document.cookie = "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+    localStorage.removeItem("token");
+    localStorage.removeItem("username");
+    localStorage.removeItem("cart");
+
+    window.location.href = "/index.html";
+}
 
 
-const logout = () => {
-  // Удаление токена или данных авторизации
-  localStorage.removeItem('token'); // если используется токен
-  localStorage.removeItem('cart'); // удаление корзины
 
-  // Очистка sessionStorage (если используется)
-  sessionStorage.removeItem('cart');
-
-};
 // Обновление токена
 app.post('/refresh-token', (req, res) => {
   const { token: refreshToken } = req.body;
