@@ -20,9 +20,10 @@ console.log("Отправка запроса на /refresh");
 
 const corsOptions = {
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (!origin || allowedOrigins.includes(origin)) { // Разрешаем запросы без origin
       callback(null, true);
     } else {
+      console.warn(`❌ Недопустимый источник запроса: ${origin}`);
       callback(new Error("Недопустимый источник запроса"));
     }
   },
@@ -282,15 +283,15 @@ app.post('/login', async (req, res) => {
     path: "/",
     maxAge: 30 * 24 * 60 * 60 * 1000, // Срок действия 30 дней
 });
-    res.json({ accessToken });
+  res.json({ accessToken });
+  res.setHeader("Set-LocalStorage", JSON.stringify({ token: accessToken }));
 });
 
 
 app.post('/refresh', async (req, res) => {
-    console.log("🔄 Запрос на обновление токена:", req.cookies);
-
-const refreshTokenDesktop = req.cookies.refreshTokenDesktop;
-const refreshTokenMobile = req.cookies.refreshTokenMobile;
+  console.log("🔄 Запрос на обновление токена:", req.cookies);
+const refreshTokenDesktop = req.cookies.refreshTokenDesktop || null;
+const refreshTokenMobile = req.cookies.refreshTokenMobile || null;
     const origin = req.headers.origin;
 
     let refreshToken;
@@ -344,24 +345,28 @@ async function refreshAccessToken() {
     try {
         const response = await fetch("https://makadamia.onrender.com/refresh", {
             method: "POST",
-            credentials: "include", // Важно, чтобы cookies передавались!
+            credentials: "include"
         });
 
         if (!response.ok) {
-            console.warn("Не удалось обновить токен, требуется повторный вход.");
-            logout();
+            console.warn("❌ Ошибка обновления токена:", response.status);
             return null;
         }
 
         const data = await response.json();
-        localStorage.setItem("token", data.accessToken); // Сохраняем новый токен
+        console.log("✅ Новый accessToken получен:", data.accessToken);
+
+        if (data.accessToken) {
+            localStorage.setItem("token", data.accessToken);
+        }
+
         return data.accessToken;
     } catch (error) {
-        console.error("Ошибка при обновлении токена:", error);
-        logout();
+        console.error("❌ Ошибка при обновлении токена:", error);
         return null;
     }
 }
+
 app.post('/logout', authMiddleware, (req, res) => {
     const origin = req.headers.origin;
 
@@ -436,12 +441,18 @@ app.get('/refresh', async (req, res) => {
 });
 app.get('/account', authMiddleware, async (req, res) => {
     try {
+        if (!req.user || !req.user.id) {
+            return res.status(401).json({ message: "Не авторизован" });
+        }
+
         const user = await User.findById(req.user.id).select("username name city");
         if (!user) {
             return res.status(404).json({ message: "Пользователь не найден" });
         }
+
         res.json({ username: user.username, name: user.name, city: user.city });
     } catch (error) {
+        console.error("❌ Ошибка загрузки аккаунта:", error);
         res.status(500).json({ message: "Ошибка сервера" });
     }
 });
