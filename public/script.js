@@ -125,7 +125,10 @@ function decrementItem(itemName) {
 function incrementItem(itemName, itemPrice) {
     addToCart(itemName, itemPrice);
 }
-
+function getCookie(name) {
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? match[2] : null;
+}
 // Преобразование кнопки "Добавить" в контролы "+", "-", и количество
 function replaceAddButtonWithControls(itemName) {
     const addButton = document.getElementById(`addButton_${itemName}`);
@@ -298,33 +301,33 @@ function getCookie(name) {
 }
 
 async function fetchWithAuth(url, options = {}) {
-    let token = getCookie("accessToken");
+    const accessToken = getCookie("accessToken"); // Получаем токен из куки
 
-    console.log("📡 Запрос с авторизацией:", url);
-
-    let response = await fetch(url, {
+    const res = await fetch(url, {
         ...options,
-        credentials: "include", // Включает передачу куков
+        credentials: "include",  // Включает передачу куки
         headers: {
             ...options.headers,
-            Authorization: `Bearer ${token}`,
-        },
+            Authorization: `Bearer ${accessToken}` // Добавляем accessToken в заголовок
+        }
     });
 
-    if (response.status === 401) {
-        console.warn("🔄 Токен недействителен, пробуем обновить...");
-        token = await refreshAccessToken();
-        if (!token) return response;
-
-        return await fetch(url, {
+    if (res.status === 401) {
+        console.log("Токен истёк, обновляем...");
+        const newAccessToken = await refreshAccessToken();
+        return fetch(url, {
             ...options,
             credentials: "include",
-            headers: { ...options.headers, Authorization: `Bearer ${token}` },
+            headers: {
+                ...options.headers,
+                Authorization: `Bearer ${newAccessToken}`
+            }
         });
     }
 
-    return response;
+    return res;
 }
+
 function getTokenExp(token) {
     try {
         const payload = JSON.parse(atob(token.split(".")[1]));
@@ -348,37 +351,23 @@ startTokenRefresh();
 
 
 async function refreshAccessToken() {
-    console.log("🔄 Попытка обновления токена...");
+    const response = await fetch("https://makadamia.onrender.com/refresh", {
+        method: "POST",
+        credentials: "include",  // Важно для передачи куки
+    });
 
-    try {
-        const response = await fetch("https://makadamia.onrender.com/refresh", {
-            method: "POST",
-            credentials: "include",
-        });
-
-        if (!response.ok) {
-            console.warn("❌ Ошибка обновления токена, требуется повторный вход.");
-            logout();
-            return null;
-        }
-
-        const data = await response.json();
-        console.log("✅ Новый accessToken:", data.accessToken);
-
-        if (data.accessToken) {
-            document.cookie = `accessToken=${data.accessToken}; path=/; Secure`;
-            return data.accessToken;
-        } else {
-            console.error("❌ Сервер не вернул accessToken!");
-            logout();
-            return null;
-        }
-    } catch (error) {
-        console.error("❌ Ошибка при обновлении токена:", error);
+    if (!response.ok) {
+        console.warn("Ошибка обновления токена");
         logout();
         return null;
     }
+
+    const data = await response.json();
+    const newAccessToken = data.accessToken;
+    document.cookie = `accessToken=${newAccessToken}; path=/; Secure`;  // Обновляем куки
+    return newAccessToken;
 }
+
 
 
 function isTokenExpired(token) {
@@ -588,8 +577,11 @@ async function updateAccount(newUsername, newPassword) {
   console.log("Ответ от сервера:", data);
 }
 function logout() {
-    localStorage.removeItem('token'); // Удаляем токен
-    window.location.href = 'index.html'; // Перенаправляем на главную
+    document.cookie = "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";  // Удаляем куки
+    document.cookie = "refreshTokenDesktop=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+    document.cookie = "refreshTokenMobile=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+    localStorage.removeItem('cart');  // Если нужно
+    window.location.href = "/";  // Перенаправляем на главную
 }
 function handleAuthClick() {
     const token = localStorage.getItem('token');
