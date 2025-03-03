@@ -19,9 +19,13 @@ const allowedOrigins = [
 console.log("Отправка запроса на /refresh");
 
 const corsOptions = {
-  origin: true,  // Разрешаем любые источники
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Недопустимый источник запроса"));
+    }
+  },
   credentials: true,
 };
 
@@ -82,7 +86,7 @@ app.post('/order', authMiddleware, async (req, res) => {
     await order.save();
     res.status(201).json(order);
 });
-
+const Order = require("./models/Order");
 // Получение заказов пользователя
 app.get('/orders', authMiddleware, async (req, res) => {
     const user = req.user;
