@@ -86,7 +86,7 @@ app.post('/order', authMiddleware, async (req, res) => {
     await order.save();
     res.status(201).json(order);
 });
-const Order = require("./models/Order");
+
 // Получение заказов пользователя
 app.get('/orders', authMiddleware, async (req, res) => {
     const user = req.user;
