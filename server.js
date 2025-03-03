@@ -255,6 +255,7 @@ app.post('/register', async (req, res) => {
 });
 
 // Авторизация пользователя
+// Авторизация пользователя
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
     const origin = req.headers.origin;
@@ -264,7 +265,7 @@ app.post('/login', async (req, res) => {
         return res.status(401).json({ message: 'Неверные данные' });
     }
 
-    let Name;
+    let cookieName;
     if (origin === "https://makadamia.onrender.com") {
         cookieName = "refreshTokenDesktop";
     } else if (origin === "https://mobile-site.onrender.com") {
@@ -276,16 +277,22 @@ app.post('/login', async (req, res) => {
     const { accessToken, refreshToken } = generateTokens(user, origin);
 
     res.cookie(cookieName, refreshToken, {
-    httpOnly: true,  // Не доступно через JavaScript
-    secure: true,    // Требует HTTPS (на `onrender.com` обязательно)
-    sameSite: "None", // Позволяет передавать куки между разными доменами
-    domain: ".onrender.com", // Домен, на который распространяются куки
-    path: "/",
-    maxAge: 30 * 24 * 60 * 60 * 1000, // Срок действия 30 дней
+        httpOnly: true,  // Не доступно через JavaScript
+        secure: true,    // Требует HTTPS (на `onrender.com` обязательно)
+        sameSite: "None", // Позволяет передавать куки между разными доменами
+        domain: ".onrender.com", // Домен, на который распространяются куки
+        path: "/",
+        maxAge: 30 * 24 * 60 * 60 * 1000, // Срок действия 30 дней
+    });
+
+    // ✅ Проверка перед отправкой JSON-ответа
+    if (!res.headersSent) {
+        return res.json({ accessToken });
+    } else {
+        console.warn("⚠️ Заголовки уже отправлены, пропускаем res.json()");
+    }
 });
-  res.json({ accessToken });
-  res.setHeader("Set-LocalStorage", JSON.stringify({ token: accessToken }));
-});
+
 
 
 app.post('/refresh', async (req, res) => {
