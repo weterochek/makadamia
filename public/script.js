@@ -292,13 +292,19 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // Функция загрузки корзины
+function getCookie(name) {
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? match[2] : null;
+}
+
 async function fetchWithAuth(url, options = {}) {
-    let token = localStorage.getItem("token");
+    let token = getCookie("accessToken");
+
     console.log("📡 Запрос с авторизацией:", url);
 
     let response = await fetch(url, {
         ...options,
-        credentials: "include",
+        credentials: "include", // Включает передачу куков
         headers: {
             ...options.headers,
             Authorization: `Bearer ${token}`,
@@ -310,7 +316,6 @@ async function fetchWithAuth(url, options = {}) {
         token = await refreshAccessToken();
         if (!token) return response;
 
-        localStorage.setItem("token", token); // Сохраняем новый токен
         return await fetch(url, {
             ...options,
             credentials: "include",
@@ -320,7 +325,6 @@ async function fetchWithAuth(url, options = {}) {
 
     return response;
 }
-
 function getTokenExp(token) {
     try {
         const payload = JSON.parse(atob(token.split(".")[1]));
@@ -344,12 +348,12 @@ startTokenRefresh();
 
 
 async function refreshAccessToken() {
-    console.log("🔄 Попытка обновления токена..."); // 👈 Проверяем, вызывается ли функция
+    console.log("🔄 Попытка обновления токена...");
 
     try {
         const response = await fetch("https://makadamia.onrender.com/refresh", {
             method: "POST",
-            credentials: "include", // 🔹 Передаёт куки!
+            credentials: "include",
         });
 
         if (!response.ok) {
@@ -359,10 +363,10 @@ async function refreshAccessToken() {
         }
 
         const data = await response.json();
-        console.log("✅ Новый accessToken:", data.accessToken); // 👈 Проверяем, получаем ли токен
+        console.log("✅ Новый accessToken:", data.accessToken);
 
         if (data.accessToken) {
-            localStorage.setItem("token", data.accessToken);
+            document.cookie = `accessToken=${data.accessToken}; path=/; Secure`;
             return data.accessToken;
         } else {
             console.error("❌ Сервер не вернул accessToken!");
@@ -375,8 +379,6 @@ async function refreshAccessToken() {
         return null;
     }
 }
-
-
 
 
 function isTokenExpired(token) {
@@ -491,29 +493,17 @@ function handleAuthClick() {
 // Логика для выхода
 async function logout() {
     try {
-        // Отправляем запрос на сервер для удаления refreshToken
-        const response = await fetch("/logout", {
+        await fetch("https://makadamia.onrender.com/logout", {
             method: "POST",
-            credentials: "include" // Передаёт куки
+            credentials: "include",
         });
 
-        if (!response.ok) {
-            console.error("❌ Ошибка при выходе с сервера");
-        }
-
-        // Очищаем данные из localStorage и sessionStorage
-        localStorage.removeItem("token");
-        localStorage.removeItem("username");
-        localStorage.removeItem("cart_guest"); // Очищаем корзину гостя
-        sessionStorage.clear();
-
-        // Очищаем куки вручную (если сервер не удалил)
+        // Удаляем токен из куков
+        document.cookie = "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
         document.cookie = "refreshTokenDesktop=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
         document.cookie = "refreshTokenMobile=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
 
-        checkAuthStatus(); // Обновляем UI
-
-        window.location.href = "/"; // Перенаправляем на главную страницу
+        window.location.href = "/"; // Перенаправляем на главную
     } catch (error) {
         console.error("Ошибка при выходе:", error);
     }
