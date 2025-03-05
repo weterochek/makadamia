@@ -281,7 +281,7 @@ res.cookie(cookieName, refreshToken, {
     httpOnly: true,
     secure: true,
     sameSite: "None",
-    domain: ".onrender.com",
+    domain: origin.includes("mobile-site.onrender.com") ? "mobile-site.onrender.com" : "makadamia.onrender.com",
     path: "/",
     maxAge: 30 * 24 * 60 * 60 * 1000,
 });
