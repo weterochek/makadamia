@@ -207,16 +207,17 @@ const User = mongoose.model("User", userSchema);
 
 function generateTokens(user, site) {
     const issuedAt = Math.floor(Date.now() / 1000);
+    
     const accessToken = jwt.sign(
         { id: user._id, username: user.username, iat: issuedAt },
         JWT_SECRET,
-        { expiresIn: "30m" }
+        { expiresIn: "30m" }  // ⏳ Access-токен на 30 минут
     );
 
     const refreshToken = jwt.sign(
         { id: user._id, username: user.username, site, iat: issuedAt },
         REFRESH_SECRET,
-        { expiresIn: "7d" }
+        { expiresIn: "7d" }  // 🔄 Refresh-токен на 7 дней
     );
 
     return { accessToken, refreshToken };
@@ -276,29 +277,23 @@ app.post('/login', async (req, res) => {
 
     const { accessToken, refreshToken } = generateTokens(user, origin);
 
+    // ⬇️ Устанавливаем httpOnly cookie с refresh-токеном
     res.cookie(cookieName, refreshToken, {
-        httpOnly: true,  // Не доступно через JavaScript
-        secure: true,    // Требует HTTPS (на `onrender.com` обязательно)
-        sameSite: "None", // Позволяет передавать куки между разными доменами
-        domain: ".onrender.com", // Домен, на который распространяются куки
+        httpOnly: true,
+        secure: true,
+        sameSite: "None",
+        domain: ".onrender.com",
         path: "/",
-        maxAge: 30 * 24 * 60 * 60 * 1000, // Срок действия 30 дней
+        maxAge: 7 * 24 * 60 * 60 * 1000  // 7 дней
     });
 
-    // ✅ Проверка перед отправкой JSON-ответа
-    if (!res.headersSent) {
-        return res.json({ accessToken });
-    } else {
-        console.warn("⚠️ Заголовки уже отправлены, пропускаем res.json()");
-    }
+    res.json({ accessToken });
 });
-
-
-
 app.post('/refresh', async (req, res) => {
-  console.log("🔄 Запрос на обновление токена:", req.cookies);
-const refreshTokenDesktop = req.cookies.refreshTokenDesktop || null;
-const refreshTokenMobile = req.cookies.refreshTokenMobile || null;
+    console.log("🔄 Запрос на обновление токена получен.");
+
+    const refreshTokenDesktop = req.cookies.refreshTokenDesktop;
+    const refreshTokenMobile = req.cookies.refreshTokenMobile;
     const origin = req.headers.origin;
 
     let refreshToken;
@@ -341,7 +336,7 @@ const refreshTokenMobile = req.cookies.refreshTokenMobile || null;
             sameSite: "None",
             domain: ".onrender.com",
             path: "/",
-            maxAge: 30 * 24 * 60 * 60 * 1000,
+            maxAge: 7 * 24 * 60 * 60 * 1000,
         });
 
         res.json({ accessToken });
