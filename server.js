@@ -329,14 +329,13 @@ app.post('/refresh', async (req, res) => {
         console.log(`🔄 Новый ${cookieName}:`, newRefreshToken);
 
         res.cookie(cookieName, newRefreshToken, {
-            httpOnly: true,
-            secure: true,
-            sameSite: "None",
-            domain: ".onrender.com",
-            path: "/",
-            maxAge: 7 * 24 * 60 * 60 * 1000,
-        });
-
+    httpOnly: true,
+    secure: true,
+    sameSite: "None",
+    domain: origin.includes("mobile-site.onrender.com") ? "mobile-site.onrender.com" : "makadamia.onrender.com",
+    path: "/",
+    maxAge: 30 * 24 * 60 * 60 * 1000,
+});
         res.json({ accessToken });
     });
 });
