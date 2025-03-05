@@ -277,16 +277,14 @@ app.post('/login', async (req, res) => {
 
     const { accessToken, refreshToken } = generateTokens(user, origin);
 
-    // ⬇️ Устанавливаем httpOnly cookie с refresh-токеном
-    res.cookie(cookieName, refreshToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: "None",
-        domain: ".onrender.com",
-        path: "/",
-        maxAge: 7 * 24 * 60 * 60 * 1000  // 7 дней
-    });
-
+res.cookie(cookieName, refreshToken, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "None",
+    domain: ".onrender.com",
+    path: "/",
+    maxAge: 30 * 24 * 60 * 60 * 1000,
+});
     res.json({ accessToken });
 });
 app.post('/refresh', async (req, res) => {
