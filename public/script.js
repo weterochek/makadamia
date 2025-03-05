@@ -399,11 +399,17 @@ function isTokenExpired(token) {
 // Запускаем проверку токена раз в минуту
 setInterval(() => { 
     const token = localStorage.getItem("token"); 
-    if (!token || isTokenExpired(token)) { 
-        console.log("🔄 Токен истёк, обновляем...");
+    if (!token) return;
+
+    const exp = getTokenExp(token);
+    const now = Math.floor(Date.now() / 1000);
+
+    // 🔄 Обновляем за 5 минут до истечения
+    if (exp && (exp - now) < 300) { 
+        console.log("🔄 Токен скоро истечёт, обновляем...");
         refreshAccessToken();
     }
-}, 300000); // 5 минут
+}, 60000);
 
 function editField(field) {
     const input = document.getElementById(field + "Input");
