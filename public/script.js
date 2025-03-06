@@ -20,15 +20,28 @@ window.onload = function() {
 console.log("Отправка запроса на /refresh");
 console.log("Токен перед запросом:", localStorage.getItem("token"));
 // Функция для показа/скрытия выпадающего окна корзины под кнопкой "Корзина"
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", async function() {
+    const token = localStorage.getItem("token");
+
+    if (!token || isTokenExpired(token)) {  // Проверяем, есть ли токен и не истёк ли он
+        console.log("🔄 Обновляем токен при входе на сайт...");
+        await refreshAccessToken();  // Запрашиваем новый accessToken
+    }
+
     const cartButton = document.getElementById('cartButton');
     const cartDropdown = document.getElementById('cartDropdown');
 
     // Открытие/закрытие корзины при клике на кнопку
-    cartButton.addEventListener('click', function(event) {
-        event.stopPropagation(); // Остановка распространения события клика
-        cartDropdown.style.display = cartDropdown.style.display === 'block' ? 'none' : 'block';
-    });
+    if (cartButton && cartDropdown) {  // Проверяем, что элементы существуют
+        cartButton.addEventListener('click', function(event) {
+            event.stopPropagation(); // Остановка распространения события клика
+            cartDropdown.style.display = cartDropdown.style.display === 'block' ? 'none' : 'block';
+        });
+    } else {
+        console.warn("❌ cartButton или cartDropdown не найдены!");
+    }
+});
+
     // Закрытие корзины при клике на крестик
     const closeCartButton = document.createElement("span");
     closeCartButton.innerHTML = "✖";
@@ -312,40 +325,42 @@ function getCookie(name) {
 }
 
 async function fetchWithAuth(url, options = {}) {
-    let accessToken = localStorage.getItem("token");
+    let token = localStorage.getItem("token");
+    const fullUrl = window.location.origin + url; // ✅ Теперь запрос идёт на текущий сервер
 
-    if (!accessToken) {
+    if (!token) {
         console.warn("❌ Нет accessToken, пробуем обновить...");
-        accessToken = await refreshAccessToken();
-        if (!accessToken) return null;
+        token = await refreshAccessToken();
+        if (!token) return null;
     }
 
-    let res = await fetch(url, {
+    let res = await fetch(fullUrl, {
         ...options,
         credentials: "include",
         headers: {
             ...options.headers,
-            Authorization: `Bearer ${accessToken}`
+            Authorization: `Bearer ${token}`
         }
     });
 
     if (res.status === 401) {
         console.warn("🔄 Токен истёк, пробуем обновить...");
-        accessToken = await refreshAccessToken();
-        if (!accessToken) return res;
+        token = await refreshAccessToken();
+        if (!token) return res;
 
-        return fetch(url, {
+        return fetch(fullUrl, {
             ...options,
             credentials: "include",
             headers: {
                 ...options.headers,
-                Authorization: `Bearer ${accessToken}`
+                Authorization: `Bearer ${token}`
             }
         });
     }
 
     return res;
 }
+
 
 function getTokenExp(token) {
     try {
@@ -357,34 +372,30 @@ function getTokenExp(token) {
 }
 
 
-function startTokenRefresh() {
-    setInterval(async () => {
-        const token = localStorage.getItem("token");
-        if (!token || isTokenExpired(token)) {
-            console.log("🔄 Токен устарел, обновляем...");
-            await refreshAccessToken();
-        }
-    }, 5 * 60 * 1000); // Проверка каждые 5 минут
-}
-startTokenRefresh();
-
-
 async function refreshAccessToken() {
-    const response = await fetch("https://makadamia.onrender.com/refresh", {
-        method: "POST",
-        credentials: "include"
-    });
+    const refreshUrl = window.location.origin + "/refresh"; // ✅ Используем текущий сервер
 
-    if (!response.ok) {
-        console.warn("Ошибка обновления токена, требуется повторный вход.");
-        logout(); // Выход из системы при неудаче
+    try {
+        const response = await fetch(refreshUrl, { // Теперь сервер определяется автоматически
+            method: "POST",
+            credentials: "include"
+        });
+
+        if (!response.ok) {
+            console.warn("❌ Ошибка обновления токена:", response.status);
+            logout(); // Выход из системы при неудаче
+            return null;
+        }
+
+        const data = await response.json();
+        localStorage.setItem("token", data.accessToken);
+        return data.accessToken;
+    } catch (error) {
+        console.error("❌ Ошибка при обновлении токена:", error);
         return null;
     }
-
-    const data = await response.json();
-    localStorage.setItem("token", data.accessToken);
-    return data.accessToken;
 }
+
 
 function isTokenExpired(token) {
     try {
@@ -485,28 +496,25 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 // Проверка состояния авторизации
 function checkAuthStatus() {
-    const token = localStorage.getItem('token'); // Проверяем наличие токена
-    const username = localStorage.getItem('username'); // Получаем имя пользователя
-    const authButton = document.getElementById('authButton'); // Кнопка "Вход"
-    const cabinetButton = document.getElementById('cabinetButton'); // Кнопка "Личный кабинет"
-    const Button = document.getElementById('Button'); // Кнопка "Выход"
+    const token = localStorage.getItem('token');
+    const username = localStorage.getItem('username');
+    const authButton = document.getElementById('authButton');
+    const cabinetButton = document.getElementById('cabinetButton');
+    const logoutButton = document.getElementById('Button');
 
-    if (token && username) {
-        // Если токен и имя пользователя существуют
-        authButton.style.display = 'none'; // Скрываем кнопку "Вход"
-        cabinetButton.style.display = 'inline-block'; // Показываем "Личный кабинет"
+    if (token && username && !isTokenExpired(token)) { // ✅ Проверяем, не истёк ли токен
+        authButton.style.display = 'none';
+        cabinetButton.style.display = 'inline-block';
 
-        // Логика для отображения кнопки "Выход" только на странице кабинета
-        if (window.location.pathname === '/account.html' && Button) {
-            Button.style.display = 'inline-block';
+        if (window.location.pathname === '/account.html' && logoutButton) {
+            logoutButton.style.display = 'inline-block';
         }
     } else {
-        // Если токена или имени пользователя нет
-        authButton.style.display = 'inline-block'; // Показываем кнопку "Вход"
-        cabinetButton.style.display = 'none'; // Скрываем "Личный кабинет"
+        authButton.style.display = 'inline-block';
+        cabinetButton.style.display = 'none';
 
-        if (Button) {
-            Button.style.display = 'none'; // Скрываем кнопку "Выход"
+        if (logoutButton) {
+            logoutButton.style.display = 'none';
         }
     }
 }
