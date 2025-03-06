@@ -283,7 +283,8 @@ res.cookie(cookieName, refreshToken, {
     sameSite: "None",
     domain: origin.includes("mobile-site.onrender.com") ? "mobile-site.onrender.com" : "makadamia.onrender.com",
     path: "/",
-    maxAge: 30 * 24 * 60 * 60 * 1000,
+    partitioned: true,
+    maxAge: 30 * 24 * 60 * 60 * 1000
 });
     res.json({ accessToken });
 });
@@ -334,7 +335,8 @@ app.post('/refresh', async (req, res) => {
     sameSite: "None",
     domain: origin.includes("mobile-site.onrender.com") ? "mobile-site.onrender.com" : "makadamia.onrender.com",
     path: "/",
-    maxAge: 30 * 24 * 60 * 60 * 1000,
+    partitioned: true,
+    maxAge: 30 * 24 * 60 * 60 * 1000
 });
         res.json({ accessToken });
     });
@@ -384,6 +386,7 @@ app.post('/logout', authMiddleware, (req, res) => {
         sameSite: 'None',
         domain: ".onrender.com",
         path: "/",
+        partitioned: true
     });
 
     res.json({ message: 'Вы вышли из системы' });
