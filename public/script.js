@@ -46,27 +46,26 @@ document.addEventListener("DOMContentLoaded", function() {
     cartDropdown.prepend(closeCartButton); // Добавляем крестик в начало содержимого
 });
 document.addEventListener("DOMContentLoaded", function () {
-    const cookieBanner = document.createElement("div");
-    cookieBanner.id = "cookie-banner";
-    cookieBanner.innerHTML = `
-        <div class="cookie-container">
-            <p>Мы используем cookies для улучшения работы сайта. Продолжая пользоваться сайтом, вы соглашаетесь с нашей <a href="/privacy-policy">политикой</a>.</p>
-            <button id="accept-cookies">Принять</button>
-        </div>
-    `;
-    document.body.appendChild(cookieBanner);
-
-    const acceptButton = document.getElementById("accept-cookies");
-
-    acceptButton.addEventListener("click", function () {
-        localStorage.setItem("cookiesAccepted", "true");
-        cookieBanner.style.display = "none";
-    });
-
-    if (localStorage.getItem("cookiesAccepted") === "true") {
-        cookieBanner.style.display = "none";
+    if (!localStorage.getItem("cookiesAccepted")) {
+        showCookieBanner();
     }
 });
+
+function showCookieBanner() {
+    const banner = document.createElement("div");
+    banner.innerHTML = `
+        <div id="cookie-banner" style="position: fixed; bottom: 0; width: 100%; background: black; color: white; padding: 10px; text-align: center; z-index: 1000;">
+            <p>Мы используем cookies для улучшения работы сайта они позволяют оставаться в аккаунте дольше, так как мы передаёт данные с помощью них.<button id="acceptCookies" style="margin-left: 10px;">Принять</button></p>
+        </div>
+    `;
+    document.body.appendChild(banner);
+
+    document.getElementById("acceptCookies").addEventListener("click", function () {
+        localStorage.setItem("cookiesAccepted", "true");
+        banner.remove();
+    });
+}
+
 document.addEventListener("DOMContentLoaded", function () {
     if (localStorage.getItem("cookiesAccepted") === "true") {
         const token = localStorage.getItem("token"); // Получаем токен
