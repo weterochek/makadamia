@@ -277,14 +277,13 @@ app.post('/login', async (req, res) => {
 
     const { accessToken, refreshToken } = generateTokens(user, origin);
 
-res.cookie(cookieName, refreshToken, {
+res.cookie("refreshTokenDesktop", refreshToken, { 
     httpOnly: true,
     secure: true,
     sameSite: "None",
-    domain: origin.includes("mobile-site.onrender.com") ? "mobile-site.onrender.com" : "makadamia.onrender.com",
+    domain: "makadamia.onrender.com",  // ✅ Добавляем domain
     path: "/",
-    partitioned: true,
-    maxAge: 30 * 24 * 60 * 60 * 1000
+    maxAge: 30 * 24 * 60 * 60 * 1000 // 30 дней
 });
     res.json({ accessToken });
 });
