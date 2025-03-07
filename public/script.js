@@ -2,17 +2,16 @@ let cart = {};
 
 window.onload = function () {
     const userAgent = navigator.userAgent.toLowerCase();
+    const currentURL = window.location.href;
 
-    console.log("User-Agent: ", userAgent);
+    if (sessionStorage.getItem("redirected")) return; // ✅ Проверка на зацикливание редиректа
 
-    if (userAgent.includes("mobile")) {
-        if (!window.location.href.includes("mobile-site.onrender.com")) {
-            window.location.href = "https://mobile-site.onrender.com";
-        }
-    } else {
-        if (!window.location.href.includes("makadamia.onrender.com")) {
-            window.location.href = "https://makadamia.onrender.com";
-        }
+    if (userAgent.includes("mobile") && !currentURL.includes("mobile-site.onrender.com")) {
+        sessionStorage.setItem("redirected", "true"); 
+        window.location.href = "https://mobile-site.onrender.com";
+    } else if (!userAgent.includes("mobile") && !currentURL.includes("makadamia.onrender.com")) {
+        sessionStorage.setItem("redirected", "true"); 
+        window.location.href = "https://makadamia.onrender.com";
     }
 };
 
