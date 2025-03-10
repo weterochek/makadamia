@@ -372,17 +372,22 @@ function getTokenExp(token) {
 
 
 async function refreshAccessToken() {
-    const refreshUrl = window.location.origin + "/refresh"; // ✅ Используем текущий сервер
+    const refreshUrl = window.location.origin + "/refresh";
 
     try {
-        const response = await fetch(refreshUrl, { // Теперь сервер определяется автоматически
+        const response = await fetch(refreshUrl, {
             method: "POST",
             credentials: "include"
         });
 
+        if (response.status === 401) {
+            console.warn("❌ Сервер вернул 401. Разлогиниваем пользователя.");
+            logout();
+            return null;
+        }
+
         if (!response.ok) {
-            console.warn("❌ Ошибка обновления токена:", response.status);
-            logout(); // Выход из системы при неудаче
+            console.warn(`⚠️ Ошибка обновления токена: ${response.status}`);
             return null;
         }
 
@@ -395,7 +400,6 @@ async function refreshAccessToken() {
     }
 }
 
-
 function isTokenExpired(token) {
     try {
         const payload = JSON.parse(atob(token.split(".")[1])); 
@@ -406,17 +410,21 @@ function isTokenExpired(token) {
 }
 
 // Запускаем проверку токена раз в минуту
-setInterval(() => { 
-    const token = localStorage.getItem("token"); 
+setInterval(async () => { 
+    let token = localStorage.getItem("token"); 
     if (!token) return;
 
     const exp = getTokenExp(token);
     const now = Math.floor(Date.now() / 1000);
 
-    // 🔄 Обновляем за 5 минут до истечения
     if (exp && (exp - now) < 300) { 
         console.log("🔄 Токен скоро истечёт, обновляем...");
-        refreshAccessToken();
+        token = await refreshAccessToken();
+
+        if (!token) {
+            console.warn("❌ Ошибка при обновлении токена. Останавливаем обновления.");
+            clearInterval(this);
+        }
     }
 }, 60000);
 
