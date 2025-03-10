@@ -373,21 +373,28 @@ function getTokenExp(token) {
 
 async function refreshAccessToken() {
     try {
+        console.log("🔄 Отправляем запрос на обновление токена...");
         const response = await fetch("https://makadamia.onrender.com/refresh", {
             method: "POST",
-            credentials: "include",
+            credentials: "include", // Важно для передачи `refreshToken`
         });
 
         if (!response.ok) {
-            console.warn("❌ Не удалось обновить токен.");
+            console.warn(`❌ Ошибка обновления токена: ${response.status}`);
             sessionStorage.setItem("authFailed", "true");
             return null;
         }
 
         const data = await response.json();
         if (data.accessToken) {
+            console.log("✅ Токен успешно обновлён:", data.accessToken);
             localStorage.setItem("token", data.accessToken);
+            localStorage.setItem("accessToken", data.accessToken);
             return data.accessToken;
+        } else {
+            console.warn("⚠️ Сервер не вернул новый `accessToken`.");
+            sessionStorage.setItem("authFailed", "true");
+            return null;
         }
     } catch (error) {
         console.error("❌ Ошибка при обновлении токена:", error);
@@ -395,6 +402,7 @@ async function refreshAccessToken() {
         return null;
     }
 }
+
 
 function isTokenExpired(token) {
     if (!token) return true; // Если токена нет, он считается истекшим
@@ -560,7 +568,6 @@ function openCabinet() {
    if (!token && !sessionStorage.getItem("authFailed")) {
     alert("Вы не авторизованы. Перенаправление...");
     window.location.href = "/login.html";
-}
     } else {
         // Переход на страницу личного кабинета
         window.location.href = "/account.html";
@@ -651,12 +658,11 @@ function handleAuthClick() {
         window.location.href = 'login.html'; // Если нет, перенаправляем на страницу входа
     }
 }
-window.addEventListener("storage", (event) => {
-    if (event.key === "sharedAccessTokenUpdate") {
-        const newToken = localStorage.getItem("sharedAccessToken");
-        if (newToken) {
-            localStorage.setItem("token", newToken);
-            console.log("Токен обновлён через localStorage:", newToken);
-        }
+
+// Убедитесь, что этот код в `script.js` загружен перед его вызовом в HTML
+document.addEventListener("DOMContentLoaded", function () {
+    const authButton = document.getElementById("authButton");
+    if (authButton) {
+        authButton.onclick = handleAuthClick;
     }
 });
