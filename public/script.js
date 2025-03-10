@@ -373,35 +373,29 @@ function getTokenExp(token) {
 
 async function refreshAccessToken() {
     try {
-        console.log("🔄 Отправляем запрос на обновление токена...");
-        const response = await fetch("https://makadamia.onrender.com/refresh", {
+        console.log("🔄 Запрос на обновление токена...");
+        const response = await fetch(`${window.location.origin}/refresh`, {
             method: "POST",
-            credentials: "include", // Важно для передачи `refreshToken`
+            credentials: "include",
         });
 
-        if (!response.ok) {
-            console.warn(`❌ Ошибка обновления токена: ${response.status}`);
-            sessionStorage.setItem("authFailed", "true");
-            return null;
-        }
-
         const data = await response.json();
-        if (data.accessToken) {
-            console.log("✅ Токен успешно обновлён:", data.accessToken);
+        if (response.ok) {
+            console.log("✅ Токен успешно обновлён!");
             localStorage.setItem("token", data.accessToken);
-            localStorage.setItem("accessToken", data.accessToken);
             return data.accessToken;
         } else {
-            console.warn("⚠️ Сервер не вернул новый `accessToken`.");
-            sessionStorage.setItem("authFailed", "true");
+            console.warn("❌ Ошибка обновления токена. Выход...");
+            logout();
             return null;
         }
     } catch (error) {
         console.error("❌ Ошибка при обновлении токена:", error);
-        sessionStorage.setItem("authFailed", "true");
+        logout();
         return null;
     }
 }
+
 
 
 function isTokenExpired(token) {
