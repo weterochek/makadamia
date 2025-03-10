@@ -21,10 +21,10 @@ console.log("Токен перед запросом:", localStorage.getItem("tok
 document.addEventListener("DOMContentLoaded", async function () {
     const token = localStorage.getItem("token");
 
-    if (!token || isTokenExpired(token)) {
-        console.log("🔄 Обновляем токен при входе на сайт...");
-        await refreshAccessToken();
-    }
+    if (!token && !sessionStorage.getItem("authChecked")) {
+    sessionStorage.setItem("authChecked", "true");
+    await refreshAccessToken();
+}
 
     const cartButton = document.getElementById("cartButton");
     const cartDropdown = document.getElementById("cartDropdown");
@@ -379,30 +379,22 @@ async function refreshAccessToken() {
         });
 
         if (!response.ok) {
-            console.warn("Не удалось обновить токен, требуется повторный вход.");
-            logout();
+            console.warn("❌ Не удалось обновить токен.");
+            sessionStorage.setItem("authFailed", "true");
             return null;
         }
 
         const data = await response.json();
-        console.log("✅ Новый accessToken:", data.accessToken);
-
         if (data.accessToken) {
             localStorage.setItem("token", data.accessToken);
             return data.accessToken;
-        } else {
-            console.error("❌ Сервер не вернул accessToken!");
-            logout();
-            return null;
         }
     } catch (error) {
         console.error("❌ Ошибка при обновлении токена:", error);
-        logout();
+        sessionStorage.setItem("authFailed", "true");
         return null;
     }
 }
-
-
 
 function isTokenExpired(token) {
     if (!token) return true; // Если токена нет, он считается истекшим
@@ -523,14 +515,15 @@ function checkAuthStatus() {
     }
 
     if (token && username && !isTokenExpired(token)) { 
-        console.log("✅ Пользователь авторизован, скрываем 'Вход' и показываем 'Личный кабинет'");
-        authButton.style.display = "none";
-        cabinetButton.style.display = "inline-block";
-    } else {
-        console.log("⚠️ Пользователь не авторизован, показываем 'Вход'");
-        authButton.style.display = "inline-block";
-        cabinetButton.style.display = "none";
-    }
+    console.log("✅ Пользователь авторизован");
+    authButton.style.display = "none";
+    cabinetButton.style.display = "inline-block";
+} else {
+    console.log("⚠️ Пользователь не авторизован");
+    authButton.style.display = "inline-block";
+    cabinetButton.style.display = "none";
+    sessionStorage.removeItem("authChecked"); // Чтобы снова попытаться обновить токен
+}
 }
 
 
@@ -564,9 +557,10 @@ function openCabinet() {
     const token = localStorage.getItem('token');
     const username = localStorage.getItem('username');
 
-    if (!token || !username) {
-        // Если токен отсутствует, перенаправляем на страницу входа
-        window.location.href = "/login.html";
+   if (!token && !sessionStorage.getItem("authFailed")) {
+    alert("Вы не авторизованы. Перенаправление...");
+    window.location.href = "/login.html";
+}
     } else {
         // Переход на страницу личного кабинета
         window.location.href = "/account.html";
