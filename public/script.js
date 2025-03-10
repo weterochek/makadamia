@@ -401,13 +401,17 @@ async function refreshAccessToken() {
 }
 
 function isTokenExpired(token) {
+    if (!token) return true; // Если токена нет, считаем его истекшим
+
     try {
-        const payload = JSON.parse(atob(token.split(".")[1])); 
+        const payload = JSON.parse(atob(token.split(".")[1]));
         return (Date.now() / 1000) >= payload.exp;
     } catch (e) {
+        console.error("❌ Ошибка декодирования токена:", e);
         return true;
     }
 }
+
 
 // Запускаем проверку токена раз в минуту
 setInterval(async () => { 
@@ -503,28 +507,28 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 // Проверка состояния авторизации
 function checkAuthStatus() {
-    const token = localStorage.getItem('token');
-    const username = localStorage.getItem('username');
-    const authButton = document.getElementById('authButton');
-    const cabinetButton = document.getElementById('cabinetButton');
-    const logoutButton = document.getElementById('Button');
+    const token = localStorage.getItem("token") || localStorage.getItem("accessToken");
+    const username = localStorage.getItem("username");
+    const authButton = document.getElementById("authButton");
+    const cabinetButton = document.getElementById("cabinetButton");
 
-    if (token && username && !isTokenExpired(token)) { // ✅ Проверяем, не истёк ли токен
-        authButton.style.display = 'none';
-        cabinetButton.style.display = 'inline-block';
+    if (!authButton || !cabinetButton) {
+        console.warn("❌ Не найдены кнопки 'Вход' или 'Личный кабинет'!");
+        return;
+    }
 
-        if (window.location.pathname === '/account.html' && logoutButton) {
-            logoutButton.style.display = 'inline-block';
-        }
+    if (token && username && !isTokenExpired(token)) { 
+        console.log("✅ Пользователь авторизован, скрываем 'Вход' и показываем 'Личный кабинет'");
+        authButton.style.display = "none";
+        cabinetButton.style.display = "inline-block";
     } else {
-        authButton.style.display = 'inline-block';
-        cabinetButton.style.display = 'none';
-
-        if (logoutButton) {
-            logoutButton.style.display = 'none';
-        }
+        console.log("⚠️ Пользователь не авторизован, показываем 'Вход'");
+        authButton.style.display = "inline-block";
+        cabinetButton.style.display = "none";
     }
 }
+
+
 
 // Логика для выхода
 async function logout() { 
