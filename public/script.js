@@ -380,9 +380,9 @@ async function refreshAccessToken() {
             credentials: "include"
         });
 
-        if (response.status === 401) {
-            console.warn("❌ Сервер вернул 401. Разлогиниваем пользователя.");
-            logout();
+        if (response.status === 403) {
+            console.warn("❌ Сервер вернул 403. Возможно, нет `refreshToken`.");
+            logout(); // Разлогиниваем пользователя
             return null;
         }
 
@@ -393,6 +393,7 @@ async function refreshAccessToken() {
 
         const data = await response.json();
         localStorage.setItem("token", data.accessToken);
+        localStorage.setItem("accessToken", data.accessToken);
         return data.accessToken;
     } catch (error) {
         console.error("❌ Ошибка при обновлении токена:", error);
@@ -400,12 +401,14 @@ async function refreshAccessToken() {
     }
 }
 
+
 function isTokenExpired(token) {
-    if (!token) return true; // Если токена нет, считаем его истекшим
+    if (!token) return true; // Если токена нет, он считается истекшим
 
     try {
-        const payload = JSON.parse(atob(token.split(".")[1]));
-        return (Date.now() / 1000) >= payload.exp;
+        const base64 = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"); // Исправляем base64
+        const payload = JSON.parse(atob(base64)); // Декодируем payload
+        return (Date.now() / 1000) >= payload.exp; // Проверяем срок действия
     } catch (e) {
         console.error("❌ Ошибка декодирования токена:", e);
         return true;
