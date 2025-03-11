@@ -366,38 +366,27 @@ function getTokenExp(token) {
 
 
 async function refreshAccessToken() {
-    console.log("🔄 Запрос на обновление токена...");
-
-    const isMobile = window.location.href.includes("makadamia.onrender.com");
-    const refreshUrl = isMobile 
-        ? "https://mobile-site.onrender.com/refresh"  // 📌 Если мобильная версия, отправляем запрос на мобильный сервер
-        : "https://makadamia.onrender.com/refresh";   // 📌 Если ПК-версия, отправляем на десктопный сервер
-
     try {
-        const response = await fetch(refreshUrl, {
+        console.log("🔄 Отправляем запрос на обновление токена...");
+        const response = await fetch(`${window.location.origin}/refresh`, {
             method: "POST",
-            credentials: "include"
+            credentials: "include"  // Убедимся, что куки передаются
         });
 
         if (!response.ok) {
-            console.warn(`❌ Ошибка обновления токена (${response.status})`);
+            console.warn("❌ Ошибка обновления токена:", response.status);
             return null;
         }
 
         const data = await response.json();
-        console.log("✅ Новый токен получен:", data.accessToken);
-
-        if (data.accessToken) {
-            localStorage.setItem("token", data.accessToken);
-        }
-
+        console.log("✅ Новый accessToken:", data.accessToken);
+        localStorage.setItem("accessToken", data.accessToken);
         return data.accessToken;
-    } catch (error) {
-        console.error("❌ Ошибка при обновлении токена:", error);
+    } catch (error) {  
+        console.error("Ошибка при обновлении токена:", error);
         return null;
     }
 }
-
 
 function isTokenExpired(token) {
     if (!token) return true; // Если токена нет, он считается истекшим
