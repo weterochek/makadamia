@@ -324,8 +324,8 @@ function getCookie(name) {
 }
 
 async function fetchWithAuth(url, options = {}) {
-    let token = localStorage.getItem("token");
-    const fullUrl = window.location.origin + url; // ✅ Теперь запрос идёт на текущий сервер
+    let token = localStorage.getItem("accessToken");
+    console.log("🔍 Текущий accessToken:", token);  // ✅ Дебаг
 
     if (!token) {
         console.warn("❌ Нет accessToken, пробуем обновить...");
@@ -333,31 +333,26 @@ async function fetchWithAuth(url, options = {}) {
         if (!token) return null;
     }
 
-    let res = await fetch(fullUrl, {
+    let response = await fetch(url, {
         ...options,
-        credentials: "include",
         headers: {
             ...options.headers,
-            Authorization: `Bearer ${token}`
-        }
+            Authorization: `Bearer ${token}`,
+        },
     });
 
-    if (res.status === 401) {
+    if (response.status === 401) {
         console.warn("🔄 Токен истёк, пробуем обновить...");
         token = await refreshAccessToken();
-        if (!token) return res;
+        if (!token) return response;
 
-        return fetch(fullUrl, {
+        return fetch(url, {
             ...options,
-            credentials: "include",
-            headers: {
-                ...options.headers,
-                Authorization: `Bearer ${token}`
-            }
+            headers: { ...options.headers, Authorization: `Bearer ${token}` },
         });
     }
 
-    return res;
+    return response;
 }
 
 function getTokenExp(token) {
