@@ -260,69 +260,75 @@ app.post('/register', async (req, res) => {
 });
 
 // Авторизация пользователя
-// Авторизация пользователя
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
-    const origin = req.headers.origin;
+    const origin = req.headers.origin;  // Получаем источник запроса
 
+    if (origin !== "https://makadamia.onrender.com") {
+        return res.status(403).json({ message: "Недопустимый источник запроса" });
+    }
+
+    // Ищем пользователя
     const user = await User.findOne({ username });
     if (!user || !(await bcrypt.compare(password, user.password))) {
         return res.status(401).json({ message: 'Неверные данные' });
     }
 
-    let cookieName;
-    if (origin === "https://makadamia.onrender.com") {
-        cookieName = "refreshTokenDesktop";
-    } else if (origin === "https://mobile-site.onrender.com") {
-        cookieName = "refreshTokenMobile";
-    } else {
+    // Генерация токенов
+    const { accessToken, refreshToken } = generateTokens(user, origin);
+
+    // Устанавливаем cookie для refreshToken
+    res.cookie("refreshTokenDesktop", refreshToken, { 
+        httpOnly: true,
+        secure: true,
+        sameSite: "None",
+        domain: ".onrender.com",
+        path: "/",
+        maxAge: 30 * 24 * 60 * 60 * 1000  // 30 дней
+    });
+
+    res.json({ accessToken });
+});
+
+
+// Обработка запроса на обновление токена для ПК-версии
+app.post('/refresh', async (req, res) => {
+    console.log("🔄 Запрос на обновление токена получен.");
+
+    const refreshToken = req.cookies.refreshTokenDesktop;  // Получаем refreshTokenDesktop
+    const origin = req.headers.origin;
+
+    if (origin !== "https://makadamia.onrender.com") {
         return res.status(403).json({ message: "Недопустимый источник запроса" });
     }
 
-    const { accessToken, refreshToken } = generateTokens(user, origin);
-
-res.cookie("refreshTokenDesktop", refreshToken, { 
-    httpOnly: true,
-    secure: true,       // ✅ Требует HTTPS
-    sameSite: "None",   // ✅ Для кросс-доменных запросов
-    domain: ".onrender.com",  // ✅ Теперь работает на всех поддоменах
-    path: "/",
-    maxAge: 30 * 24 * 60 * 60 * 1000 // 30 дней
-});
-    res.json({ accessToken });
-});
-app.post('/refresh', async (req, res) => {
-    console.log("🔄 Запрос на обновление токена получен.");
-    console.log("Текущие куки:", req.cookies);  // ✅ Логируем все куки
-    const refreshToken = req.cookies.refreshTokenDesktop;
     if (!refreshToken) {
-        console.warn("❌ Нет refreshTokenDesktop, отправляем 401.");
+        console.warn("❌ Нет refreshToken, отправляем 401.");
         return res.status(401).json({ message: "Не авторизован" });
     }
 
     jwt.verify(refreshToken, REFRESH_SECRET, async (err, decodedUser) => {
-        if (err) {
-            console.warn("❌ Недействительный refresh-токен:", err.message);
+        if (err || decodedUser.site !== origin) {
+            console.warn("❌ Недействительный refresh-токен, отправляем 403.");
             return res.status(403).json({ message: "Недействительный refresh-токен" });
         }
 
-        console.log("✅ Refresh-токен действителен, создаём новый access-токен.");
         const user = await User.findById(decodedUser.id);
         if (!user) {
             return res.status(404).json({ message: "Пользователь не найден" });
         }
 
-        const { accessToken, refreshToken: newRefreshToken } = generateTokens(user, req.headers.origin);
+        console.log("✅ Refresh-токен действителен, создаём новый access-токен.");
+        const { accessToken, refreshToken: newRefreshToken } = generateTokens(user, origin);
 
-        console.log("🔄 Новый refreshToken:", newRefreshToken);
-
+        // Обновляем refreshToken в куках
         res.cookie("refreshTokenDesktop", newRefreshToken, { 
             httpOnly: true,
             secure: true,
             sameSite: "None",
             domain: ".onrender.com",
             path: "/",
-            maxAge: 30 * 24 * 60 * 60 * 1000
+            maxAge: 30 * 24 * 60 * 60 * 1000  // 30 дней
         });
 
         res.json({ accessToken });
