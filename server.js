@@ -293,9 +293,7 @@ res.cookie("refreshTokenDesktop", refreshToken, {
 });
 app.post('/refresh', async (req, res) => {
     console.log("🔄 Запрос на обновление токена получен.");
-
-    console.log("🔍 Все куки:", req.cookies);  // ✅ Дебаг
-
+    console.log("Текущие куки:", req.cookies);  // ✅ Логируем все куки
     const refreshToken = req.cookies.refreshTokenDesktop;
     if (!refreshToken) {
         console.warn("❌ Нет refreshTokenDesktop, отправляем 401.");
