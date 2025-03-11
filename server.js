@@ -213,7 +213,7 @@ function generateTokens(user, site) {
     const issuedAt = Math.floor(Date.now() / 1000);
     
     const accessToken = jwt.sign(
-        { id: user._id, username: user.username, iat: issuedAt },
+        { id: user._id, username: user.username, site, iat: issuedAt },
         JWT_SECRET,
         { expiresIn: "30m" }  // ⏳ Access-токен на 30 минут
     );
@@ -346,7 +346,7 @@ app.post('/refresh', async (req, res) => {
 
 async function refreshAccessToken() {
     try {
-        const response = await fetch("https://makadamia.onrender.com/refresh", {
+        const response = await fetch(`${req.headers.origin}/refresh`, {
             method: "POST",
             credentials: "include"
         });
@@ -357,10 +357,10 @@ async function refreshAccessToken() {
         }
 
         jwt.verify(refreshToken, REFRESH_SECRET, async (err, decodedUser) => {
-        if (err) {
-            console.warn("❌ Недействительный refresh-токен, отправляем 403.");
-            return res.status(403).json({ message: "Недействительный refresh-токен" });
-        }
+    if (err || decodedUser.site !== req.headers.origin) {
+        console.warn("❌ Недействительный refresh-токен, отправляем 403.");
+        return res.status(403).json({ message: "Недействительный refresh-токен" });
+    }
 
         const user = await User.findById(decodedUser.id);
         if (!user) {
@@ -441,19 +441,6 @@ app.post('/-token', (req, res) => {
 // Приватный маршрут
 app.get('/private-route', authMiddleware, (req, res) => {
   res.json({ message: `Добро пожаловать, пользователь ${req.user.id}` });
-});
-app.get('/refresh', async (req, res) => {
-    const refreshToken = req.cookies.refreshToken;
-    if (!refreshToken) return res.status(401).json({ error: "Нет refreshToken" });
-
-    try {
-        const payload = jwt.verify(refreshToken, REFRESH_SECRET);
-        const newAccessToken = jwt.sign({ id: payload.id, username: payload.username }, JWT_SECRET, { expiresIn: '2h' });
-
-        res.json({ accessToken: newAccessToken });
-    } catch (error) {
-        res.status(403).json({ error: "RefreshToken недействителен" });
-    }
 });
 app.get('/account', authMiddleware, async (req, res) => {
     try {
