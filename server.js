@@ -19,17 +19,21 @@ const allowedOrigins = [
 console.log("Отправка запроса на /refresh");
 
 const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) { // Разрешаем запросы без origin
-      callback(null, true);
-    } else {
-      console.warn(`❌ Недопустимый источник запроса: ${origin}`);
-      callback(new Error("Недопустимый источник запроса"));
-    }
-  },
-  credentials: true,
+    origin: (origin, callback) => {
+        const allowedOrigins = [
+            "https://makadamia.onrender.com",
+            "https://mobile-site.onrender.com",
+            "http://localhost:3000"
+        ];
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error("Not allowed by CORS"));
+        }
+    },
+    credentials: true, // Обязательно для передачи cookies!
 };
-
+app.use(cors(corsOptions));
 // Используем CORS с настройками
 app.use(cors(corsOptions));
 app.use(cookieParser());
@@ -281,7 +285,6 @@ res.cookie("refreshTokenDesktop", refreshToken, {
     httpOnly: true,
     secure: true,
     sameSite: "None",
-    domain: "makadamia.onrender.com",  // ✅ Добавляем domain
     path: "/",
     maxAge: 30 * 24 * 60 * 60 * 1000 // 30 дней
 });
