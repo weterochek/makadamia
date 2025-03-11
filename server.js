@@ -356,28 +356,40 @@ async function refreshAccessToken() {
             return null;
         }
 
-        const data = await response.json();
-        console.log("✅ Новый accessToken получен:", data.accessToken);
-
-        if (data.accessToken) {
-            localStorage.setItem("token", data.accessToken);
+        jwt.verify(refreshToken, REFRESH_SECRET, async (err, decodedUser) => {
+        if (err) {
+            console.warn("❌ Недействительный refresh-токен, отправляем 403.");
+            return res.status(403).json({ message: "Недействительный refresh-токен" });
         }
 
-        return data.accessToken;
-    } catch (error) {
-        console.error("❌ Ошибка при обновлении токена:", error);
-        return null;
-    }
-}
+        const user = await User.findById(decodedUser.id);
+        if (!user) {
+            return res.status(404).json({ message: "Пользователь не найден" });
+        }
 
+        const { accessToken, refreshToken: newRefreshToken } = generateTokens(user, req.headers.origin);
+
+        console.log("✅ Новый access-токен сгенерирован.");
+        
+        res.cookie(decodedUser.site === "https://makadamia.onrender.com" ? "refreshTokenDesktop" : "refreshTokenMobile", newRefreshToken, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "None",
+            path: "/",
+            partitioned: true
+        });
+
+        res.json({ accessToken });
+    });
+}
 app.post('/logout', authMiddleware, (req, res) => {
     const origin = req.headers.origin;
 
     let cookieName;
     if (origin === "https://makadamia.onrender.com") {
-        cookieName = "refreshTokenDesktop";
+        cookieName = "TokenDesktop";
     } else if (origin === "https://mobile-site.onrender.com") {
-        cookieName = "refreshTokenMobile";
+        cookieName = "TokenMobile";
     } else {
         return res.status(403).json({ message: "Недопустимый источник запроса" });
     }
@@ -410,15 +422,15 @@ async function logout() {
 
 
 // Обновление токена
-app.post('/refresh-token', (req, res) => {
-  const { token: refreshToken } = req.body;
+app.post('/-token', (req, res) => {
+  const { token: Token } = req.body;
 
-  if (!refreshToken) {
+  if (!Token) {
     return res.status(403).json({ message: 'Токен обновления не предоставлен' });
   }
 
   try {
-    const user = jwt.verify(refreshToken, JWT_SECRET);
+    const user = jwt.verify(Token, JWT_SECRET);
     const newAccessToken = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '1h' });
     res.status(200).json({ token: newAccessToken });
   } catch (err) {
