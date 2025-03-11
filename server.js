@@ -344,44 +344,23 @@ app.post('/refresh', async (req, res) => {
     });
 });
 
-async function refreshAccessToken(req, res) {
+async function refreshAccessToken() {
     try {
-        console.log("🔄 Запрос на обновление токена...");
-
-        const refreshToken = req.cookies.refreshTokenDesktop || req.cookies.refreshTokenMobile;
-        if (!refreshToken) {
-            console.warn("❌ Нет refresh-токена, отправляем 401.");
-            return res.status(401).json({ message: "Не авторизован" });
-        }
-
-        const decodedUser = jwt.verify(refreshToken, REFRESH_SECRET);
-        if (!decodedUser || decodedUser.site !== req.headers.origin) {
-            console.warn("❌ Недействительный refresh-токен, отправляем 403.");
-            return res.status(403).json({ message: "Недействительный refresh-токен" });
-        }
-
-        const user = await User.findById(decodedUser.id);
-        if (!user) {
-            return res.status(404).json({ message: "Пользователь не найден" });
-        }
-
-        const { accessToken, refreshToken: newRefreshToken } = generateTokens(user, req.headers.origin);
-
-        console.log("✅ Новый access-токен сгенерирован.");
-
-        res.cookie(decodedUser.site === "https://makadamia.onrender.com" ? "refreshTokenDesktop" : "refreshTokenMobile", newRefreshToken, {
-            httpOnly: true,
-            secure: true,
-            sameSite: "None",
-            path: "/",
-            partitioned: true
+        const response = await fetch(`${window.location.origin}/refresh`, { // ✅ Заменил req.headers.origin
+            method: "POST",
+            credentials: "include"
         });
 
-        return res.json({ accessToken });
+        if (!response.ok) {
+            console.warn("❌ Ошибка обновления токена:", response.status);
+            return null;
+        }
 
-    } catch (error) {  // ✅ Добавляем обработку ошибок
-        console.error("❌ Ошибка при обновлении токена:", error);
-        return res.status(500).json({ message: "Ошибка сервера", error: error.message });
+        const data = await response.json(); // ✅ Получаем новый accessToken
+        return data.accessToken; // ✅ Возвращаем токен вместо res.json()
+    } catch (error) {  // ✅ Добавили catch
+        console.error("Ошибка при обновлении токена:", error);
+        return null;
     }
 }
 
