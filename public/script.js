@@ -325,7 +325,6 @@ function getCookie(name) {
 
 async function fetchWithAuth(url, options = {}) {
     let token = localStorage.getItem("accessToken");
-    console.log("🔍 Текущий accessToken:", token);  // ✅ Дебаг
 
     if (!token) {
         console.warn("❌ Нет accessToken, пробуем обновить...");
@@ -333,18 +332,18 @@ async function fetchWithAuth(url, options = {}) {
         if (!token) return null;
     }
 
-    let response = await fetch(url, {
+    const res = await fetch(url, {
         ...options,
         headers: {
             ...options.headers,
-            Authorization: `Bearer ${token}`,
-        },
+            Authorization: `Bearer ${token}`  // Добавляем токен в заголовки
+        }
     });
 
-    if (response.status === 401) {
+    if (res.status === 401) {
         console.warn("🔄 Токен истёк, пробуем обновить...");
         token = await refreshAccessToken();
-        if (!token) return response;
+        if (!token) return res;
 
         return fetch(url, {
             ...options,
@@ -352,8 +351,9 @@ async function fetchWithAuth(url, options = {}) {
         });
     }
 
-    return response;
+    return res;
 }
+
 
 function getTokenExp(token) {
     try {
@@ -367,10 +367,9 @@ function getTokenExp(token) {
 
 async function refreshAccessToken() {
     try {
-        console.log("🔄 Отправляем запрос на обновление токена...");
-        const response = await fetch(`${window.location.origin}/refresh`, {
+        const response = await fetch("https://makadamia.onrender.com/refresh", {
             method: "POST",
-            credentials: "include"  // Убедимся, что куки передаются
+            credentials: "include",  // Для отправки cookies
         });
 
         if (!response.ok) {
@@ -379,14 +378,34 @@ async function refreshAccessToken() {
         }
 
         const data = await response.json();
-        console.log("✅ Новый accessToken:", data.accessToken);
+        console.log("✅ Новый access токен:", data.accessToken);
+
         localStorage.setItem("accessToken", data.accessToken);
         return data.accessToken;
-    } catch (error) {  
-        console.error("Ошибка при обновлении токена:", error);
+    } catch (error) {
+        console.error("❌ Ошибка при обновлении токена:", error);
         return null;
     }
 }
+
+function generateTokens(user, site) {
+    const issuedAt = Math.floor(Date.now() / 1000);
+    
+    const accessToken = jwt.sign(
+        { id: user._id, username: user.username, iat: issuedAt },
+        JWT_SECRET,
+        { expiresIn: "30m" }  // ⏳ Access-токен на 30 минут
+    );
+
+    const refreshToken = jwt.sign(
+        { id: user._id, username: user.username, site, iat: issuedAt },
+        REFRESH_SECRET,
+        { expiresIn: "7d" }  // 🔄 Refresh-токен на 7 дней
+    );
+
+    return { accessToken, refreshToken };
+}
+
 
 function isTokenExpired(token) {
     if (!token) return true; // Если токена нет, он считается истекшим
