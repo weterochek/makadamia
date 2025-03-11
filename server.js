@@ -344,23 +344,21 @@ app.post('/refresh', async (req, res) => {
     });
 });
 
-async function refreshAccessToken() {
+async function refreshAccessToken(req, res) {
     try {
-        const response = await fetch(`${req.headers.origin}/refresh`, {
-            method: "POST",
-            credentials: "include"
-        });
+        console.log("🔄 Запрос на обновление токена...");
 
-        if (!response.ok) {
-            console.warn("❌ Ошибка обновления токена:", response.status);
-            return null;
+        const refreshToken = req.cookies.refreshTokenDesktop || req.cookies.refreshTokenMobile;
+        if (!refreshToken) {
+            console.warn("❌ Нет refresh-токена, отправляем 401.");
+            return res.status(401).json({ message: "Не авторизован" });
         }
 
-        jwt.verify(refreshToken, REFRESH_SECRET, async (err, decodedUser) => {
-    if (err || decodedUser.site !== req.headers.origin) {
-        console.warn("❌ Недействительный refresh-токен, отправляем 403.");
-        return res.status(403).json({ message: "Недействительный refresh-токен" });
-    }
+        const decodedUser = jwt.verify(refreshToken, REFRESH_SECRET);
+        if (!decodedUser || decodedUser.site !== req.headers.origin) {
+            console.warn("❌ Недействительный refresh-токен, отправляем 403.");
+            return res.status(403).json({ message: "Недействительный refresh-токен" });
+        }
 
         const user = await User.findById(decodedUser.id);
         if (!user) {
@@ -370,7 +368,7 @@ async function refreshAccessToken() {
         const { accessToken, refreshToken: newRefreshToken } = generateTokens(user, req.headers.origin);
 
         console.log("✅ Новый access-токен сгенерирован.");
-        
+
         res.cookie(decodedUser.site === "https://makadamia.onrender.com" ? "refreshTokenDesktop" : "refreshTokenMobile", newRefreshToken, {
             httpOnly: true,
             secure: true,
@@ -379,9 +377,14 @@ async function refreshAccessToken() {
             partitioned: true
         });
 
-        res.json({ accessToken });
-    });
+        return res.json({ accessToken });
+
+    } catch (error) {  // ✅ Добавляем обработку ошибок
+        console.error("❌ Ошибка при обновлении токена:", error);
+        return res.status(500).json({ message: "Ошибка сервера", error: error.message });
+    }
 }
+
 app.post('/logout', authMiddleware, (req, res) => {
     const origin = req.headers.origin;
 
@@ -454,9 +457,9 @@ app.get('/account', authMiddleware, async (req, res) => {
         }
 
         res.json({ username: user.username, name: user.name, city: user.city });
-    } catch (error) {
-        console.error("❌ Ошибка загрузки аккаунта:", error);
-        res.status(500).json({ message: "Ошибка сервера" });
+    } catch (error) {  // ✅ Добавляем обработку ошибки
+        console.error("Ошибка при загрузке аккаунта:", error);
+        res.status(500).json({ message: "Ошибка сервера", error: error.message });
     }
 });
 app.put('/account', authMiddleware, async (req, res) => {
