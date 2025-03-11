@@ -283,8 +283,9 @@ app.post('/login', async (req, res) => {
 
 res.cookie("refreshTokenDesktop", refreshToken, { 
     httpOnly: true,
-    secure: true,
-    sameSite: "None",
+    secure: true,       // ✅ Требует HTTPS
+    sameSite: "None",   // ✅ Для кросс-доменных запросов
+    domain: ".onrender.com",  // ✅ Теперь работает на всех поддоменах
     path: "/",
     maxAge: 30 * 24 * 60 * 60 * 1000 // 30 дней
 });
@@ -293,60 +294,48 @@ res.cookie("refreshTokenDesktop", refreshToken, {
 app.post('/refresh', async (req, res) => {
     console.log("🔄 Запрос на обновление токена получен.");
 
-    const refreshTokenDesktop = req.cookies.refreshTokenDesktop;
-    const refreshTokenMobile = req.cookies.refreshTokenMobile;
-    const origin = req.headers.origin;
+    console.log("🔍 Все куки:", req.cookies);  // ✅ Дебаг
 
-    let refreshToken;
-    let cookieName;
-
-    if (origin === "https://makadamia.onrender.com") {
-        refreshToken = refreshTokenDesktop;
-        cookieName = "refreshTokenDesktop";
-    } else if (origin === "https://mobile-site.onrender.com") {
-        refreshToken = refreshTokenMobile;
-        cookieName = "refreshTokenMobile";
-    } else {
-        return res.status(403).json({ message: "Недопустимый источник запроса" });
-    }
-
+    const refreshToken = req.cookies.refreshTokenDesktop;
     if (!refreshToken) {
-        console.warn("❌ Нет refresh-токена, отправляем 401.");
+        console.warn("❌ Нет refreshTokenDesktop, отправляем 401.");
         return res.status(401).json({ message: "Не авторизован" });
     }
 
     jwt.verify(refreshToken, REFRESH_SECRET, async (err, decodedUser) => {
-        if (err || decodedUser.site !== origin) {
-            console.warn("❌ Недействительный refresh-токен, отправляем 403.");
+        if (err) {
+            console.warn("❌ Недействительный refresh-токен:", err.message);
             return res.status(403).json({ message: "Недействительный refresh-токен" });
         }
 
+        console.log("✅ Refresh-токен действителен, создаём новый access-токен.");
         const user = await User.findById(decodedUser.id);
         if (!user) {
             return res.status(404).json({ message: "Пользователь не найден" });
         }
 
-        console.log("✅ Refresh-токен действителен, создаём новый access-токен.");
-        const { accessToken, refreshToken: newRefreshToken } = generateTokens(user, origin);
+        const { accessToken, refreshToken: newRefreshToken } = generateTokens(user, req.headers.origin);
 
-        console.log(`🔄 Новый ${cookieName}:`, newRefreshToken);
+        console.log("🔄 Новый refreshToken:", newRefreshToken);
 
-        res.cookie(cookieName, newRefreshToken, {
-    httpOnly: true,
-    secure: true,
-    sameSite: "None",
-    domain: origin.includes("mobile-site.onrender.com") ? "mobile-site.onrender.com" : "makadamia.onrender.com",
-    path: "/",
-    partitioned: true,
-    maxAge: 30 * 24 * 60 * 60 * 1000
-});
+        res.cookie("refreshTokenDesktop", newRefreshToken, { 
+            httpOnly: true,
+            secure: true,
+            sameSite: "None",
+            domain: ".onrender.com",
+            path: "/",
+            maxAge: 30 * 24 * 60 * 60 * 1000
+        });
+
         res.json({ accessToken });
     });
 });
 
+
 async function refreshAccessToken() {
     try {
-        const response = await fetch(`${window.location.origin}/refresh`, { // ✅ Заменил req.headers.origin
+        console.log("🔄 Отправляем запрос на обновление токена...");
+        const response = await fetch(`${window.location.origin}/refresh`, { // ✅ Автоматически берёт URL
             method: "POST",
             credentials: "include"
         });
@@ -357,7 +346,9 @@ async function refreshAccessToken() {
         }
 
         const data = await response.json(); // ✅ Получаем новый accessToken
-        return data.accessToken; // ✅ Возвращаем токен вместо res.json()
+        console.log("✅ Новый accessToken:", data.accessToken);
+        localStorage.setItem("accessToken", data.accessToken);
+        return data.accessToken;
     } catch (error) {  // ✅ Добавили catch
         console.error("Ошибка при обновлении токена:", error);
         return null;
