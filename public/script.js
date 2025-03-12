@@ -552,27 +552,27 @@ app.post('/logout', authMiddleware, (req, res) => {
 });
 
 // Логика для выхода
-async function logout() {
-    try {
-        const response = await fetch("/logout", {
-            method: "POST",
-            credentials: "include"
+async function logout() { 
+    try { 
+        await fetch("https://makadamia.onrender.com/logout", { 
+            method: "POST", 
+            credentials: "include" 
         });
 
-        if (!response.ok) {
-            console.error("❌ Ошибка при выходе с сервера");
-        }
-
-        localStorage.removeItem("token");
-        localStorage.removeItem("username");
-        sessionStorage.clear();
-
+        // Удаляем токены
+        document.cookie = "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
         document.cookie = "refreshTokenDesktop=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
         document.cookie = "refreshTokenMobile=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+        
+        // Очищаем локальное хранилище
+        localStorage.removeItem("token");
+        localStorage.removeItem("cart");
+        localStorage.removeItem("username");
 
+        // Перенаправление на страницу входа
         window.location.href = "/index.html";
-    } catch (error) {
-        console.error("Ошибка при выходе:", error);
+    } catch (error) { 
+        console.error("Ошибка выхода:", error); 
     }
 }
 // Переход на страницу личного кабинета
