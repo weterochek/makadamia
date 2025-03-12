@@ -367,16 +367,14 @@ function getTokenExp(token) {
 
 async function refreshAccessToken() {
     console.log("🔄 Запрос на обновление токена...");
-    
-    const isMobile = window.location.hostname.includes("mobile-site");
-    const refreshUrl = isMobile
-        ? "https://mobile-site.onrender.com/refresh"
-        : "https://makadamia.onrender.com/refresh";
+
+    // Make sure the URL corresponds to the PC version
+    const refreshUrl = "https://makadamia.onrender.com/refresh"; // Desktop refresh URL only
 
     try {
         const response = await fetch(refreshUrl, {
             method: "POST",
-            credentials: "include"
+            credentials: "include" // Make sure credentials are included with the request
         });
 
         if (!response.ok) {
@@ -388,10 +386,7 @@ async function refreshAccessToken() {
         console.log("✅ Новый токен получен:", data.accessToken);
 
         if (data.accessToken) {
-            localStorage.setItem("token", data.accessToken);
-            console.log("✅ Токен сохранен в localStorage:", localStorage.getItem("token"));
-        } else {
-            console.warn("⚠️ Токен не получен!");
+            localStorage.setItem("token", data.accessToken); // Save the new token to localStorage
         }
 
         return data.accessToken;
