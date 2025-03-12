@@ -369,10 +369,6 @@ async function refreshAccessToken() {
     console.log("🔄 Запрос на обновление токена...");
 
     const isMobile = window.location.href.includes("makadamia.onrender.com");
-    const refreshUrl = isMobile 
-        ? "https://mobile-site.onrender.com/refresh"  // 📌 Если мобильная версия, отправляем запрос на мобильный сервер
-        : "https://makadamia.onrender.com/refresh";   // 📌 Если ПК-версия, отправляем на десктопный сервер
-
     try {
         const response = await fetch(refreshUrl, {
             method: "POST",
