@@ -31,7 +31,7 @@ const corsOptions = {
             callback(new Error("Not allowed by CORS"));
         }
     },
-    credentials: true, // Обязательно для передачи cookies!
+    credentials: true, // Обязательно для передачи s!
 };
 app.use(cors(corsOptions));
 // Используем CORS с настройками
