@@ -369,6 +369,8 @@ async function refreshAccessToken() {
     console.log("🔄 Запрос на обновление токена...");
 
     const isMobile = window.location.href.includes("makadamia.onrender.com");
+    const refreshUrl = "/refresh"; // ✅ Объявляем переменную
+
     try {
         const response = await fetch(refreshUrl, {
             method: "POST",
@@ -393,6 +395,7 @@ async function refreshAccessToken() {
         return null;
     }
 }
+
 
 function generateTokens(user, site) {
     const issuedAt = Math.floor(Date.now() / 1000);
