@@ -366,15 +366,12 @@ function getTokenExp(token) {
 
 
 async function refreshAccessToken() {
-    console.log("🔄 Запрос на обновление токена...");
-
-    // Make sure the URL corresponds to the PC version
-    const refreshUrl = "https://makadamia.onrender.com/refresh"; // Desktop refresh URL only
+    const refreshUrl = "https://makadamia.onrender.com/refresh";  // ПК сервер
 
     try {
         const response = await fetch(refreshUrl, {
             method: "POST",
-            credentials: "include" // Make sure credentials are included with the request
+            credentials: "include"  // Включаем cookies
         });
 
         if (!response.ok) {
@@ -386,7 +383,7 @@ async function refreshAccessToken() {
         console.log("✅ Новый токен получен:", data.accessToken);
 
         if (data.accessToken) {
-            localStorage.setItem("token", data.accessToken); // Save the new token to localStorage
+            localStorage.setItem("token", data.accessToken); // Сохраняем токен в localStorage
         }
 
         return data.accessToken;
@@ -539,33 +536,20 @@ function checkAuthStatus() {
 }
 
 // Логика для выхода
+// Логика для выхода
 async function logout() {
-    try {
-        // Send a request to the logout endpoint
-        const response = await fetch("https://makadamia.onrender.com/logout", {
-            method: "POST",
-            credentials: "include" // Ensure credentials are included in the request
-        });
+    const response = await fetch("/logout", { method: "POST", credentials: "include" });
 
-        // If logout fails, handle the error
-        if (!response.ok) {
-            console.warn("❌ Ошибка выхода", response.status);
-            return;
-        }
-
-        // Clear cookies and localStorage
+    if (response.ok) {
         document.cookie = "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
         document.cookie = "refreshTokenDesktop=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
         document.cookie = "refreshTokenMobile=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
-
+        
         localStorage.removeItem("token");
         localStorage.removeItem("cart");
         localStorage.removeItem("username");
 
-        // Redirect to the home page or login page
         window.location.href = "/index.html";
-    } catch (error) {
-        console.error("Ошибка выхода:", error);
     }
 }
 
