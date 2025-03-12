@@ -349,9 +349,7 @@ async function refreshAccessToken() {
         return null;
     }
 }
-app.post('/logout', (req, res) => {
-    console.log("🚀 Запрос на выход...");
-
+app.post('/logout', authMiddleware, (req, res) => {
     res.clearCookie("refreshTokenDesktop", {
         httpOnly: true,
         secure: true,
@@ -360,10 +358,16 @@ app.post('/logout', (req, res) => {
         domain: "makadamia.onrender.com"
     });
 
-    console.log("✅ Выход выполнен!");
-    res.json({ message: "Вы вышли из системы" });
-});
+    res.clearCookie("refreshTokenMobile", {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'None',
+        path: "/",
+        domain: "mobile-site.onrender.com"
+    });
 
+    res.json({ message: 'Вы вышли из системы' });
+});
 
 
 
