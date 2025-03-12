@@ -350,21 +350,19 @@ async function refreshAccessToken() {
         return null;
     }
 }
+app.post('/logout', authMiddleware, (req, res) => {
+    console.log("🚀 Запрос на выход получен!");
 
-async function logout() {
-    await fetch("https://makadamia.onrender.com/logout", {
-        method: "POST",
-        credentials: "include"
+    res.clearCookie("refreshTokenDesktop", {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'None',
+        path: "/",
+        domain: "makadamia.onrender.com"
     });
 
-    document.cookie = "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
-    localStorage.removeItem("token");
-    localStorage.removeItem("username");
-    localStorage.removeItem("cart");
-
-    window.location.href = "/index.html";
-}
-
+    res.json({ message: "✅ Вы успешно вышли из системы!" });
+});
 
 
 // Обновление токена
