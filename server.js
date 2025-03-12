@@ -351,7 +351,6 @@ app.post('/logout', authMiddleware, (req, res) => {
 });
 
 
-
 // Обновление токена
 app.post('/-token', (req, res) => {
   const { token: Token } = req.body;
