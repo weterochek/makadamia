@@ -293,7 +293,7 @@ app.post('/login', async (req, res) => {
 app.post('/refresh', async (req, res) => {
     console.log("🔄 ПК-сайт: Запрос на обновление токена...");
 
-    const refreshToken = req.cookies.refreshTokenDesktop; // Correct cookie name for desktop
+    const refreshToken = req.cookies.refreshTokenDesktop; // Make sure it's using the correct token cookie for the PC
     if (!refreshToken) {
         console.warn("❌ ПК-сайт: Нет refresh-токена!");
         return res.status(401).json({ message: "Не авторизован" });
@@ -319,7 +319,7 @@ app.post('/refresh', async (req, res) => {
             sameSite: "None",
             path: "/",
             domain: "makadamia.onrender.com",
-            maxAge: 30 * 24 * 60 * 60 * 1000
+            maxAge: 30 * 24 * 60 * 60 * 1000 // Set expiration time for the cookie
         });
 
         res.json({ accessToken });
