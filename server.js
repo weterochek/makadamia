@@ -277,7 +277,6 @@ app.post('/login', async (req, res) => {
     // Генерируем токены
     const { accessToken, refreshToken } = generateTokens(user);
 
-    // ✅ Устанавливаем refreshTokenMobile в cookie
     res.cookie("refreshTokenDesktop", refreshToken, { 
         httpOnly: true,
         secure: true,
