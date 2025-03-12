@@ -541,28 +541,31 @@ function checkAuthStatus() {
 // Логика для выхода
 async function logout() {
     try {
-        // Attempt logout
+        // Send a request to the logout endpoint
         const response = await fetch("https://makadamia.onrender.com/logout", {
             method: "POST",
-            credentials: "include", // Make sure credentials are sent
+            credentials: "include" // Ensure credentials are included in the request
         });
 
+        // If logout fails, handle the error
         if (!response.ok) {
-            throw new Error("❌ Ошибка при выходе с сервера");
+            console.warn("❌ Ошибка выхода", response.status);
+            return;
         }
 
         // Clear cookies and localStorage
-        localStorage.removeItem("token");
-        localStorage.removeItem("username");
-        sessionStorage.clear();
-
-        // Clear cookies manually
+        document.cookie = "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
         document.cookie = "refreshTokenDesktop=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
         document.cookie = "refreshTokenMobile=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
 
-        window.location.href = "/"; // Redirect after logout
+        localStorage.removeItem("token");
+        localStorage.removeItem("cart");
+        localStorage.removeItem("username");
+
+        // Redirect to the home page or login page
+        window.location.href = "/index.html";
     } catch (error) {
-        console.error("❌ Ошибка выхода:", error);
+        console.error("Ошибка выхода:", error);
     }
 }
 
