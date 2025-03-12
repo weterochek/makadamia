@@ -549,7 +549,7 @@ async function logout() {
         });
 
         if (!response.ok) {
-            throw new Error(`Ошибка при выходе: ${response.status}`);
+            throw new Error(`Ошибка выхода: ${response.status}`);
         }
 
         console.log("✅ Выход выполнен успешно!");
@@ -559,12 +559,18 @@ async function logout() {
         localStorage.removeItem("cart");
         localStorage.removeItem("username");
 
+        // Очищаем куки вручную (только клиентские)
+        document.cookie = "refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+        document.cookie = "refreshTokenDesktop=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+        document.cookie = "refreshTokenMobile=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+
         // Перенаправление на главную страницу
         window.location.href = "/index.html";
     } catch (error) { 
         console.error("❌ Ошибка выхода:", error); 
     }
 }
+
 // Переход на страницу личного кабинета
 function openCabinet() {
     const token = localStorage.getItem('token');
