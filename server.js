@@ -263,24 +263,21 @@ app.post('/register', async (req, res) => {
 // Авторизация пользователя
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
-    const origin = req.headers.origin;
 
-    if (origin !== "https://makadamia.onrender.com") {
-        return res.status(403).json({ message: "Недопустимый источник запроса" });
-    }
-
+    // Проверяем наличие пользователя и пароля
     const user = await User.findOne({ username });
     if (!user || !(await bcrypt.compare(password, user.password))) {
         return res.status(401).json({ message: 'Неверные данные' });
     }
 
-    // Генерируем токены
-    const { accessToken, refreshToken } = generateTokens(user);
+    // Генерируем токены для ПК версии
+    const { accessToken, refreshToken } = generateTokens(user, "desktop");
 
-    res.cookie("refreshTokenDesktop", refreshToken, { 
+    // Устанавливаем cookie для ПК версии
+    res.cookie("refreshTokenDesktop", refreshToken, {
         httpOnly: true,
         secure: true,
-        sameSite: "None",
+        sameSite: 'None',
         path: "/",
         maxAge: 7 * 24 * 60 * 60 * 1000 // 7 дней
     });
@@ -356,14 +353,6 @@ app.post('/logout', authMiddleware, (req, res) => {
         sameSite: 'None',
         path: "/",
         domain: "makadamia.onrender.com"
-    });
-
-    res.clearCookie("refreshTokenMobile", {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'None',
-        path: "/",
-        domain: "mobile-site.onrender.com"
     });
 
     res.json({ message: 'Вы вышли из системы' });
