@@ -293,7 +293,7 @@ app.post('/login', async (req, res) => {
 app.post('/refresh', async (req, res) => {
     console.log("🔄 ПК-сайт: Запрос на обновление токена...");
 
-    const refreshToken = req.cookies.refreshTokenDesktop;
+    const refreshToken = req.cookies.refreshTokenDesktop; // Correct cookie name for desktop
     if (!refreshToken) {
         console.warn("❌ ПК-сайт: Нет refresh-токена!");
         return res.status(401).json({ message: "Не авторизован" });
@@ -363,6 +363,7 @@ app.post('/logout', (req, res) => {
     console.log("✅ Выход выполнен!");
     res.json({ message: "Вы вышли из системы" });
 });
+
 
 
 
