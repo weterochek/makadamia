@@ -367,13 +367,12 @@ function getTokenExp(token) {
 
 async function refreshAccessToken() {
     console.log("🔄 Запрос на обновление токена...");
-
-    const isMobile = window.location.hostname.includes("mobile-site");  // Detect if it's mobile or PC
+    
+    const isMobile = window.location.hostname.includes("mobile-site");
     const refreshUrl = isMobile
-        ? "https://mobile-site.onrender.com/refresh"  // Mobile refresh URL
-        : "https://makadamia.onrender.com/refresh";   // Desktop refresh URL
+        ? "https://mobile-site.onrender.com/refresh"
+        : "https://makadamia.onrender.com/refresh";
 
-    // Если это ПК-версия, мы будем использовать правильный refreshUrl
     try {
         const response = await fetch(refreshUrl, {
             method: "POST",
@@ -390,6 +389,9 @@ async function refreshAccessToken() {
 
         if (data.accessToken) {
             localStorage.setItem("token", data.accessToken);
+            console.log("✅ Токен сохранен в localStorage:", localStorage.getItem("token"));
+        } else {
+            console.warn("⚠️ Токен не получен!");
         }
 
         return data.accessToken;
