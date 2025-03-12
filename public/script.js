@@ -368,9 +368,12 @@ function getTokenExp(token) {
 async function refreshAccessToken() {
     console.log("🔄 Запрос на обновление токена...");
 
-    const isMobile = window.location.href.includes("makadamia.onrender.com");
-    const refreshUrl = "/refresh"; // ✅ Объявляем переменную
+    const isMobile = window.location.hostname.includes("mobile-site");  // Detect if it's mobile or PC
+    const refreshUrl = isMobile
+        ? "https://mobile-site.onrender.com/refresh"  // Mobile refresh URL
+        : "https://makadamia.onrender.com/refresh";   // Desktop refresh URL
 
+    // Если это ПК-версия, мы будем использовать правильный refreshUrl
     try {
         const response = await fetch(refreshUrl, {
             method: "POST",
@@ -541,30 +544,31 @@ function checkAuthStatus() {
 // Логика для выхода
 async function logout() {
     try {
-        console.log("🚀 Отправляем запрос на /logout...");
-
+        // Attempt logout
         const response = await fetch("https://makadamia.onrender.com/logout", {
             method: "POST",
-            credentials: "include"
+            credentials: "include", // Make sure credentials are sent
         });
 
         if (!response.ok) {
-            throw new Error(`Ошибка выхода: ${response.status}`);
+            throw new Error("❌ Ошибка при выходе с сервера");
         }
 
-        console.log("✅ Выход выполнен!");
-
-        // Чистим куки и локальное хранилище
-        document.cookie = "refreshTokenDesktop=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+        // Clear cookies and localStorage
         localStorage.removeItem("token");
-        localStorage.removeItem("cart");
         localStorage.removeItem("username");
+        sessionStorage.clear();
 
-        window.location.href = "/index.html";
+        // Clear cookies manually
+        document.cookie = "refreshTokenDesktop=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+        document.cookie = "refreshTokenMobile=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+
+        window.location.href = "/"; // Redirect after logout
     } catch (error) {
         console.error("❌ Ошибка выхода:", error);
     }
 }
+
 
 // Переход на страницу личного кабинета
 function openCabinet() {
