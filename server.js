@@ -291,20 +291,17 @@ app.post('/login', async (req, res) => {
 
 // Обработка запроса на обновление токена для ПК-версии
 app.post('/refresh', async (req, res) => {
-    console.log("🔄 Запрос на обновление токена для пк версии");
-    console.log("🔍 Все куки:", req.cookies); // Добавляем логирование всех куков
+    console.log("🔄 ПК-сайт: Запрос на обновление токена...");
 
     const refreshToken = req.cookies.refreshTokenDesktop;
-    console.log("🔍 Полученный refreshTokenDesktop:", refreshToken);
-
     if (!refreshToken) {
-        console.warn("❌ Нет refreshTokenDesktop, отправляем 401.");
+        console.warn("❌ ПК-сайт: Нет refresh-токена!");
         return res.status(401).json({ message: "Не авторизован" });
     }
 
     jwt.verify(refreshToken, REFRESH_SECRET, async (err, decodedUser) => {
         if (err) {
-            console.warn("❌ Недействительный refresh-токен, отправляем 403.");
+            console.warn("❌ ПК-сайт: Недействительный refresh-токен!");
             return res.status(403).json({ message: "Недействительный refresh-токен" });
         }
 
@@ -313,20 +310,22 @@ app.post('/refresh', async (req, res) => {
             return res.status(404).json({ message: "Пользователь не найден" });
         }
 
-        console.log("✅ Refresh-токен действителен, создаём новый access-токен.");
-        const { accessToken, refreshToken: newRefreshToken } = generateTokens(user);
+        console.log("✅ ПК-сайт: Токен обновлён!");
+        const { accessToken, refreshToken: newRefreshToken } = generateTokens(user, "desktop");
 
         res.cookie("refreshTokenDesktop", newRefreshToken, {
             httpOnly: true,
             secure: true,
             sameSite: "None",
             path: "/",
-            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 дней
+            domain: "makadamia.onrender.com",
+            maxAge: 30 * 24 * 60 * 60 * 1000
         });
 
         res.json({ accessToken });
     });
 });
+
 
 async function refreshAccessToken() {
     try {
@@ -350,8 +349,8 @@ async function refreshAccessToken() {
         return null;
     }
 }
-app.post('/logout', authMiddleware, (req, res) => {
-    console.log("🚀 Запрос на выход получен!");
+app.post('/logout', (req, res) => {
+    console.log("🚀 Запрос на выход...");
 
     res.clearCookie("refreshTokenDesktop", {
         httpOnly: true,
@@ -361,8 +360,10 @@ app.post('/logout', authMiddleware, (req, res) => {
         domain: "makadamia.onrender.com"
     });
 
-    res.json({ message: "✅ Вы успешно вышли из системы!" });
+    console.log("✅ Выход выполнен!");
+    res.json({ message: "Вы вышли из системы" });
 });
+
 
 
 // Обновление токена
