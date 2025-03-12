@@ -366,21 +366,31 @@ function getTokenExp(token) {
 
 
 async function refreshAccessToken() {
+    console.log("🔄 Запрос на обновление токена...");
+
+    const isMobile = window.location.href.includes("makadamia.onrender.com");
+    const refreshUrl = isMobile 
+        ? "https://mobile-site.onrender.com/refresh"  // 📌 Если мобильная версия, отправляем запрос на мобильный сервер
+        : "https://makadamia.onrender.com/refresh";   // 📌 Если ПК-версия, отправляем на десктопный сервер
+
     try {
-        const response = await fetch("https://makadamia.onrender.com/refresh", {
+        const response = await fetch(refreshUrl, {
             method: "POST",
-            credentials: "include",  // Для отправки cookies
+            credentials: "include"
         });
 
         if (!response.ok) {
-            console.warn("❌ Ошибка обновления токена:", response.status);
+            console.warn(`❌ Ошибка обновления токена (${response.status})`);
             return null;
         }
 
         const data = await response.json();
-        console.log("✅ Новый access токен:", data.accessToken);
+        console.log("✅ Новый токен получен:", data.accessToken);
 
-        localStorage.setItem("accessToken", data.accessToken);
+        if (data.accessToken) {
+            localStorage.setItem("token", data.accessToken);
+        }
+
         return data.accessToken;
     } catch (error) {
         console.error("❌ Ошибка при обновлении токена:", error);
@@ -422,23 +432,15 @@ function isTokenExpired(token) {
 
 
 // Запускаем проверку токена раз в минуту
-setInterval(async () => { 
-    let token = localStorage.getItem("token"); 
-    if (!token) return;
-
-    const exp = getTokenExp(token);
-    const now = Math.floor(Date.now() / 1000);
-
-    if (exp && (exp - now) < 300) { 
-        console.log("🔄 Токен скоро истечёт, обновляем...");
-        token = await refreshAccessToken();
-
-        if (!token) {
-            console.warn("❌ Ошибка при обновлении токена. Останавливаем обновления.");
-            clearInterval(this);
-        }
+setInterval(() => {
+    if (isTokenExpired()) {
+      console.log("⏳ Проверяем обновление токена...");
+        console.log("🔄 Токен истёк, обновляем...");
+        refreshAccessToken().then(newToken => {
+            console.log("✅ Новый токен после автообновления:", newToken);
+        }).catch(err => console.error("❌ Ошибка обновления:", err));
     }
-}, 60000);
+}, 60000); // 1 раз в минуту
 
 function editField(field) {
     const input = document.getElementById(field + "Input");
@@ -537,30 +539,40 @@ function checkAuthStatus() {
 }
 }
 
+app.post('/logout', authMiddleware, (req, res) => {
+    res.clearCookie("refreshTokenDesktop", {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'None',
+        path: "/",
+        domain: "makadamia.onrender.com"
+    });
 
+    res.json({ message: 'Вы вышли из системы' });
+});
 
 // Логика для выхода
-async function logout() { 
-    try { 
-        await fetch("https://makadamia.onrender.com/logout", { 
-            method: "POST", 
-            credentials: "include" 
+async function logout() {
+    try {
+        const response = await fetch("/logout", {
+            method: "POST",
+            credentials: "include"
         });
 
-        // Удаляем токены
-        document.cookie = "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+        if (!response.ok) {
+            console.error("❌ Ошибка при выходе с сервера");
+        }
+
+        localStorage.removeItem("token");
+        localStorage.removeItem("username");
+        sessionStorage.clear();
+
         document.cookie = "refreshTokenDesktop=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
         document.cookie = "refreshTokenMobile=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
-        
-        // Очищаем локальное хранилище
-        localStorage.removeItem("token");
-        localStorage.removeItem("cart");
-        localStorage.removeItem("username");
 
-        // Перенаправление на страницу входа
         window.location.href = "/index.html";
-    } catch (error) { 
-        console.error("Ошибка выхода:", error); 
+    } catch (error) {
+        console.error("Ошибка при выходе:", error);
     }
 }
 // Переход на страницу личного кабинета
