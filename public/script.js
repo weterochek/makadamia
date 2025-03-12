@@ -539,12 +539,12 @@ function checkAuthStatus() {
 }
 
 // Логика для выхода
-async function logout() { 
-    try { 
+async function logout() {
+    try {
         console.log("🚀 Отправляем запрос на /logout...");
 
-        const response = await fetch("https://makadamia.onrender.com/logout", { 
-            method: "POST", 
+        const response = await fetch("https://makadamia.onrender.com/logout", {
+            method: "POST",
             credentials: "include"
         });
 
@@ -552,22 +552,17 @@ async function logout() {
             throw new Error(`Ошибка выхода: ${response.status}`);
         }
 
-        console.log("✅ Выход выполнен успешно!");
+        console.log("✅ Выход выполнен!");
 
-        // Очищаем только доступные данные
+        // Чистим куки и локальное хранилище
+        document.cookie = "refreshTokenDesktop=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
         localStorage.removeItem("token");
         localStorage.removeItem("cart");
         localStorage.removeItem("username");
 
-        // Очищаем куки вручную (только клиентские)
-        document.cookie = "refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
-        document.cookie = "refreshTokenDesktop=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
-        document.cookie = "refreshTokenMobile=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
-
-        // Перенаправление на главную страницу
         window.location.href = "/index.html";
-    } catch (error) { 
-        console.error("❌ Ошибка выхода:", error); 
+    } catch (error) {
+        console.error("❌ Ошибка выхода:", error);
     }
 }
 
