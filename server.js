@@ -264,22 +264,19 @@ app.post('/register', async (req, res) => {
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
 
-    // Проверяем наличие пользователя и пароля
     const user = await User.findOne({ username });
     if (!user || !(await bcrypt.compare(password, user.password))) {
         return res.status(401).json({ message: 'Неверные данные' });
     }
 
-    // Генерируем токены для ПК версии
-    const { accessToken, refreshToken } = generateTokens(user, "desktop");
+    const { accessToken, refreshToken } = generateTokens(user);
 
-    // Устанавливаем cookie для ПК версии
-    res.cookie("refreshTokenDesktop", refreshToken, {
+    res.cookie("refreshTokenDesktop", refreshToken, { 
         httpOnly: true,
         secure: true,
-        sameSite: 'None',
+        sameSite: "None",
         path: "/",
-        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 дней
+        maxAge: 30 * 24 * 60 * 60 * 1000  // Устанавливаем refreshToken на 30 дней
     });
 
     res.json({ accessToken });
@@ -288,17 +285,14 @@ app.post('/login', async (req, res) => {
 
 // Обработка запроса на обновление токена для ПК-версии
 app.post('/refresh', async (req, res) => {
-    console.log("🔄 ПК-сайт: Запрос на обновление токена...");
+    const refreshToken = req.cookies.refreshTokenDesktop;  // Используем refreshTokenDesktop для ПК-версии
 
-    const refreshToken = req.cookies.refreshTokenDesktop; // Make sure it's using the correct token cookie for the PC
     if (!refreshToken) {
-        console.warn("❌ ПК-сайт: Нет refresh-токена!");
         return res.status(401).json({ message: "Не авторизован" });
     }
 
     jwt.verify(refreshToken, REFRESH_SECRET, async (err, decodedUser) => {
-        if (err) {
-            console.warn("❌ ПК-сайт: Недействительный refresh-токен!");
+        if (err || decodedUser.site !== "https://makadamia.onrender.com") {
             return res.status(403).json({ message: "Недействительный refresh-токен" });
         }
 
@@ -307,16 +301,14 @@ app.post('/refresh', async (req, res) => {
             return res.status(404).json({ message: "Пользователь не найден" });
         }
 
-        console.log("✅ ПК-сайт: Токен обновлён!");
-        const { accessToken, refreshToken: newRefreshToken } = generateTokens(user, "desktop");
+        const { accessToken, refreshToken: newRefreshToken } = generateTokens(user);
 
         res.cookie("refreshTokenDesktop", newRefreshToken, {
             httpOnly: true,
             secure: true,
             sameSite: "None",
             path: "/",
-            domain: "makadamia.onrender.com",
-            maxAge: 30 * 24 * 60 * 60 * 1000 // Set expiration time for the cookie
+            maxAge: 30 * 24 * 60 * 60 * 1000  // Обновляем refreshToken на 30 дней
         });
 
         res.json({ accessToken });
