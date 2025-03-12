@@ -541,7 +541,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 // Проверка состояния авторизации
 function checkAuthStatus() {
-    const token = localStorage.getItem("token") || localStorage.getItem("accessToken");
+    const token = localStorage.getItem("token");
     const username = localStorage.getItem("username");
     const authButton = document.getElementById("authButton");
     const cabinetButton = document.getElementById("cabinetButton");
@@ -552,35 +552,38 @@ function checkAuthStatus() {
     }
 
     if (token && username && !isTokenExpired(token)) { 
-    console.log("✅ Пользователь авторизован");
-    authButton.style.display = "none";
-    cabinetButton.style.display = "inline-block";
-} else {
-    console.log("⚠️ Пользователь не авторизован");
-    authButton.style.display = "inline-block";
-    cabinetButton.style.display = "none";
-    sessionStorage.removeItem("authChecked"); // Чтобы снова попытаться обновить токен
-}
+        console.log("✅ Пользователь авторизован");
+        authButton.style.display = "none";
+        cabinetButton.style.display = "inline-block";
+    } else {
+        console.log("⚠️ Пользователь не авторизован");
+        authButton.style.display = "inline-block";
+        cabinetButton.style.display = "none";
+        sessionStorage.removeItem("authChecked"); // Убедитесь, что снова проверите авторизацию
+    }
 }
 
+
 async function logout() {
-    const token = localStorage.getItem("token"); // Add token here if needed
+    const token = localStorage.getItem("token"); // Получение токена
 
     try {
         const response = await fetch("https://makadamia.onrender.com/logout", {
             method: "POST",
             credentials: 'include',
             headers: {
-                "Authorization": `Bearer ${token}`  // Send the token in the request header
+                "Authorization": `Bearer ${token}`  // Отправка токена в запросе
             }
         });
 
         if (response.ok) {
+            // Очистка токенов
             document.cookie = "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
             document.cookie = "refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
-            localStorage.removeItem('accessToken');
+            localStorage.removeItem('token');
+            sessionStorage.removeItem('token'); // Также очищаем сессионное хранилище
 
-            window.location.href = "/index.html";
+            window.location.href = "/index.html"; // Перенаправление на страницу входа
         } else {
             console.error("❌ Ошибка при выходе:", response.status);
         }
@@ -588,6 +591,7 @@ async function logout() {
         console.error("❌ Ошибка при выходе:", error);
     }
 }
+
 
 
 // Переход на страницу личного кабинета
