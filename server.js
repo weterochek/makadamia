@@ -352,29 +352,6 @@ async function refreshAccessToken() {
     }
 }
 
-app.post('/logout', authMiddleware, (req, res) => {
-    const origin = req.headers.origin;
-
-    let cookieName;
-    if (origin === "https://makadamia.onrender.com") {
-        cookieName = "TokenDesktop";
-    } else if (origin === "https://mobile-site.onrender.com") {
-        cookieName = "TokenMobile";
-    } else {
-        return res.status(403).json({ message: "Недопустимый источник запроса" });
-    }
-
-    res.clearCookie(cookieName, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'None',
-        domain: ".onrender.com",
-        path: "/",
-        partitioned: true
-    });
-
-    res.json({ message: 'Вы вышли из системы' });
-});
 async function logout() {
     await fetch("https://makadamia.onrender.com/logout", {
         method: "POST",
