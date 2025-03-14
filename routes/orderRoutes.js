@@ -6,7 +6,7 @@ const authMiddleware = require("../middleware/authMiddleware");
 // Создание заказа
 router.post("/order", authMiddleware, async (req, res) => {
     try {
-        const { cart, address, additionalInfo } = req.body;
+        const { items, address, additionalInfo } = req.body;
         const userId = req.user.id;
 
         if (!cart || cart.length === 0) {
@@ -15,7 +15,7 @@ router.post("/order", authMiddleware, async (req, res) => {
 
         const newOrder = new Order({
             userId,
-            items: cart, // ✅ cart передаём как items
+            items, // ✅ cart передаём как items
             address,
             additionalInfo,
             status: "Оформлен"
