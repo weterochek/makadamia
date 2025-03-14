@@ -6,6 +6,7 @@ const authMiddleware = require("../middleware/authMiddleware");
 // Создание заказа
 router.post("/order", authMiddleware, async (req, res) => {
     try {
+        console.log("Полученные данные от клиента:", req.body);
         const { items, address, additionalInfo } = req.body;
         const userId = req.user.id;
 
