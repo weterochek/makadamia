@@ -1,55 +1,20 @@
 let cart = {};
 
-
-async function submitOrder() {
-    const token = localStorage.getItem("token");
-    if (!token) {
-        alert("Вы не авторизованы!");
-        return;
-    }
-
-    const orderData = {
-        name: document.getElementById("customerName").value,
-        address: document.getElementById("customerAddress").value,
-        additionalInfo: document.getElementById("additionalInfo").value,
-        items: Object.values(cart).map(item => ({
-    productId: item.productId,
-    quantity: item.quantity
-}))
-    };
-
-    try {
-        const response = await fetch("https://makadamia.onrender.com/api/order", {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${token}`,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(orderData)
-        });
-
-        if (!response.ok) {
-            throw new Error("Ошибка при оформлении заказа");
-        }
-
-        alert("🎉 Заказ успешно оформлен!");
-        cart = {}; // Очищаем корзину
-        saveCartToLocalStorage();
-        window.location.href = "thankyou.html";
-    } catch (error) {
-        console.error("Ошибка сети или сервера:", error);
-        alert("Ошибка при оформлении заказа. Проверьте соединение.");
+// Загрузка корзины из localStorage
+function loadCartFromLocalStorage() {
+    const username = localStorage.getItem("username") || "guest"; // Используем имя пользователя или guest
+    const storedCart = localStorage.getItem(`cart_${username}`);
+    if (storedCart) {
+        cart = JSON.parse(storedCart); // Загружаем корзину только если она есть
     }
 }
 
-// Обработчик кнопки оформления заказа
-document.addEventListener("DOMContentLoaded", () => {
-    loadCartFromLocalStorage();
-    document.getElementById("checkoutForm").addEventListener("submit", function (e) {
-        e.preventDefault();
-        submitOrder();
-    });
-});
+// Сохранение корзины в localStorage
+function saveCartToLocalStorage() {
+    const username = localStorage.getItem("username") || "guest"; // Используем имя пользователя или guest
+    localStorage.setItem(`cart_${username}`, JSON.stringify(cart)); // Сохраняем корзину
+}
+
 // Отображение корзины
 function renderCheckoutCart() {
     const cartItemsContainer = document.getElementById("cartItems");
@@ -92,10 +57,11 @@ function decrementItem(itemName) {
             delete cart[itemName];
         }
         saveCartToLocalStorage();
-        renderCheckoutCart(); // ✅ Исправлено
+        renderCheckoutCart(); // После изменения корзины обновляем отображение
     }
 }
 
+// Увеличение количества товара
 function incrementItem(itemName, itemPrice) {
     if (cart[itemName]) {
         cart[itemName].quantity += 1;
@@ -103,14 +69,7 @@ function incrementItem(itemName, itemPrice) {
         cart[itemName] = { price: itemPrice, quantity: 1 };
     }
     saveCartToLocalStorage();
-    renderCheckoutCart(); // ✅ Исправлено
-}
-
-
-// Сохранение корзины в localStorage
-function saveCartToLocalStorage() {
-    const username = localStorage.getItem("username") || "guest";
-    localStorage.setItem(`cart_${username}`, JSON.stringify(cart));
+    renderCheckoutCart(); // После изменения корзины обновляем отображение
 }
 
 // Загрузка данных пользователя
@@ -141,6 +100,7 @@ async function loadUserData() {
     }
 }
 
+// Обработчик кнопки оформления заказа
 document.addEventListener("DOMContentLoaded", () => {
     loadCartFromLocalStorage();
     renderCheckoutCart();
@@ -156,7 +116,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Кнопка "Оформить заказ"
-   document.addEventListener("DOMContentLoaded", () => {
     const checkoutForm = document.getElementById("checkoutForm");
     if (checkoutForm) {
         checkoutForm.addEventListener("submit", async function (e) {
@@ -170,17 +129,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // Формируем данные заказа
             const orderData = {
-               ame: document.getElementById("customerName").value,
-               address: document.getElementById("customerAddress").value,
-               additionalInfo: document.getElementById("additionalInfo").value,
-               timestamp: document.getElementById("orderTime").value || new Date().toISOString(), // Если время не выбрано — используем текущее время
-               cart: cart // ✅ Добавляем корзину в заказ
+                name: document.getElementById("customerName").value,
+                address: document.getElementById("customerAddress").value,
+                additionalInfo: document.getElementById("additionalInfo").value,
+                timestamp: document.getElementById("orderTime").value || new Date().toISOString(), // Если время не выбрано — используем текущее время
+                cart: cart // ✅ Добавляем корзину в заказ
             };
 
             console.log("📡 Отправка данных заказа:", orderData);
 
             try {
-                const response = await fetch("https://makadamia.onrender.com/order", {
+                const response = await fetch("https://makadamia.onrender.com/api/order", {
                     method: "POST",
                     headers: {
                         "Authorization": `Bearer ${token}`,
@@ -191,16 +150,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 console.log("📥 Ответ от сервера:", response);
 
-                // ✅ Проверяем код ответа
                 if (!response.ok) {
                     console.error(`❌ Ошибка ${response.status}:`, response.statusText);
-                    if (response.status === 404) {
-                        alert("Ошибка 404: Сервер не нашел страницу оформления заказа.");
-                    } else {
-                        const errorData = await response.json();
-                        console.error("❌ Ошибка от сервера:", errorData);
-                        alert("Ошибка при оформлении заказа: " + (errorData.message || "Неизвестная ошибка"));
-                    }
+                    alert("Ошибка при оформлении заказа.");
                     return;
                 }
 
@@ -217,22 +169,4 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
-});
-
-    const additionalInfoField = document.getElementById("additionalInfo");
-    additionalInfoField.addEventListener("input", function () {
-        if (!this.value.trim()) {
-            this.placeholder = "(необязательно)";
-        }
-    });
-    additionalInfoField.addEventListener("focus", function () {
-        if (this.placeholder === "(необязательно)") {
-            this.placeholder = "";
-        }
-    });
-    additionalInfoField.addEventListener("blur", function () {
-        if (!this.value.trim()) {
-            this.placeholder = "(необязательно)";
-        }
-    });
 });
