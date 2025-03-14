@@ -7,30 +7,33 @@ const authMiddleware = require("../middleware/authMiddleware");
 
 router.post("/order", authMiddleware, async (req, res) => {
     try {
-        console.log("Полученные данные от клиента:", req.body);
-        console.log("🔍 Полученные данные заказа:", req.body);
-        const { items, address, additionalInfo } = req.body;
-        const userId = req.user.id;
+        console.log("🔍 Полученные данные заказа:", req.body);  // Логируем приходящие данные
 
-        if (!cart || cart.length === 0) {
+        const { items, address, additionalInfo } = req.body;
+
+        if (!items || items.length === 0) {
+            console.error("❌ Корзина пуста");
             return res.status(400).json({ message: "Корзина не может быть пустой" });
         }
 
+        const userId = req.user.id;
         const newOrder = new Order({
             userId,
-            items, // ✅ cart передаём как items
+            items,
             address,
             additionalInfo,
             status: "Оформлен"
         });
 
         await newOrder.save();
+        console.log("✅ Заказ успешно сохранен:", newOrder);
         res.status(201).json({ message: "Заказ успешно оформлен" });
     } catch (error) {
-        console.error("Ошибка при создании заказа:", error);
+        console.error("❌ Ошибка при сохранении заказа:", error);
         res.status(500).json({ message: "Ошибка сервера" });
     }
 });
+
 
 // Получение заказов пользователя
 router.get("/orders", authMiddleware, async (req, res) => {
