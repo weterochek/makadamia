@@ -198,19 +198,20 @@ function generateTokens(user, site) {
     const issuedAt = Math.floor(Date.now() / 1000);
     
     const accessToken = jwt.sign(
-        { id: user._id, username: user.username, site, iat: issuedAt },
+        { id: user._id, username: user.username, site: "https://makadamia.onrender.com", iat: issuedAt },
         JWT_SECRET,
         { expiresIn: "30m" }  // ⏳ Access-токен на 30 минут
     );
 
     const refreshToken = jwt.sign(
-        { id: user._id, username: user.username, site, iat: issuedAt },
+        { id: user._id, username: user.username, site: "https://makadamia.onrender.com", iat: issuedAt },
         REFRESH_SECRET,
         { expiresIn: "7d" }  // 🔄 Refresh-токен на 7 дней
     );
 
     return { accessToken, refreshToken };
 }
+
 
 // Регистрация пользователя
 app.post('/register', async (req, res) => {
