@@ -275,7 +275,7 @@ app.post('/refresh', async (req, res) => {
     if (!refreshToken) {
         return res.status(401).json({ message: "Не авторизован" });
     }
-
+    console.log("🔍 Полученный refreshToken:", refreshToken);
     jwt.verify(refreshToken, REFRESH_SECRET, async (err, decodedUser) => {
         if (err || decodedUser.site !== "https://makadamia.onrender.com") {
             return res.status(403).json({ message: "Недействительный refresh-токен" });
