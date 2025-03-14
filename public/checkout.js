@@ -19,10 +19,10 @@ async function submitOrder() {
         name: document.getElementById("customerName").value,
         address: document.getElementById("customerAddress").value,
         additionalInfo: document.getElementById("additionalInfo").value,
-        cart: Object.keys(cart).map(item => ({
-            productId: cart[item].productId,
-            quantity: cart[item].quantity
-        }))
+        items: Object.values(cart).map(item => ({
+    productId: item.productId,
+    quantity: item.quantity
+}))
     };
 
     try {
