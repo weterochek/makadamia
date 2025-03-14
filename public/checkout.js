@@ -1,14 +1,6 @@
 let cart = {};
 
-// Загрузка корзины из localStorage
-function loadCartFromLocalStorage() {
-    const username = localStorage.getItem("username") || "guest"; // Используем имя пользователя или guest
-    const storedCart = localStorage.getItem(`cart_${username}`);
-    localStorage.setItem(`cart_${username}`, JSON.stringify(cart));
-    if (storedCart) {
-        cart = JSON.parse(storedCart);
-    }
-}
+
 async function submitOrder() {
     const token = localStorage.getItem("token");
     if (!token) {
