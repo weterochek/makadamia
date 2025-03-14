@@ -4,6 +4,7 @@ let cart = {};
 function loadCartFromLocalStorage() {
     const username = localStorage.getItem("username") || "guest"; // Используем имя пользователя или guest
     const storedCart = localStorage.getItem(`cart_${username}`);
+    localStorage.setItem(`cart_${username}`, JSON.stringify(cart));
     if (storedCart) {
         cart = JSON.parse(storedCart);
     }
@@ -99,11 +100,10 @@ function decrementItem(itemName) {
             delete cart[itemName];
         }
         saveCartToLocalStorage();
-        renderCart();
+        renderCheckoutCart(); // ✅ Исправлено
     }
 }
 
-// Увеличение количества товара
 function incrementItem(itemName, itemPrice) {
     if (cart[itemName]) {
         cart[itemName].quantity += 1;
@@ -111,8 +111,9 @@ function incrementItem(itemName, itemPrice) {
         cart[itemName] = { price: itemPrice, quantity: 1 };
     }
     saveCartToLocalStorage();
-    renderCart();
+    renderCheckoutCart(); // ✅ Исправлено
 }
+
 
 // Сохранение корзины в localStorage
 function saveCartToLocalStorage() {
