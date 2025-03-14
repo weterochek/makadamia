@@ -9,9 +9,13 @@ router.post("/order", authMiddleware, async (req, res) => {
         const { cart, address, additionalInfo } = req.body;
         const userId = req.user.id;
 
+        if (!cart || cart.length === 0) {
+            return res.status(400).json({ message: "Корзина не может быть пустой" });
+        }
+
         const newOrder = new Order({
             userId,
-            items: cart,
+            items: cart, // ✅ cart передаём как items
             address,
             additionalInfo,
             status: "Оформлен"
