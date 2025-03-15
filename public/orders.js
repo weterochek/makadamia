@@ -1,6 +1,3 @@
-// orders.js
-
-
 // Получаем токен из localStorage
 async function loadUserOrders() {
     const token = localStorage.getItem("token");
@@ -18,35 +15,18 @@ async function loadUserOrders() {
             }
         });
 
-        const orders = await response.json();
-        displayOrders(orders);
+        if (response.ok) {
+            const orders = await response.json();
+            displayOrders(orders);
+        } else {
+            console.error("Ошибка при загрузке заказов:", response.statusText);
+        }
     } catch (error) {
         console.error("Ошибка при загрузке заказов:", error);
     }
 }
 
-document.addEventListener("DOMContentLoaded", loadUserOrders); // Загружаем заказы при загрузке страницы
-
-// Получаем токен из localStorage
-const token = localStorage.getItem("token");
-
-if (!token) {
-    console.error("Ошибка: Токен не найден!");
-    return; // Если токен не найден, выходим из функции
-}
-
-fetch('/orders', {
-    method: 'GET',
-    headers: {
-        'Authorization': `Bearer ${token}`  // Отправляем токен в заголовках запроса
-    }
-})
-.then(response => response.json())
-.then(orders => {
-    displayOrders(orders);  // Отображаем заказы
-})
-.catch(error => console.error("Ошибка при загрузке заказов:", error));
-
+// Отображение заказов
 function displayOrders(orders) {
     const ordersContainer = document.getElementById("ordersContainer");
     if (orders.length === 0) {
@@ -54,15 +34,15 @@ function displayOrders(orders) {
     } else {
         orders.forEach(order => {
             const orderElement = document.createElement("div");
-            
-            // Format the createdAt date to a readable format
-            const orderDate = new Date(order.createdAt).toLocaleString(); // You can customize this format based on your needs
-            
+
+            // Форматируем дату заказа
+            const orderDate = new Date(order.createdAt).toLocaleString(); // Вы можете изменить формат даты по своему усмотрению
+
             orderElement.innerHTML = `
                 <h3>Заказ №${order._id}</h3>
                 <p>Адрес: ${order.address}</p>
                 <p>Статус: ${order.status}</p>
-                <p>Время заказа: ${orderDate}</p>  <!-- Added the order time -->
+                <p>Время заказа: ${orderDate}</p> <!-- Добавлено время заказа -->
                 <ul>
                     ${order.items.map(item => `<li>${item.name} - ${item.quantity} шт. по ${item.price} ₽</li>`).join('')}
                 </ul>
@@ -73,4 +53,4 @@ function displayOrders(orders) {
 }
 
 // Загрузка заказов при загрузке страницы
-document.addEventListener("DOMContentLoaded", loadOrders);
+document.addEventListener("DOMContentLoaded", loadUserOrders);
