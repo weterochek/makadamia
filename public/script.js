@@ -60,6 +60,22 @@ document.addEventListener("DOMContentLoaded", function () {
         showCookieBanner();
     }
 });
+  if (localStorage.getItem("cookiesAccepted") === "true") {
+        if (token) {
+            fetch("https://makadamia.onrender.com/account", {
+                method: "GET", // ✅ Добавляем явное указание метода
+                credentials: "include", // ✅ Передаем cookies
+                headers: {
+                    "Authorization": `Bearer ${token}` // ✅ Передаем токен
+                }
+            })
+            .then(response => response.json())
+            .then(data => console.log("✅ Данные аккаунта:", data))
+            .catch(error => console.error("❌ Ошибка загрузки аккаунта:", error));
+        } else {
+            console.warn("❌ Нет токена, не запрашиваем /account");
+        }
+    }
 
 function showCookieBanner() {
     const banner = document.createElement("div");
@@ -151,10 +167,6 @@ function incrementItem(itemName, itemPrice) {
     addToCart(itemName, itemPrice); // При увеличении просто вызываем addToCart
 }
 
-// Увеличение количества товара
-function incrementItem(itemName, itemPrice) {
-    addToCart(itemName, itemPrice);
-}
 function getCookie(name) {
     const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
     return match ? match[2] : null;
@@ -257,38 +269,6 @@ function updateCartDisplay() {
 });
 
 // Обновление отображения корзины и количества товара на карточке
-function updateCartDisplay() {
-    const cartItems = document.getElementById("cartItems");
-    if (!cartItems) return;
-
-    cartItems.innerHTML = ""; // Очищаем список товаров
-    let totalAmount = 0;
-
-    for (const item in cart) {
-        const itemTotal = cart[item].price * cart[item].quantity;
-        totalAmount += itemTotal;
-
-        const cartItem = document.createElement("div");
-        cartItem.className = "cart-item";
-        cartItem.setAttribute("data-name", item); // Добавляем атрибут для поиска
-        cartItem.innerHTML = `
-            <div class="item-info">${item} - ${itemTotal} ₽</div>
-            <div class="cart-buttons">
-                <button onclick="decrementItem('${item}')">-</button>
-                <span class="quantity">${cart[item].quantity}</span>
-                <button onclick="incrementItem('${item}', ${cart[item].price})">+</button>
-            </div>
-        `;
-        cartItems.appendChild(cartItem);
-    }
-
-    document.getElementById("totalAmount").textContent = `Итого: ${totalAmount} ₽`;
-
-    // Если корзина пуста, скрываем её
-    if (Object.keys(cart).length === 0) {
-        document.getElementById("cartDropdown").style.display = "none";
-    }
-}
 
 // Сохранение корзины в localStorage
 function saveCartToLocalStorage() {
@@ -726,6 +706,7 @@ async function loadUserData(token) {
     }
 }
 
+// Определяем функцию handleAuthClick до того, как она используется
 function handleAuthClick() {
     const token = localStorage.getItem('token');
     if (token) {
@@ -735,13 +716,14 @@ function handleAuthClick() {
     }
 }
 
-// Убедитесь, что этот код в `script.js` загружен перед его вызовом в HTML
+// Теперь подключаем обработчик события
 document.addEventListener("DOMContentLoaded", function () {
     const authButton = document.getElementById("authButton");
     if (authButton) {
-        authButton.onclick = handleAuthClick;
+        authButton.onclick = handleAuthClick;  // Присваиваем функцию к кнопке
     }
 });
+
 async function loadOrders() {
     const token = localStorage.getItem("token");
     if (!token) {
