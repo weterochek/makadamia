@@ -1,34 +1,32 @@
 // orders.js
 
-// Загрузка заказов пользователя
-async function loadOrders() {
+
+// Получаем токен из localStorage
+async function loadUserOrders() {
     const token = localStorage.getItem("token");
+
     if (!token) {
-        alert("Вы не авторизованы!");
-        return;
+        console.error("Ошибка: Токен не найден!");
+        return; // Если токен не найден, выходим из функции
     }
 
     try {
-        const response = await fetch("https://makadamia.onrender.com/orders", {
+        const response = await fetch("/orders", {
             method: "GET",
             headers: {
-                "Authorization": `Bearer ${token}`,
-                "Content-Type": "application/json"
+                "Authorization": `Bearer ${token}`,  // Отправляем токен в заголовках запроса
             }
         });
 
-        if (!response.ok) {
-            throw new Error("Ошибка при загрузке заказов");
-        }
-
         const orders = await response.json();
-        displayOrders(orders); // Вызываем функцию для отображения заказов
-
+        displayOrders(orders);
     } catch (error) {
         console.error("Ошибка при загрузке заказов:", error);
-        alert("Ошибка при загрузке заказов");
     }
 }
+
+document.addEventListener("DOMContentLoaded", loadUserOrders); // Загружаем заказы при загрузке страницы
+
 // Получаем токен из localStorage
 const token = localStorage.getItem("token");
 
@@ -56,10 +54,15 @@ function displayOrders(orders) {
     } else {
         orders.forEach(order => {
             const orderElement = document.createElement("div");
+            
+            // Format the createdAt date to a readable format
+            const orderDate = new Date(order.createdAt).toLocaleString(); // You can customize this format based on your needs
+            
             orderElement.innerHTML = `
                 <h3>Заказ №${order._id}</h3>
                 <p>Адрес: ${order.address}</p>
                 <p>Статус: ${order.status}</p>
+                <p>Время заказа: ${orderDate}</p>  <!-- Added the order time -->
                 <ul>
                     ${order.items.map(item => `<li>${item.name} - ${item.quantity} шт. по ${item.price} ₽</li>`).join('')}
                 </ul>
@@ -67,33 +70,6 @@ function displayOrders(orders) {
             ordersContainer.appendChild(orderElement);
         });
     }
-}
-
-// Отображение заказов на странице
-function displayOrders(orders) {
-    const ordersContainer = document.getElementById("ordersContainer");
-    if (!ordersContainer) {
-        console.error("❌ Контейнер для заказов не найден");
-        return;
-    }
-
-    ordersContainer.innerHTML = ""; // Очищаем контейнер
-
-    orders.forEach(order => {
-        const orderElement = document.createElement("div");
-        orderElement.classList.add("order");
-        orderElement.innerHTML = `
-            <h3>Заказ №${order._id}</h3>
-            <p>Адрес: ${order.address}</p>
-            <p>Доп. информация: ${order.additionalInfo || "Нет"}</p>
-            <p>Статус: ${order.status}</p>
-            <p>Дата: ${new Date(order.createdAt).toLocaleDateString()}</p>
-            <ul>
-                ${order.items.map(item => `<li>${item.productId} - ${item.quantity} шт.</li>`).join("")}
-            </ul>
-        `;
-        ordersContainer.appendChild(orderElement);
-    });
 }
 
 // Загрузка заказов при загрузке страницы
