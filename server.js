@@ -34,6 +34,7 @@ const corsOptions = {
     },
     credentials: true, // Обязательно для передачи s!
 };
+app.use(express.json());
 app.use(cors(corsOptions));
 // Используем CORS с настройками
 app.use(cors(corsOptions));
@@ -52,7 +53,7 @@ mongoose.connect(mongoURI, {
   .catch((error) => console.error("MongoDB connection error:", error));
 
 // Middleware для обработки JSON
-app.use(express.json());
+
 const authMiddleware = (req, res, next) => {
     const authHeader = req.headers.authorization;
     if (!authHeader) {
