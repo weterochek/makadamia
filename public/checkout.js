@@ -133,11 +133,10 @@ const orderData = {
     address: document.getElementById("customerAddress").value,
     additionalInfo: document.getElementById("additionalInfo").value,
     items: Object.values(cart).map(item => ({
-        productId: item.productId,
+        productId: item.productId,  // Убедитесь, что передаете строку
         quantity: item.quantity
     }))
 };
-
 
 
             console.log("📡 Отправка данных заказа:", orderData);
