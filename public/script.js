@@ -19,27 +19,30 @@ console.log("Отправка запроса на /refresh");
 console.log("Токен перед запросом:", localStorage.getItem("token"));
 
 document.addEventListener("DOMContentLoaded", async function () {
-    const token = localStorage.getItem("token");
+    // Объединяем все события, которые должны быть обработаны после загрузки страницы.
 
+    const token = localStorage.getItem("token");
+    console.log("Токен перед запросом:", token);
+
+    // Проверка наличия токена
     if (!token && !sessionStorage.getItem("authChecked")) {
-    sessionStorage.setItem("authChecked", "true");
-    await refreshAccessToken();
-}
-    document.addEventListener("DOMContentLoaded", function () {
-    // Your existing code for handling cookies
+        sessionStorage.setItem("authChecked", "true");
+        await refreshAccessToken();
+    }
+
+    // Работа с cookies
     if (!localStorage.getItem("cookiesAccepted")) {
         showCookieBanner();
     }
 
-    // Your existing code for authButton click handler
+    // Работа с кнопкой авторизации
     const authButton = document.getElementById("authButton");
     if (authButton) {
         authButton.onclick = handleAuthClick;
     }
 
-    // Your existing code for loading user data
+    // Запрос на данные аккаунта
     if (localStorage.getItem("cookiesAccepted") === "true") {
-        const token = localStorage.getItem("token");
         if (token) {
             fetch("https://makadamia.onrender.com/account", {
                 method: "GET",
@@ -52,9 +55,10 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
-    // Your existing code for handling edit buttons
+    // Работа с кнопками редактирования
     const editNameBtn = document.getElementById("editName");
     const editCityBtn = document.getElementById("editCity");
+
     if (editNameBtn) {
         editNameBtn.addEventListener("click", () => editField("name"));
     } else {
@@ -66,7 +70,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     } else {
         console.warn("Кнопка editCity не найдена!");
     }
-});
 
 
     const cartButton = document.getElementById("cartButton");
