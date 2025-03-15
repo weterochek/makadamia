@@ -1,210 +1,439 @@
-require("dotenv").config();
-const express = require("express");
-const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
-const cors = require("cors");
-const path = require("path");
-const jwt = require("jsonwebtoken");
-const cookieParser = require("cookie-parser");
-const Joi = require("joi");
-const app = express();
-const orderRoutes = require("./routes/orderRoutes");
+let cart = {};
 
-// Настройка CORS
-const allowedOrigins = [
-  'https://makadamia.onrender.com', // Первый сайт
-  'https://mobile-site.onrender.com', // Второй сайт
-  'http://localhost:3000' // Для локальной разработки
-];
+window.onload = function () {
+    const userAgent = navigator.userAgent.toLowerCase();
+    const currentURL = window.location.href;
+
+    if (sessionStorage.getItem("redirected")) return; // ✅ Проверка на зацикливание редиректа
+
+    if (userAgent.includes("mobile") && !currentURL.includes("mobile-site.onrender.com")) {
+        sessionStorage.setItem("redirected", "true"); 
+        window.location.href = "https://mobile-site.onrender.com";
+    } else if (!userAgent.includes("mobile") && !currentURL.includes("makadamia.onrender.com")) {
+        sessionStorage.setItem("redirected", "true"); 
+        window.location.href = "https://makadamia.onrender.com";
+    }
+};
 
 console.log("Отправка запроса на /refresh");
+console.log("Токен перед запросом:", localStorage.getItem("token"));
 
-const corsOptions = {
-    origin: (origin, callback) => {
-        const allowedOrigins = [
-            "https://makadamia.onrender.com",
-            "https://mobile-site.onrender.com",
-            "http://localhost:3000"
-        ];
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error("Not allowed by CORS"));
-        }
-    },
-    credentials: true, // Обязательно для передачи s!
-};
-app.use(cors(corsOptions));
-// Используем CORS с настройками
-app.use(cors(corsOptions));
-app.use(cookieParser());
-app.use("/api", orderRoutes);
-// Подключение к MongoDB
-const JWT_SECRET = process.env.JWT_SECRET || "ai3ohPh3Aiy9eeThoh8caaM9voh5Aezaenai0Fae2Pahsh2Iexu7Qu/";
-const mongoURI = process.env.MONGO_URI || "mongodb://11_ifelephant:ee590bdf579c7404d12fd8cf0990314242d56e62@axs-h.h.filess.io:27018/11_ifelephant";
-const REFRESH_SECRET = process.env.REFRESH_SECRET || "J8$GzP1d&KxT^m4YvNcR";
-mongoose.connect(mongoURI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  ssl: false, // Включено SSL
-})
-  .then(() => console.log("MongoDB connected"))
-  .catch((error) => console.error("MongoDB connection error:", error));
+document.addEventListener("DOMContentLoaded", async function () {
+    const token = localStorage.getItem("token");
 
-// Middleware для обработки JSON
-app.use(express.json());
-const authMiddleware = (req, res, next) => {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-        console.warn("Ошибка 401: Токен отсутствует");
-        return res.status(401).json({ message: "Токен не предоставлен" });
+    if (!token && !sessionStorage.getItem("authChecked")) {
+    sessionStorage.setItem("authChecked", "true");
+    await refreshAccessToken();
+}
+
+    const cartButton = document.getElementById("cartButton");
+    const cartDropdown = document.getElementById("cartDropdown");
+
+    if (cartButton && cartDropdown) {
+        cartButton.addEventListener("click", function (event) {
+            event.stopPropagation();
+            cartDropdown.style.display = cartDropdown.style.display === "block" ? "none" : "block";
+        });
+
+        // Закрытие корзины при клике на крестик
+        const closeCartButton = document.createElement("span");
+        closeCartButton.innerHTML = "✖";
+        closeCartButton.style.cursor = "pointer";
+        closeCartButton.style.position = "absolute";
+        closeCartButton.style.top = "10px";
+        closeCartButton.style.right = "10px";
+        closeCartButton.style.fontSize = "1.2em";
+        closeCartButton.style.color = "black";
+        closeCartButton.addEventListener("click", function (event) {
+            event.stopPropagation();
+            cartDropdown.style.display = "none";
+        });
+
+        cartDropdown.prepend(closeCartButton);
+    } else {
+        console.warn("❌ cartButton или cartDropdown не найдены!");
     }
-
-    const token = authHeader.split(" ")[1];
-    if (!token) {
-        console.warn("Ошибка 401: Некорректный формат заголовка Authorization");
-        return res.status(401).json({ message: "Некорректный формат токена" });
-    }
-
-    try {
-        const decoded = jwt.verify(token, JWT_SECRET);
-        req.user = decoded;
-        next();
-    } catch (err) {
-        console.warn("Ошибка 401: Недействительный токен", err.message);
-        return res.status(401).json({ message: "Недействительный токен" });
-    }
-};
-
-
-// Получение заказов пользователя
-app.get('/orders', authMiddleware, async (req, res) => {
-    const user = req.user;
-    const orders = await Order.find({ userId: user._id });
-
-    // Форматируем время заказов перед отправкой клиенту
-    orders.forEach(order => {
-        order.timestampFormatted = order.timestamp.toLocaleString();  // Преобразуем время в строку
-    });
-
-    res.json(orders);
 });
 
+document.addEventListener("DOMContentLoaded", function () {
+    if (!localStorage.getItem("cookiesAccepted")) {
+        showCookieBanner();
+    }
+});
+
+function showCookieBanner() {
+    const banner = document.createElement("div");
+    banner.innerHTML = `
+        <div id="cookie-banner" style="position: fixed; bottom: 0; width: 100%; background: black; color: white; padding: 10px; text-align: center; z-index: 1000;">
+            <p>Мы используем cookies для улучшения работы сайта. Они позволяют оставаться в аккаунте дольше, так как мы передаём данные с помощью них. 
+            <button id="acceptCookies" style="margin-left: 10px;">Принять</button></p>
+        </div>
+    `;
+    document.body.appendChild(banner);
+
+    document.getElementById("acceptCookies").addEventListener("click", function () {
+        localStorage.setItem("cookiesAccepted", "true");
+        banner.remove();
+    });
+}
+
+
+document.addEventListener("DOMContentLoaded", function () {
+    if (localStorage.getItem("cookiesAccepted") === "true") {
+        const token = localStorage.getItem("token"); // Получаем токен
+
+        if (!token) {
+            console.warn("❌ Нет токена, не запрашиваем /account");
+            return;
+        }
+
+        fetch("https://makadamia.onrender.com/account", {
+            method: "GET", // ✅ Добавляем явное указание метода
+            credentials: "include", // ✅ Передаем cookies
+            headers: {
+                "Authorization": `Bearer ${token}` // ✅ Передаем токен
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Ошибка HTTP: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => console.log("✅ Данные аккаунта:", data))
+        .catch(error => console.error("❌ Ошибка загрузки аккаунта:", error));
+    } else {
+        console.log("⚠️ Пользователь не принял cookies. Запрос не отправлен.");
+    }
+});
+// Добавление товара в корзину
+function addToCart(itemName, itemPrice) {
+    if (cart[itemName]) {
+        cart[itemName].quantity += 1;
+    } else {
+        cart[itemName] = { price: itemPrice, quantity: 1 };
+    }
+    saveCartToLocalStorage();
+    updateCartDisplay();
+    replaceAddButtonWithControls(itemName);
+}
+
+// Уменьшение количества товара
+function decrementItem(itemName) {
+    if (cart[itemName]) {
+        cart[itemName].quantity -= 1;
+
+        if (cart[itemName].quantity === 0) {
+            delete cart[itemName]; // ❌ Удаляем товар из объекта cart
+
+            // Удаляем товар из корзины на странице
+            const cartItemElement = document.querySelector(`.cart-item[data-name="${itemName}"]`);
+            if (cartItemElement) {
+                cartItemElement.remove();
+            }
+
+            revertControlsToAddButton(itemName); // Возвращаем кнопку "Добавить"
+        }
+
+        saveCartToLocalStorage(); // Сохраняем обновлённые данные
+        updateCartDisplay(); // Обновляем UI корзины
+
+        // Если корзина пуста, скрываем её
+        if (Object.keys(cart).length === 0) {
+            document.getElementById("cartDropdown").style.display = "none";
+        }
+    }
+}
+// Увеличение количества товара
+function incrementItem(itemName, itemPrice) {
+    addToCart(itemName, itemPrice);
+}
+function getCookie(name) {
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? match[2] : null;
+}
+// Преобразование кнопки "Добавить" в контролы "+", "-", и количество
+function replaceAddButtonWithControls(itemName) {
+    const addButton = document.getElementById(`addButton_${itemName}`);
+    const removeButton = document.getElementById(`removeBtn_${itemName}`);
+    const addButtonControl = document.getElementById(`addBtn_${itemName}`);
+    const quantityDisplay = document.getElementById(`quantity_${itemName}`);
+
+    if (!addButton || !removeButton || !addButtonControl || !quantityDisplay) {
+        console.warn(`❌ Ошибка: Не найдены элементы для ${itemName}`);
+        return;
+    }
+
+    addButton.style.display = "none";
+    removeButton.style.display = "inline-block";
+    addButtonControl.style.display = "inline-block";
+    quantityDisplay.style.display = "inline-block";
+    quantityDisplay.textContent = cart[itemName].quantity;
+}
+
+
+// Возвращение кнопки "Добавить" вместо контролов, если товара нет в корзине
+function revertControlsToAddButton(itemName) {
+    const addButton = document.getElementById(`addButton_${itemName}`);
+    const removeButton = document.getElementById(`removeBtn_${itemName}`);
+    const addButtonControl = document.getElementById(`addBtn_${itemName}`);
+    const quantityDisplay = document.getElementById(`quantity_${itemName}`);
+
+    if (!addButton || !removeButton || !addButtonControl || !quantityDisplay) {
+        console.warn(`⚠️ Ошибка: Не найдены элементы для товара ${itemName}`);
+        return;
+    }
+
+    addButton.style.display = "inline-block";
+    removeButton.style.display = "none";
+    addButtonControl.style.display = "none";
+    quantityDisplay.style.display = "none";
+}
+//ощичение корзины
+document.addEventListener('DOMContentLoaded', () => {
+    const clearCartButton = document.getElementById('clear-cart');
+    const cartTotal = document.getElementById('totalAmount'); // Элемент с итоговой суммой
+    const cartItemsContainer = document.getElementById('cartItems'); // Контейнер товаров в корзине
+
+    // Функция обновления отображения корзины
+    function updateCartDisplay() {
+        // Очищаем корзину на странице
+        cartItemsContainer.innerHTML = '';
+
+        // Получаем корзину из localStorage
+        const cart = JSON.parse(localStorage.getItem('cart')) || {};
+        let totalAmount = 0;
+
+        // Перебираем все товары в корзине и рассчитываем общую сумму
+        for (const item in cart) {
+            totalAmount += cart[item].price * cart[item].quantity;
+
+            const cartItem = document.createElement('div');
+            cartItem.className = 'cart-item';
+            cartItem.innerHTML = `
+                <div class="item-info">${item} - ${cart[item].price * cart[item].quantity} ₽</div>
+                <div class="cart-buttons">
+                    <button onclick="decrementItem('${item}')">-</button>
+                    <span class="quantity">${cart[item].quantity}</span>
+                    <button onclick="incrementItem('${item}', ${cart[item].price})">+</button>
+                </div>
+            `;
+            cartItemsContainer.appendChild(cartItem);
+        }
+
+        // Обновляем итоговую сумму
+        cartTotal.textContent = `Итого: ${totalAmount} ₽`;
+    }
+
+    // Очищение корзины
+    if (clearCartButton) {
+    clearCartButton.addEventListener('click', () => {
+        const username = localStorage.getItem("username");
+        if (username) {
+            localStorage.removeItem(`cart_${username}`); // Удаляем корзину для текущего пользователя
+        }
+        localStorage.removeItem('cart'); // Если корзина также хранится под этим ключом
+        updateCartDisplay(); // Обновляем корзину на странице
+        cartTotal.textContent = 'Итого: 0 ₽';
+    });
+}
+
+    // Инициализируем корзину при загрузке страницы
+    updateCartDisplay();
+});
+
+// Обновление отображения корзины и количества товара на карточке
+function updateCartDisplay() {
+    const cartItems = document.getElementById("cartItems");
+    if (!cartItems) return;
+
+    cartItems.innerHTML = ""; // Очищаем список товаров
+    let totalAmount = 0;
+
+    for (const item in cart) {
+        const itemTotal = cart[item].price * cart[item].quantity;
+        totalAmount += itemTotal;
+
+        const cartItem = document.createElement("div");
+        cartItem.className = "cart-item";
+        cartItem.setAttribute("data-name", item); // Добавляем атрибут для поиска
+        cartItem.innerHTML = `
+            <div class="item-info">${item} - ${itemTotal} ₽</div>
+            <div class="cart-buttons">
+                <button onclick="decrementItem('${item}')">-</button>
+                <span class="quantity">${cart[item].quantity}</span>
+                <button onclick="incrementItem('${item}', ${cart[item].price})">+</button>
+            </div>
+        `;
+        cartItems.appendChild(cartItem);
+    }
+
+    document.getElementById("totalAmount").textContent = `Итого: ${totalAmount} ₽`;
+
+    // Если корзина пуста, скрываем её
+    if (Object.keys(cart).length === 0) {
+        document.getElementById("cartDropdown").style.display = "none";
+    }
+}
+
+// Сохранение корзины в localStorage
+function saveCartToLocalStorage() {
+    const username = localStorage.getItem("username");
+    if (username) {
+        localStorage.setItem(`cart_${username}`, JSON.stringify(cart));
+    }
+}
+
+// Оформление заказа
+function checkout() {
+    alert("Ваш заказ оформлен!");
+    cart = {};
+    updateCartDisplay();
+    resetAddToCartButtons();
+    saveCartToLocalStorage();
+    toggleCart();
+}
+
+// Сброс всех кнопок на исходное состояние "Добавить"
+function resetAddToCartButtons() {
+    for (const itemName in cart) {
+        revertControlsToAddButton(itemName);
+    }
+}
+function loadCartFromLocalStorage() {
+    const username = localStorage.getItem("username");
+    if (username) {
+        const storedCart = JSON.parse(localStorage.getItem(`cart_${username}`));
+        if (storedCart) {
+            cart = storedCart;
+        }
+        updateCartDisplay();
+    }
+}
+// Загрузка корзины из localStorage при загрузке страницы
+document.addEventListener("DOMContentLoaded", () => {
+    loadCartFromLocalStorage();
+    const cartModal = document.getElementById("cartModal");
+    if (cartModal) cartModal.style.display = "none";
+});
+
+// Функция загрузки корзины
+function getCookie(name) {
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? match[2] : null;
+}
 
 async function fetchWithAuth(url, options = {}) {
-    let accessToken = localStorage.getItem("accessToken");
+    let token = localStorage.getItem("accessToken");
 
-    if (!accessToken || isTokenExpired(accessToken)) {
-        console.log("Токен устарел, обновляем...");
-        accessToken = await refreshAccessToken();
+    if (!token) {
+        console.warn("❌ Нет accessToken, пробуем обновить...");
+        token = await refreshAccessToken();
+        if (!token) return null;
     }
 
     const res = await fetch(url, {
         ...options,
         headers: {
             ...options.headers,
-            Authorization: `Bearer ${accessToken}`
+            Authorization: `Bearer ${token}`  // Добавляем токен в заголовки
         }
     });
 
     if (res.status === 401) {
-        console.log("Ошибка 401: Токен недействителен, пробуем обновить...");
-        accessToken = await refreshAccessToken();
+        console.warn("🔄 Токен истёк, пробуем обновить...");
+        token = await refreshAccessToken();
+        if (!token) return res;
 
         return fetch(url, {
             ...options,
-            headers: {
-                ...options.headers,
-                Authorization: `Bearer ${accessToken}`
-            }
+            headers: { ...options.headers, Authorization: `Bearer ${token}` },
         });
     }
 
     return res;
 }
+document.addEventListener('DOMContentLoaded', async () => {
+    const accessToken = localStorage.getItem('accessToken');  // Получаем токен из localStorage
 
-// Функция проверки срока жизни токена
-function isTokenExpired(token) {
+    if (accessToken) {
+        document.getElementById('authButton').textContent = 'Личный кабинет';  // Изменяем кнопку
+        await loadUserData(accessToken);  // Загружаем данные пользователя
+    } else {
+        document.getElementById('authButton').textContent = 'Вход';  // Если токен отсутствует, отображаем "Вход"
+    }
+});
+
+
+function getTokenExp(token) {
     try {
-        const payload = JSON.parse(atob(token.split(".")[1])); // Декодируем токен
-        return payload.exp * 1000 < Date.now(); // Если exp в прошлом — токен истёк
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        return payload.exp;
     } catch (e) {
-        return true; // Если ошибка — токен недействителен
+        return null;
     }
 }
 
 
-// Перенаправление HTTP на HTTPS
-app.use((req, res, next) => {
-    if (process.env.NODE_ENV === "production") {
-        console.log("Проверка протокола:", req.headers["x-forwarded-proto"]);
-        if (req.headers["x-forwarded-proto"] !== "https") {
-            console.log("🔄 Перенаправление на HTTPS...");
-            return res.redirect(`https://${req.headers.host}${req.url}`);
+async function refreshAccessToken() {
+    console.log("🔄 Запрос на обновление токена...");
+
+    const token = localStorage.getItem("token"); // Проверка наличия токена
+    if (!token) {
+        console.warn("❌ Нет токена, пропускаем обновление");
+        return null; // Если токена нет, не отправляем запрос на обновление
+    }
+
+    try {
+        const response = await fetch("https://makadamia.onrender.com/refresh", {
+            method: "POST",
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            console.warn(`❌ Ошибка обновления токена (${response.status})`);
+            return null;
         }
+
+        const data = await response.json();
+        console.log("✅ Новый токен получен:", data.accessToken);
+        localStorage.setItem("token", data.accessToken);  // Сохраняем новый токен
+        return data.accessToken;
+    } catch (error) {
+        console.error("❌ Ошибка при обновлении токена:", error);
+        return null;
     }
-    next();
-});
+}
 
-const Cart = require("./models/Cart"); // Подключаем модель
 
-app.post('/cart/add', authMiddleware, async (req, res) => {
-  try {
-    if (!req.user || !req.user.id) {
-      return res.status(401).json({ message: 'Авторизуйтесь, чтобы добавить товар в корзину' });
-    }
+async function loadUserData(token) {
+    const response = await fetch("/account", {
+        headers: {
+            "Authorization": `Bearer ${token}`  // Передаем токен в заголовке
+        }
+    });
 
-    const { productId, quantity } = req.body;
-    const userId = req.user.id;
-
-    let cart = await Cart.findOne({ userId });
-
-    if (!cart) {
-      cart = new Cart({ userId, items: [] });
-    }
-
-    const existingItem = cart.items.find(item => item.productId.toString() === productId);
-
-    if (existingItem) {
-      existingItem.quantity += quantity;
+    if (response.ok) {
+        const data = await response.json();
+        document.getElementById("username").textContent = data.username;  // Отображаем данные пользователя
     } else {
-      cart.items.push({ productId, quantity });
+        localStorage.removeItem('accessToken');  // Если токен недействителен, удаляем его
     }
+}
 
-    await cart.save();
-    res.status(200).json({ message: "Товар добавлен в корзину", cart });
 
-  } catch (error) {
-    console.error("Ошибка добавления в корзину:", error);
-    res.status(500).json({ message: "Ошибка сервера" });
-  }
-});
-
-// Указание папки со статическими файлами
-app.use(express.static(path.join(__dirname, "public")));
-
-// Схема и модель пользователя
-const userSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  name: { type: String, default: "" },
-  city: { type: String, default: "" }
-});
-const User = mongoose.model("User", userSchema);
-
-// Мидлвар для проверки токена
 
 function generateTokens(user, site) {
     const issuedAt = Math.floor(Date.now() / 1000);
     
     const accessToken = jwt.sign(
-        { id: user._id, username: user.username, site: "https://makadamia.onrender.com", iat: issuedAt },
+        { id: user._id, username: user.username, iat: issuedAt },
         JWT_SECRET,
         { expiresIn: "30m" }  // ⏳ Access-токен на 30 минут
     );
 
     const refreshToken = jwt.sign(
-        { id: user._id, username: user.username, site: "https://makadamia.onrender.com", iat: issuedAt },
+        { id: user._id, username: user.username, site, iat: issuedAt },
         REFRESH_SECRET,
         { expiresIn: "7d" }  // 🔄 Refresh-токен на 7 дней
     );
@@ -212,254 +441,288 @@ function generateTokens(user, site) {
     return { accessToken, refreshToken };
 }
 
-const Order = require("./models/Order"); // Подключаем модель заказа
 
-app.post("/api/order", authMiddleware, async (req, res) => {
+function isTokenExpired(token) {
+    if (!token) return true; // Если токена нет, он считается истекшим
+
     try {
-        console.log("📦 Новый заказ:", req.body); // Логируем входящие данные
-
-        const { items, address, additionalInfo } = req.body;
-
-        if (!items || items.length === 0) {
-            console.error("❌ Корзина пуста");
-            return res.status(400).json({ message: "Корзина не может быть пустой" });
-        }
-
-        const userId = req.user.id; // Получаем ID пользователя из токена
-
-        const newOrder = new Order({
-            userId,
-            items,
-            address,
-            additionalInfo,
-            status: "Оформлен"
-        });
-
-        await newOrder.save();
-        console.log("✅ Заказ успешно сохранен:", newOrder);
-        res.status(201).json({ message: "Заказ успешно оформлен", order: newOrder });
-    } catch (error) {
-        console.error("❌ Ошибка при сохранении заказа:", error);
-        res.status(500).json({ message: "Ошибка сервера" });
-    }
-});
-
-// Регистрация пользователя
-app.post('/register', async (req, res) => {
-  const schema = Joi.object({
-    username: Joi.string().trim().min(3).max(30).required(),
-    password: Joi.string().min(8).required(),
-  });
-
-  const { error } = schema.validate(req.body);
-  if (error) {
-    return res.status(400).json({ message: error.details[0].message });
-  }
-
-  const { username, password } = req.body;
-
-  try {
-    console.log("Регистрация пользователя:", username);
-    const existingUser = await User.findOne({ username });
-    if (existingUser) {
-      return res.status(409).json({ message: 'Пользователь с таким именем уже существует' });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 12);
-    const newUser = new User({ username, password: hashedPassword });
-
-    await newUser.save();
-    console.log(`Пользователь "${username}" успешно зарегистрирован.`);
-    return res.status(201).json({ message: 'Пользователь успешно зарегистрирован' });
-
-  } catch (err) {
-    console.error("Ошибка регистрации:", err);
-    return res.status(500).json({ message: 'Ошибка регистрации пользователя', error: err.message });
-  }
-});
-// Авторизация пользователя
-app.post('/login', async (req, res) => {
-    const { username, password } = req.body;
-
-    const user = await User.findOne({ username });
-    if (!user || !(await bcrypt.compare(password, user.password))) {
-        return res.status(401).json({ message: 'Неверные данные' });
-    }
-
-    const { accessToken, refreshToken } = generateTokens(user);
-
-    res.cookie("refreshTokenDesktop", refreshToken, { 
-        httpOnly: true,
-        secure: true,
-        sameSite: "None",
-        path: "/",
-        maxAge: 30 * 24 * 60 * 60 * 1000  // Устанавливаем refreshToken на 30 дней
-    });
-
-    res.json({ accessToken });
-});
-
-
-// Обработка запроса на обновление токена для ПК-версии
-app.post('/refresh', async (req, res) => {
-    const refreshToken = req.cookies.refreshTokenDesktop;  // Используем refreshTokenDesktop для ПК-версии
-
-    if (!refreshToken) {
-        console.error("❌ Refresh-токен отсутствует в cookies");
-        return res.status(401).json({ message: "Не авторизован" });
-    }
-  
-    console.log("🔍 Полученный refreshToken:", refreshToken);
-    jwt.verify(refreshToken, REFRESH_SECRET, async (err, decodedUser) => {
-        if (err) {
-            console.error("❌ Ошибка проверки refresh-токена:", err.message);
-            return res.status(403).json({ message: "Недействительный refresh-токен" });
-        }
-
-        if (!decodedUser || decodedUser.site !== "https://makadamia.onrender.com") {
-            console.error("❌ Токен не соответствует сайту:", decodedUser);
-            return res.status(403).json({ message: "Недействительный refresh-токен" });
-        }
-
-        const user = await User.findById(decodedUser.id);
-        if (!user) {
-            console.error("❌ Пользователь не найден по ID:", decodedUser.id);
-            return res.status(404).json({ message: "Пользователь не найден" });
-        }
-
-        const { accessToken, refreshToken: newRefreshToken } = generateTokens(user);
-
-        res.cookie("refreshTokenDesktop", newRefreshToken, {
-            httpOnly: true,
-            secure: true,
-            sameSite: "None",
-            path: "/",
-            maxAge: 30 * 24 * 60 * 60 * 1000  // Обновляем refreshToken на 30 дней
-        });
-
-        console.log("✅ Refresh-токен обновлен успешно");
-        res.json({ accessToken });
-    });
-});
-
-
-async function refreshAccessToken() {
-    try {
-        console.log("🔄 Отправляем запрос на обновление токена...");
-        const response = await fetch(`${window.location.origin}/refresh`, { // ✅ Автоматически берёт URL
-            method: "POST",
-            credentials: "include"
-        });
-
-        if (!response.ok) {
-            console.warn("❌ Ошибка обновления токена:", response.status);
-            return null;
-        }
-
-        const data = await response.json(); // ✅ Получаем новый accessToken
-        console.log("✅ Новый accessToken:", data.accessToken);
-        localStorage.setItem("accessToken", data.accessToken);
-        return data.accessToken;
-    } catch (error) {  // ✅ Добавили catch
-        console.error("Ошибка при обновлении токена:", error);
-        return null;
+        const base64 = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"); // Исправляем base64
+        const payload = JSON.parse(atob(base64)); // Декодируем payload
+        return (Date.now() / 1000) >= payload.exp; // Проверяем срок действия
+    } catch (e) {
+        console.error("❌ Ошибка декодирования токена:", e);
+        return true;
     }
 }
-app.post('/logout', authMiddleware, (req, res) => {
-    res.clearCookie("refreshTokenDesktop", {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'None',
-        path: "/",
-        domain: "makadamia.onrender.com"
+
+
+// Запускаем проверку токена раз в минуту
+setInterval(() => {
+    if (isTokenExpired()) {
+      console.log("⏳ Проверяем обновление токена...");
+        console.log("🔄 Токен истёк, обновляем...");
+        refreshAccessToken().then(newToken => {
+            console.log("✅ Новый токен после автообновления:", newToken);
+        }).catch(err => console.error("❌ Ошибка обновления:", err));
+    }
+}, 60000); // 1 раз в минуту
+
+function editField(field) {
+    const input = document.getElementById(field + "Input");
+    console.log("Редактируем поле:", field, "Значение:", input.value);
+
+    if (input.disabled) {
+        input.disabled = false;
+        input.focus();
+    } else {
+        fetch("https://makadamia.onrender.com/account", {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${localStorage.getItem("token")}`
+            },
+            body: JSON.stringify({ [field]: input.value }) // Отправляем данные на сервер
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Ответ сервера:", data);
+            input.disabled = true;
+        })
+        .catch(error => console.log("Ошибка обновления профиля:", error));
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+        console.warn("❌ Нет токена, не запрашиваем /account");
+        return;
+    }
+
+    fetch("https://makadamia.onrender.com/account", {
+        method: "GET", // ✅ Добавляем явное указание метода
+        headers: { 
+            "Authorization": `Bearer ${token}` // ✅ Передаем токен
+        }
+    })
+    .then(res => {
+        if (!res.ok) {
+            throw new Error(`Ошибка HTTP: ${res.status}`);
+        }
+        return res.json();
+    })
+    .then(data => {
+        const nameInput = document.getElementById("nameInput");
+        const cityInput = document.getElementById("cityInput");
+
+        if (nameInput) nameInput.value = data.name || "";
+        if (cityInput) cityInput.value = data.city || "";
+    })
+    .catch(error => console.error("❌ Ошибка загрузки профиля:", error));
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    console.log("Страница загружена");
+
+    const editNameBtn = document.getElementById("editName");
+    const editCityBtn = document.getElementById("editCity");
+
+    if (editNameBtn) {
+        editNameBtn.addEventListener("click", () => editField("name"));
+    } else {
+        console.warn("Кнопка editName не найдена!");
+    }
+
+    if (editCityBtn) {
+        editCityBtn.addEventListener("click", () => editField("city"));
+    } else {
+        console.warn("Кнопка editCity не найдена!");
+    }
+});
+// Проверка состояния авторизации
+function checkAuthStatus() {
+    const token = localStorage.getItem("token");
+    const username = localStorage.getItem("username");
+    const authButton = document.getElementById("authButton");
+    const cabinetButton = document.getElementById("cabinetButton");
+
+    if (!authButton || !cabinetButton) {
+        console.warn("❌ Не найдены кнопки 'Вход' или 'Личный кабинет'!");
+        return;
+    }
+
+    if (token && username && !isTokenExpired(token)) { 
+        console.log("✅ Пользователь авторизован");
+        authButton.style.display = "none";
+        cabinetButton.style.display = "inline-block";
+    } else {
+        console.log("⚠️ Пользователь не авторизован");
+        authButton.style.display = "inline-block";
+        cabinetButton.style.display = "none";
+        sessionStorage.removeItem("authChecked"); // Убедитесь, что снова проверите авторизацию
+    }
+}
+
+
+async function logout() {
+    const token = localStorage.getItem("token"); // Получаем токен
+
+    try {
+        const response = await fetch("https://makadamia.onrender.com/logout", {
+            method: "POST",
+            credentials: 'include', // Обязательно передаем cookies
+            headers: {
+                "Authorization": `Bearer ${token}`  // Отправка токена для выхода
+            }
+        });
+
+        if (response.ok) {
+            // Очистка токенов и cookies
+            localStorage.removeItem('token');
+            sessionStorage.removeItem('token');
+            document.cookie = "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+            document.cookie = "refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+            
+            window.location.href = "/index.html"; // Перенаправление на страницу входа
+        } else {
+            console.error("❌ Ошибка при выходе:", response.status);
+        }
+    } catch (error) {
+        console.error("❌ Ошибка при выходе:", error);
+    }
+}
+
+
+
+
+// Переход на страницу личного кабинета
+function openCabinet() {
+    const token = localStorage.getItem('token');
+    const username = localStorage.getItem('username');
+
+   if (!token && !sessionStorage.getItem("authFailed")) {
+    alert("Вы не авторизованы. Перенаправление...");
+    window.location.href = "/login.html";
+    } else {
+        // Переход на страницу личного кабинета
+        window.location.href = "/account.html";
+    }
+}
+
+// Инициализация авторизации и кнопок при загрузке страницы
+document.addEventListener("DOMContentLoaded", function () {
+    checkAuthStatus();
+
+    // Убеждаемся, что кнопка "Выход" отображается только в личном кабинете
+    const logoutButton = document.getElementById('logoutButton');
+    if (logoutButton && window.location.pathname !== '/account.html') {
+        logoutButton.style.display = 'none';
+    }
+});
+
+// Расчет баланса на основе корзины
+function calculateBalance() {
+    let balance = 0;
+    for (const item in cart) {
+        balance += cart[item].price * cart[item].quantity;
+    }
+    return balance;
+}
+// Переход на страницу оформления заказа
+function goToCheckoutPage() {
+    saveCartToLocalStorage();
+    window.location.href = "checkout.html";
+}
+
+
+document.addEventListener("DOMContentLoaded", () => {
+    const token = localStorage.getItem('token'); // Получаем токен из localStorage
+    if (!token) {
+        document.getElementById('usernameDisplay').innerText = "Гость";
+        return;
+    }
+
+    fetch("https://makadamia.onrender.com/account", {
+        method: "GET",
+        credentials: "include", // ✅ Добавляем передачу cookies
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    })
+    .then(res => {
+        if (!res.ok) {
+            throw new Error(`Ошибка HTTP: ${res.status}`);
+        }
+        return res.json();
+    })
+    .then(data => {
+        if (data.username) {
+            document.getElementById('usernameDisplay').innerText = data.username;
+            document.getElementById('authButton').style.display = 'none'; // Скрываем "Вход"
+            document.getElementById('cabinetButton').style.display = 'inline-block'; // Показываем "Личный кабинет"
+        } else {
+            document.getElementById('usernameDisplay').innerText = "Ошибка загрузки";
+        }
+    })
+    .catch(error => {
+        console.error("Ошибка загрузки аккаунта:", error);
+        document.getElementById('usernameDisplay').innerText = "Ошибка загрузки";
+    });
+});
+async function updateAccount(newUsername, newPassword) {
+  const token = localStorage.getItem("accessToken");
+
+  const response = await fetch("https://makadamia.onrender.com/account", {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}` // Без этого сервер отклонит запрос
+    },
+    body: JSON.stringify({ username: newUsername, password: newPassword }),
+  });
+
+  const data = await response.json();
+  console.log("Ответ от сервера:", data);
+}
+document.addEventListener('DOMContentLoaded', async () => {
+    const accessToken = localStorage.getItem('accessToken');
+    const authButton = document.getElementById('authButton');  // Кнопка Вход/Личный кабинет
+
+    if (accessToken) {
+        authButton.textContent = 'Личный кабинет';
+        await loadUserData(accessToken);  // Загрузить данные аккаунта
+    } else {
+        authButton.textContent = 'Вход';
+    }
+});
+
+async function loadUserData(token) {
+    const response = await fetch('/account', {
+        headers: { 'Authorization': `Bearer ${token}` },
     });
 
-    res.json({ message: 'Вы вышли из системы' });
-});
+    if (response.ok) {
+        const userData = await response.json();
+        document.getElementById('username').textContent = userData.username;
+    } else {
+        localStorage.removeItem('accessToken');
+    }
+}
 
+function handleAuthClick() {
+    const token = localStorage.getItem('token');
+    if (token) {
+        window.location.href = 'account.html'; // Если пользователь авторизован, переходим в личный кабинет
+    } else {
+        window.location.href = 'login.html'; // Если нет, перенаправляем на страницу входа
+    }
+}
 
-// Обновление токена
-app.post('/-token', (req, res) => {
-  const { token: Token } = req.body;
-
-  if (!Token) {
-    return res.status(403).json({ message: 'Токен обновления не предоставлен' });
-  }
-
-  try {
-    const user = jwt.verify(Token, JWT_SECRET);
-    const newAccessToken = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '1h' });
-    res.status(200).json({ token: newAccessToken });
-  } catch (err) {
-    res.status(403).json({ message: 'Недействительный токен обновления' });
-  }
-});
-
-// Приватный маршрут
-app.get('/private-route', authMiddleware, (req, res) => {
-  res.json({ message: `Добро пожаловать, пользователь ${req.user.id}` });
-});
-app.get('/account', authMiddleware, async (req, res) => {
-    try {
-        if (!req.user || !req.user.id) {
-            return res.status(401).json({ message: "Не авторизован" });
-        }
-
-        const user = await User.findById(req.user.id).select("username name city");
-        if (!user) {
-            return res.status(404).json({ message: "Пользователь не найден" });
-        }
-
-        res.json({ username: user.username, name: user.name, city: user.city });
-    } catch (error) {  // ✅ Добавляем обработку ошибки
-        console.error("Ошибка при загрузке аккаунта:", error);
-        res.status(500).json({ message: "Ошибка сервера", error: error.message });
+// Убедитесь, что этот код в `script.js` загружен перед его вызовом в HTML
+document.addEventListener("DOMContentLoaded", function () {
+    const authButton = document.getElementById("authButton");
+    if (authButton) {
+        authButton.onclick = handleAuthClick;
     }
 });
-app.put('/account', authMiddleware, async (req, res) => {
-    const { name, city, username, password } = req.body; // Получаем данные из запроса
-
-    try {
-        const user = await User.findById(req.user.id);
-        if (!user) {
-            return res.status(404).json({ message: 'Пользователь не найден' });
-        }
-
-        if (name) user.name = name;  // Обновляем имя
-        if (city) user.city = city;  // Обновляем город
-        if (username) user.username = username;  // Обновляем username
-        if (password) user.password = await bcrypt.hash(password, 12);  // Обновляем пароль
-
-        await user.save(); // Сохраняем обновлённые данные
-        res.json({ message: 'Аккаунт обновлён', user });
-    } catch (error) {
-        res.status(500).json({ message: 'Ошибка при обновлении аккаунта', error: error.message });
-    }
-});
-// Обработка корневого маршрута
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
-});
-
-// Проверка соединения
-app.get("/connect", (req, res) => {
-  res.send("Соединение с сервером успешно!");
-});
-
-// Обработчик ошибок
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: 'Что-то пошло не так!', error: err.message });
-});
-
-// Обработка 404 ошибок
-app.use((req, res) => {
-  res.status(404).json({ message: "Ресурс не найден" });
-});
-
-// Порт, на котором будет работать сервер
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
-
