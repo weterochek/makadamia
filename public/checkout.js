@@ -128,13 +128,15 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             // Формируем данные заказа
-            const orderData = {
-                name: document.getElementById("customerName").value,
-                address: document.getElementById("customerAddress").value,
-                additionalInfo: document.getElementById("additionalInfo").value,
-                timestamp: document.getElementById("orderTime").value || new Date().toISOString(), // Если время не выбрано — используем текущее время
-                cart: cart // ✅ Добавляем корзину в заказ
-            };
+           const orderData = {
+    address: document.getElementById("customerAddress").value,
+    additionalInfo: document.getElementById("additionalInfo").value,
+    items: Object.keys(cart).map(key => ({
+        productId: cart[key].productId, 
+        quantity: cart[key].quantity
+    })) // ✅ Теперь cart передается как items
+};
+
 
             console.log("📡 Отправка данных заказа:", orderData);
 
