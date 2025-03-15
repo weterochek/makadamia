@@ -114,12 +114,12 @@ function generateUniqueProductId() {
 // Функция добавления товара в корзину
 function addToCart(itemName, itemPrice) {
     const productId = generateUniqueProductId();  // Генерация уникального productId
-    
+
     // Добавляем товар в корзину
     if (cart[itemName]) {
         cart[itemName].quantity += 1;
     } else {
-        cart[itemName] = { price: itemPrice, quantity: 1, productId: productId };
+        cart[itemName] = { name: itemName, price: itemPrice, quantity: 1, productId: productId };
     }
 
     // Сохраняем корзину в localStorage
@@ -127,6 +127,7 @@ function addToCart(itemName, itemPrice) {
     updateCartDisplay();
     replaceAddButtonWithControls(itemName);
 }
+
 
 
 
