@@ -82,13 +82,15 @@ const authMiddleware = (req, res, next) => {
 app.get('/orders', authMiddleware, async (req, res) => {
     const userId = req.user.id; // Получаем ID пользователя из токена
     try {
-        const orders = await Order.find({ userId }); // Находим все заказы этого пользователя
+        const orders = await Order.find({ userId })
+            .populate('items.productId', 'name price'); // Загружаем только нужные поля: name и price
         res.json(orders); // Отправляем заказы в виде JSON
     } catch (error) {
         console.error("Ошибка получения заказов:", error);
         res.status(500).json({ message: "Ошибка при получении заказов" });
     }
 });
+
 
 
 
