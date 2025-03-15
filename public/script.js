@@ -17,6 +17,15 @@ window.onload = function () {
 
 console.log("Отправка запроса на /refresh");
 console.log("Токен перед запросом:", localStorage.getItem("token"));
+function handleAuthClick() {
+    const token = localStorage.getItem('token');
+    if (token) {
+        window.location.href = 'account.html'; // Если пользователь авторизован, переходим в личный кабинет
+    } else {
+        window.location.href = 'login.html'; // Если нет, перенаправляем на страницу входа
+    }
+}
+
 
 document.addEventListener("DOMContentLoaded", async function () {
     // Объединяем все события, которые должны быть обработаны после загрузки страницы.
@@ -718,14 +727,6 @@ async function loadUserData(token) {
 }
 
 // Определяем функцию handleAuthClick до того, как она используется
-function handleAuthClick() {
-    const token = localStorage.getItem('token');
-    if (token) {
-        window.location.href = 'account.html'; // Если пользователь авторизован, переходим в личный кабинет
-    } else {
-        window.location.href = 'login.html'; // Если нет, перенаправляем на страницу входа
-    }
-}
 
 
 async function loadOrders() {
