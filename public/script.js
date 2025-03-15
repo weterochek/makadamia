@@ -653,14 +653,11 @@ function goToCheckoutPage() {
 
 document.addEventListener("DOMContentLoaded", () => {
     const token = localStorage.getItem('token'); // Получаем токен из localStorage
+        console.log("Используем токен:", token);  // Логирование токена
     if (!token) {
         document.getElementById('usernameDisplay').innerText = "Гость";
         return;
-document.addEventListener("DOMContentLoaded", function () {
-    const token = localStorage.getItem("token");  // Получаем токен из localStorage
-    console.log("Используем токен:", token);  // Логирование токена
-    }
-
+        
     fetch("https://makadamia.onrender.com/account", {
         method: "GET",
         credentials: "include", // ✅ Добавляем передачу cookies
