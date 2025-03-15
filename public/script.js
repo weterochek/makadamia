@@ -412,6 +412,7 @@ async function refreshAccessToken() {
         const data = await response.json();
         console.log("✅ Новый токен получен:", data.accessToken);
         localStorage.setItem("token", data.accessToken);  // Сохраняем новый токен
+        console.log("Новый токен сохранен в localStorage:", data.accessToken);
         return data.accessToken;
     } catch (error) {
         console.error("❌ Ошибка при обновлении токена:", error);
@@ -655,6 +656,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!token) {
         document.getElementById('usernameDisplay').innerText = "Гость";
         return;
+document.addEventListener("DOMContentLoaded", function () {
+    const token = localStorage.getItem("token");  // Получаем токен из localStorage
+    console.log("Используем токен:", token);  // Логирование токена
     }
 
     fetch("https://makadamia.onrender.com/account", {
@@ -684,6 +688,7 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById('usernameDisplay').innerText = "Ошибка загрузки";
     });
 });
+
 async function updateAccount(newUsername, newPassword) {
   const token = localStorage.getItem("accessToken");
 
