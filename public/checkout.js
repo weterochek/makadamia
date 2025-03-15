@@ -128,14 +128,16 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             // Формируем данные заказа
-           const orderData = {
+const orderData = {
+    name: document.getElementById("customerName").value,
     address: document.getElementById("customerAddress").value,
     additionalInfo: document.getElementById("additionalInfo").value,
-    items: Object.keys(cart).map(key => ({
-        productId: cart[key].productId, 
-        quantity: cart[key].quantity
-    })) // ✅ Теперь cart передается как items
+    items: Object.values(cart).map(item => ({
+        productId: item.productId,
+        quantity: item.quantity
+    }))
 };
+
 
 
             console.log("📡 Отправка данных заказа:", orderData);
