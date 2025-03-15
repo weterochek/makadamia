@@ -29,6 +29,37 @@ async function loadOrders() {
         alert("Ошибка при загрузке заказов");
     }
 }
+fetch('/orders', {
+    method: 'GET',
+    headers: {
+        'Authorization': `Bearer ${token}`
+    }
+})
+.then(response => response.json())
+.then(orders => {
+    displayOrders(orders);
+})
+.catch(error => console.error("Ошибка при загрузке заказов:", error));
+
+function displayOrders(orders) {
+    const ordersContainer = document.getElementById("ordersContainer");
+    if (orders.length === 0) {
+        ordersContainer.innerHTML = "<p>У вас нет заказов.</p>";
+    } else {
+        orders.forEach(order => {
+            const orderElement = document.createElement("div");
+            orderElement.innerHTML = `
+                <h3>Заказ №${order._id}</h3>
+                <p>Адрес: ${order.address}</p>
+                <p>Статус: ${order.status}</p>
+                <ul>
+                    ${order.items.map(item => `<li>${item.name} - ${item.quantity} шт. по ${item.price} ₽</li>`).join('')}
+                </ul>
+            `;
+            ordersContainer.appendChild(orderElement);
+        });
+    }
+}
 
 // Отображение заказов на странице
 function displayOrders(orders) {
