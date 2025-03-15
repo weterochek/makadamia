@@ -106,8 +106,12 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log("⚠️ Пользователь не принял cookies. Запрос не отправлен.");
     }
 });
-// Добавление товара в корзину
-// Функция для генерации уникального productId
+// Функция генерации уникального productId
+function generateUniqueProductId() {
+    return 'prod_' + Math.random().toString(36).substr(2, 9);  // Генерация уникального ID
+}
+
+// Функция добавления товара в корзину
 function addToCart(itemName, itemPrice) {
     const productId = generateUniqueProductId();  // Генерация уникального productId
     
@@ -115,7 +119,7 @@ function addToCart(itemName, itemPrice) {
     if (cart[itemName]) {
         cart[itemName].quantity += 1;
     } else {
-        cart[itemName] = { price: itemPrice, quantity: 1, productId: productId }; // Сохраняем productId
+        cart[itemName] = { price: itemPrice, quantity: 1, productId: productId };
     }
 
     // Сохраняем корзину в localStorage
