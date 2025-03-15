@@ -212,6 +212,15 @@ function generateTokens(user, site) {
     return { accessToken, refreshToken };
 }
 
+app.post("/api/order", async (req, res) => {
+    try {
+        console.log("📦 Новый заказ:", req.body); // Логирование входящих данных
+        // Код обработки заказа...
+    } catch (error) {
+        console.error("❌ Ошибка при оформлении заказа:", error);
+        res.status(500).json({ message: "Ошибка сервера" });
+    }
+});
 
 // Регистрация пользователя
 app.post('/register', async (req, res) => {
