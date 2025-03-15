@@ -7,10 +7,11 @@ const authMiddleware = require("../middleware/authMiddleware");
 
 router.post("/order", authMiddleware, async (req, res) => {
     try {
-        console.log("🔍 Полученные данные заказа:", req.body);  // Логируем приходящие данные
+        console.log("🔍 Полученные данные заказа:", req.body); // Логируем приходящие данные
 
         const { items, address, additionalInfo } = req.body;
 
+        // Проверка на пустую корзину
         if (!items || items.length === 0) {
             console.error("❌ Корзина пуста");
             return res.status(400).json({ message: "Корзина не может быть пустой" });
