@@ -212,12 +212,34 @@ function generateTokens(user, site) {
     return { accessToken, refreshToken };
 }
 
-app.post("/api/order", async (req, res) => {
+const Order = require("./models/Order"); // Подключаем модель заказа
+
+app.post("/api/order", authMiddleware, async (req, res) => {
     try {
-        console.log("📦 Новый заказ:", req.body); // Логирование входящих данных
-        // Код обработки заказа...
+        console.log("📦 Новый заказ:", req.body); // Логируем входящие данные
+
+        const { items, address, additionalInfo } = req.body;
+
+        if (!items || items.length === 0) {
+            console.error("❌ Корзина пуста");
+            return res.status(400).json({ message: "Корзина не может быть пустой" });
+        }
+
+        const userId = req.user.id; // Получаем ID пользователя из токена
+
+        const newOrder = new Order({
+            userId,
+            items,
+            address,
+            additionalInfo,
+            status: "Оформлен"
+        });
+
+        await newOrder.save();
+        console.log("✅ Заказ успешно сохранен:", newOrder);
+        res.status(201).json({ message: "Заказ успешно оформлен", order: newOrder });
     } catch (error) {
-        console.error("❌ Ошибка при оформлении заказа:", error);
+        console.error("❌ Ошибка при сохранении заказа:", error);
         res.status(500).json({ message: "Ошибка сервера" });
     }
 });
