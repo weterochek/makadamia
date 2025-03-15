@@ -217,49 +217,38 @@ const Order = require("./models/Order"); // Подключаем модель з
 
 app.post("/api/order", authMiddleware, async (req, res) => {
     try {
-        console.log("📦 Новый заказ:", req.body);  // Логируем приходящие данные
-
-        // Деструктурируем данные из запроса
         const { items, address, additionalInfo } = req.body;
-
-        // Проверка на наличие товаров в заказе
-        if (!items || items.length === 0) {
-            console.error("❌ Корзина пуста");
-            return res.status(400).json({ message: "Корзина не может быть пустой" });
-        }
-
-        // Логируем каждую позицию заказа, чтобы увидеть productId и количество
-        items.forEach(item => {
-            console.log(`Продукт ID: ${item.productId}, Количество: ${item.quantity}`);
-        });
-
-        // Получаем ID пользователя из JWT (токен)
         const userId = req.user.id;
 
-        // Создаем новый заказ в базе данных
-        const newOrder = new Order({
-            userId,
-            items,
-            address,
-            additionalInfo,
-            status: "Оформлен"  // Начальный статус заказа
+        // Получаем данные о товарах по их productId
+        const products = await Product.find({ '_id': { $in: items.map(item => item.productId) } });
+
+        // Создаем массив с полными данными о товарах
+        const fullItems = items.map(item => {
+            const product = products.find(p => p._id.toString() === item.productId);
+            return {
+                productId: item.productId,
+                name: product ? product.name : "Неизвестный товар",
+                price: product ? product.price : 0,
+                quantity: item.quantity
+            };
         });
 
-        // Сохраняем заказ в базе данных
+        const newOrder = new Order({
+            userId,
+            items: fullItems,
+            address,
+            additionalInfo,
+            status: "Оформлен"
+        });
+
         await newOrder.save();
-        console.log("✅ Заказ успешно сохранен:", newOrder);
-
-        // Возвращаем успешный ответ
-        res.status(201).json({ message: "Заказ успешно оформлен" });
-
+        res.status(201).json({ message: "Заказ успешно оформлен", order: newOrder });
     } catch (error) {
-        // Логируем ошибку при сохранении заказа
-        console.error("❌ Ошибка при сохранении заказа:", error);
-        // Отправляем ошибку сервера
+        console.error("Ошибка при сохранении заказа:", error);
         res.status(500).json({ message: "Ошибка сервера" });
     }
 });
-
 
 // Регистрация пользователя
 app.post('/register', async (req, res) => {
