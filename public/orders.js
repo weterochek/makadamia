@@ -27,6 +27,7 @@ async function loadUserOrders() {
 }
 
 // Отображение заказов
+// Отображение заказов
 function displayOrders(orders) {
     const ordersContainer = document.getElementById("ordersContainer");
     if (orders.length === 0) {
@@ -36,21 +37,24 @@ function displayOrders(orders) {
             const orderElement = document.createElement("div");
 
             // Форматируем дату заказа
-            const orderDate = new Date(order.createdAt).toLocaleString(); // Вы можете изменить формат даты по своему усмотрению
+            const orderDate = new Date(order.createdAt).toLocaleString();
 
             orderElement.innerHTML = `
                 <h3>Заказ №${order._id}</h3>
                 <p>Адрес: ${order.address}</p>
                 <p>Статус: ${order.status}</p>
-                <p>Время заказа: ${orderDate}</p> <!-- Добавлено время заказа -->
+                <p>Время заказа: ${orderDate}</p>
                 <ul>
-                    ${order.items.map(item => `<li>${item.name} - ${item.quantity} шт. по ${item.price} ₽</li>`).join('')}
+                    ${order.items.map(item => 
+                        `<li>${item.name} - ${item.quantity} шт. по ${item.price} ₽</li>`
+                    ).join('')}
                 </ul>
             `;
             ordersContainer.appendChild(orderElement);
         });
     }
 }
+
 
 // Загрузка заказов при загрузке страницы
 document.addEventListener("DOMContentLoaded", loadUserOrders);
