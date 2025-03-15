@@ -27,7 +27,6 @@ async function loadUserOrders() {
 }
 
 // Отображение заказов
-// Отображение заказов
 function displayOrders(orders) {
     const ordersContainer = document.getElementById("ordersContainer");
     if (orders.length === 0) {
@@ -46,7 +45,7 @@ function displayOrders(orders) {
                 <p>Время заказа: ${orderDate}</p>
                 <ul>
                     ${order.items.map(item => 
-                        `<li>${item.name} - ${item.quantity} шт. по ${item.price} ₽</li>`
+                        `<li>${item.productId.name} - ${item.quantity} шт. по ${item.productId.price} ₽</li>`
                     ).join('')}
                 </ul>
             `;
@@ -54,6 +53,7 @@ function displayOrders(orders) {
         });
     }
 }
+
 
 
 // Загрузка заказов при загрузке страницы
