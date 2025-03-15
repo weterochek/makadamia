@@ -771,9 +771,14 @@ async function loadOrders() {
 // Отображение заказов на странице
 function displayOrders(orders) {
     const ordersContainer = document.getElementById("ordersContainer");
-    if (!ordersContainer) {
-        console.error("❌ Контейнер для заказов не найден");
+    const noOrdersMessage = document.getElementById("noOrdersMessage");
+
+    // Если заказов нет, показываем сообщение
+    if (orders.length === 0) {
+        noOrdersMessage.style.display = 'block';
         return;
+    } else {
+        noOrdersMessage.style.display = 'none';
     }
 
     ordersContainer.innerHTML = ""; // Очищаем контейнер
@@ -781,19 +786,19 @@ function displayOrders(orders) {
     orders.forEach(order => {
         const orderElement = document.createElement("div");
         orderElement.classList.add("order");
+
         orderElement.innerHTML = `
             <h3>Заказ №${order._id}</h3>
             <p>Адрес: ${order.address}</p>
             <p>Доп. информация: ${order.additionalInfo || "Нет"}</p>
-            <p>Статус: ${order.status}</p>
+            <p>Статус: <strong>${order.status}</strong></p>
             <p>Дата: ${new Date(order.createdAt).toLocaleDateString()}</p>
             <ul>
-                ${order.items.map(item => `<li>${item.productId} - ${item.quantity} шт.</li>`).join("")}
+                ${order.items.map(item => `
+                    <li>${item.productId} - ${item.quantity} шт.</li>
+                `).join("")}
             </ul>
         `;
         ordersContainer.appendChild(orderElement);
     });
 }
-
-document.addEventListener("DOMContentLoaded", loadOrders);
-
