@@ -25,6 +25,49 @@ document.addEventListener("DOMContentLoaded", async function () {
     sessionStorage.setItem("authChecked", "true");
     await refreshAccessToken();
 }
+    document.addEventListener("DOMContentLoaded", function () {
+    // Your existing code for handling cookies
+    if (!localStorage.getItem("cookiesAccepted")) {
+        showCookieBanner();
+    }
+
+    // Your existing code for authButton click handler
+    const authButton = document.getElementById("authButton");
+    if (authButton) {
+        authButton.onclick = handleAuthClick;
+    }
+
+    // Your existing code for loading user data
+    if (localStorage.getItem("cookiesAccepted") === "true") {
+        const token = localStorage.getItem("token");
+        if (token) {
+            fetch("https://makadamia.onrender.com/account", {
+                method: "GET",
+                credentials: "include", 
+                headers: { "Authorization": `Bearer ${token}` }
+            })
+            .then(response => response.json())
+            .then(data => console.log("✅ Данные аккаунта:", data))
+            .catch(error => console.error("❌ Ошибка загрузки аккаунта:", error));
+        }
+    }
+
+    // Your existing code for handling edit buttons
+    const editNameBtn = document.getElementById("editName");
+    const editCityBtn = document.getElementById("editCity");
+    if (editNameBtn) {
+        editNameBtn.addEventListener("click", () => editField("name"));
+    } else {
+        console.warn("Кнопка editName не найдена!");
+    }
+
+    if (editCityBtn) {
+        editCityBtn.addEventListener("click", () => editField("city"));
+    } else {
+        console.warn("Кнопка editCity не найдена!");
+    }
+});
+
 
     const cartButton = document.getElementById("cartButton");
     const cartDropdown = document.getElementById("cartDropdown");
@@ -55,11 +98,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 });
 
-document.addEventListener("DOMContentLoaded", function () {
-    if (!localStorage.getItem("cookiesAccepted")) {
-        showCookieBanner();
-    }
-});
+
   if (localStorage.getItem("cookiesAccepted") === "true") {
         if (token) {
             fetch("https://makadamia.onrender.com/account", {
@@ -94,34 +133,7 @@ function showCookieBanner() {
 }
 
 
-document.addEventListener("DOMContentLoaded", function () {
-    if (localStorage.getItem("cookiesAccepted") === "true") {
-        const token = localStorage.getItem("token"); // Получаем токен
 
-        if (!token) {
-            console.warn("❌ Нет токена, не запрашиваем /account");
-            return;
-        }
-
-        fetch("https://makadamia.onrender.com/account", {
-            method: "GET", // ✅ Добавляем явное указание метода
-            credentials: "include", // ✅ Передаем cookies
-            headers: {
-                "Authorization": `Bearer ${token}` // ✅ Передаем токен
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`Ошибка HTTP: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => console.log("✅ Данные аккаунта:", data))
-        .catch(error => console.error("❌ Ошибка загрузки аккаунта:", error));
-    } else {
-        console.log("⚠️ Пользователь не принял cookies. Запрос не отправлен.");
-    }
-});
 // Функция генерации уникального productId
 function generateUniqueProductId() {
     return 'prod_' + Math.random().toString(36).substr(2, 9);  // Генерация уникального ID
@@ -605,10 +617,6 @@ function openCabinet() {
     }
 }
 
-// Инициализация авторизации и кнопок при загрузке страницы
-document.addEventListener("DOMContentLoaded", function () {
-    checkAuthStatus();
-
     // Убеждаемся, что кнопка "Выход" отображается только в личном кабинете
     const logoutButton = document.getElementById('logoutButton');
     if (logoutButton && window.location.pathname !== '/account.html') {
@@ -716,13 +724,6 @@ function handleAuthClick() {
     }
 }
 
-// Теперь подключаем обработчик события
-document.addEventListener("DOMContentLoaded", function () {
-    const authButton = document.getElementById("authButton");
-    if (authButton) {
-        authButton.onclick = handleAuthClick;  // Присваиваем функцию к кнопке
-    }
-});
 
 async function loadOrders() {
     const token = localStorage.getItem("token");
