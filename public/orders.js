@@ -29,15 +29,23 @@ async function loadOrders() {
         alert("Ошибка при загрузке заказов");
     }
 }
+// Получаем токен из localStorage
+const token = localStorage.getItem("token");
+
+if (!token) {
+    console.error("Ошибка: Токен не найден!");
+    return; // Если токен не найден, выходим из функции
+}
+
 fetch('/orders', {
     method: 'GET',
     headers: {
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${token}`  // Отправляем токен в заголовках запроса
     }
 })
 .then(response => response.json())
 .then(orders => {
-    displayOrders(orders);
+    displayOrders(orders);  // Отображаем заказы
 })
 .catch(error => console.error("Ошибка при загрузке заказов:", error));
 
