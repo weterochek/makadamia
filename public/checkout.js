@@ -165,7 +165,7 @@ const orderData = {
                 alert("🎉 Заказ успешно оформлен!");
                 cart = {}; // Очищаем корзину
                 saveCartToLocalStorage();
-                window.location.href = "thankyou.html";
+                window.location.href = "index.html";
             } catch (error) {
                 console.error("❌ Ошибка сети или сервера:", error);
                 alert("Ошибка при оформлении заказа. Проверьте соединение.");
