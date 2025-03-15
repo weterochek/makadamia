@@ -80,16 +80,16 @@ const authMiddleware = (req, res, next) => {
 
 // Получение заказов пользователя
 app.get('/orders', authMiddleware, async (req, res) => {
-    const user = req.user;
-    const orders = await Order.find({ userId: user._id });
-
-    // Форматируем время заказов перед отправкой клиенту
-    orders.forEach(order => {
-        order.timestampFormatted = order.timestamp.toLocaleString();  // Преобразуем время в строку
-    });
-
-    res.json(orders);
+    const userId = req.user.id; // Получаем ID пользователя из токена
+    try {
+        const orders = await Order.find({ userId }); // Находим все заказы этого пользователя
+        res.json(orders); // Отправляем заказы в виде JSON
+    } catch (error) {
+        console.error("Ошибка получения заказов:", error);
+        res.status(500).json({ message: "Ошибка при получении заказов" });
+    }
 });
+
 
 
 async function fetchWithAuth(url, options = {}) {
