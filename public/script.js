@@ -288,6 +288,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+
 // Обновление отображения корзины
 function updateCartDisplay() {
     const cartItems = document.getElementById("cartItems");
@@ -323,12 +324,7 @@ function updateCartDisplay() {
 }
 
     // Очищение корзины
-    if (clearCartButton) {
-    clearCartButton.addEventListener('click', () => {
-    cart = {};  // Очистка корзины
-    localStorage.removeItem('cart');  // Удаляем корзину из localStorage
-    updateCartDisplay();  // Обновляем отображение корзины
-    cartTotal.textContent = 'Итого: 0 ₽'; // Обновляем сумму
+
 
     // Сброс отображаемого количества товара на карточке
     const productCards = document.querySelectorAll(".card-dish");
