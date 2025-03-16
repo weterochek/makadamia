@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const orderSchema = new mongoose.Schema({
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // связь с пользователем
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Добавлена связь с пользователем
     name: { type: String, required: true },
     address: { type: String, required: true },
     additionalInfo: { type: String },
@@ -14,3 +14,4 @@ const orderSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now }
 });
 
+module.exports = mongoose.model('Order', orderSchema);
