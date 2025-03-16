@@ -172,7 +172,7 @@ loginForm.addEventListener("submit", async (e) => {
         if (response.ok) {
             localStorage.setItem("token", data.accessToken);
             localStorage.setItem("username", username);
-            localStorage.setItem("userId", data.userId); // сохраняем userId
+            localStorage.setItem("userId", data.userId);
 
             window.location.href = "/index.html";
         } else {
