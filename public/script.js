@@ -125,6 +125,7 @@ async function addToCart(productId, productPrice) {
 
         // Проверяем, существует ли корзина в localStorage, если нет - создаем новую
         let cart = JSON.parse(localStorage.getItem("cart")) || [];
+        console.log("Текущая корзина:", cart);  // Логируем текущую корзину для проверки
 
         // Проверяем, есть ли уже такой товар в корзине
         const existingProductIndex = cart.findIndex(item => item._id === product._id);
@@ -132,9 +133,11 @@ async function addToCart(productId, productPrice) {
         if (existingProductIndex > -1) {
             // Если товар уже есть в корзине, увеличиваем его количество
             cart[existingProductIndex].quantity += 1;
+            console.log("Товар найден в корзине. Обновляем количество:", cart[existingProductIndex]);
         } else {
             // Если товара нет в корзине, добавляем новый товар
             cart.push({ _id: product._id, name: product.name, price: product.price, quantity: 1 });
+            console.log("Товар добавлен в корзину:", cart);
         }
 
         // Сохраняем корзину в localStorage
