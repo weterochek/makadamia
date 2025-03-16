@@ -162,14 +162,14 @@ function getCookie(name) {
     return match ? match[2] : null;
 }
 // Преобразование кнопки "Добавить" в контролы "+", "-", и количество
-function replaceAddButtonWithControls(productName) {
-    const addButton = document.getElementById(`addButton_${productName}`);
-    const removeButton = document.getElementById(`removeBtn_${productName}`);
-    const addButtonControl = document.getElementById(`addBtn_${productName}`);
-    const quantityDisplay = document.getElementById(`quantity_${productName}`);
+function replaceAddButtonWithControls(productId) {
+    const addButton = document.getElementById(`addButton_${productId}`);
+    const removeButton = document.getElementById(`removeBtn_${productId}`);
+    const addButtonControl = document.getElementById(`addBtn_${productId}`);
+    const quantityDisplay = document.getElementById(`quantity_${productId}`);
 
     if (!addButton || !removeButton || !addButtonControl || !quantityDisplay) {
-        console.warn(`❌ Ошибка: Не найдены элементы для товара ${productName}`);
+        console.warn(`❌ Ошибка: Не найдены элементы для товара ${productId}`);
         return;
     }
 
@@ -180,23 +180,21 @@ function replaceAddButtonWithControls(productName) {
     quantityDisplay.textContent = cart[productId].quantity;  // Обновляем количество
 }
 
-
-// Возвращение кнопки "Добавить" вместо контролов, если товара нет в корзине
-function revertControlsToAddButton(itemName) {
-    const addButton = document.getElementById(`addButton_${itemName}`);
-    const removeButton = document.getElementById(`removeBtn_${itemName}`);
-    const addButtonControl = document.getElementById(`addBtn_${itemName}`);
-    const quantityDisplay = document.getElementById(`quantity_${itemName}`);
+function revertControlsToAddButton(productId) {
+    const addButton = document.getElementById(`addButton_${productId}`);
+    const removeButton = document.getElementById(`removeBtn_${productId}`);
+    const addButtonControl = document.getElementById(`addBtn_${productId}`);
+    const quantityDisplay = document.getElementById(`quantity_${productId}`);
 
     if (!addButton || !removeButton || !addButtonControl || !quantityDisplay) {
-        console.warn(`⚠️ Ошибка: Не найдены элементы для товара ${itemName}`);
+        console.warn(`❌ Ошибка: Не найдены элементы для товара ${productId}`);
         return;
     }
 
-    addButton.style.display = "inline-block";
-    removeButton.style.display = "none";
-    addButtonControl.style.display = "none";
-    quantityDisplay.style.display = "none";
+    addButton.style.display = "inline-block";  // Показываем кнопку "Добавить"
+    removeButton.style.display = "none";  // Скрываем кнопку "-"
+    addButtonControl.style.display = "none";  // Скрываем кнопку "+"
+    quantityDisplay.style.display = "none";  // Скрываем количество
 }
 //ощичение корзины
 document.addEventListener('DOMContentLoaded', () => {
