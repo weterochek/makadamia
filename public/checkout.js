@@ -134,13 +134,15 @@ const items = Object.keys(cart).map(productId => ({
     quantity: cart[productId].quantity
 }));
 
+const username = localStorage.getItem("username"); // или userId, если используешь
+
 const orderData = {
+    username: username,
     name: nameInput.value,
     address: addressInput.value,
     additionalInfo: additionalInfoInput.value,
     items: items
 };
-
 fetch("https://makadamia.onrender.com/api/order", {
     method: "POST",
     headers: {
