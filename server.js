@@ -195,17 +195,18 @@ const userSchema = new mongoose.Schema({
 });
 const User = mongoose.model("User", userSchema);
 // Получение товара по ID
+// Маршрут для получения товара по ID
 app.get('/products/:id', async (req, res) => {
-    const productId = req.params.id;  // Получаем ID товара из URL
+    const productId = req.params.id;
     try {
-        const product = await Product.findById(productId);  // Ищем товар по ID в базе данных
+        const product = await Product.findById(productId);
         if (!product) {
             return res.status(404).json({ message: 'Товар не найден' });
         }
-        res.json(product);  // Отправляем информацию о товаре клиенту
+        res.json(product); // Возвращаем весь объект товара
     } catch (error) {
         console.error('Ошибка при получении товара:', error);
-        res.status(500).json({ message: 'Ошибка сервера' });
+        res.status(500).json({ message: 'Ошибка при получении товара' });
     }
 });
 
