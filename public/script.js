@@ -218,39 +218,29 @@ document.addEventListener('DOMContentLoaded', () => {
 // Обновление отображения корзины
 function updateCartDisplay() {
     const cartItemsContainer = document.getElementById("cartItems");
-    const totalAmountElement = document.getElementById("totalAmount");
+    const totalAmount = document.getElementById("totalAmount");
 
-    if (!cartItemsContainer || !totalAmountElement) return;
+    if (!cartItemsContainer || !totalAmount) return;
 
-    cartItemsContainer.innerHTML = "";  // Очищаем список товаров
-    let totalAmount = 0;
+    cartItemsContainer.innerHTML = '';
+    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+    let total = 0;
 
-    for (const productId in cart) {
-        const item = cart[productId];
-        const itemTotal = item.price * item.quantity;
-        totalAmount += itemTotal;
-
-        const cartItem = document.createElement('div');
-        cartItem.className = 'cart-item';
-        cartItem.innerHTML = `
-            <div class="item-info">${item.name} - ${item.quantity} шт. по ${item.price} ₽</div>
-            <div class="cart-buttons">
-                <button onclick="decrementItem('${productId}')">-</button>
-                <span class="quantity">${item.quantity}</span>
-                <button onclick="incrementItem('${productId}')">+</button>
+    cart.forEach(item => {
+        total += item.price * item.quantity;
+        const itemElement = document.createElement('div');
+        itemElement.className = 'cart-item';
+        itemElement.innerHTML = `
+            <div class="cart-item-info">
+                <p>${item.name} - ${item.quantity} шт. по ${item.price} ₽</p>
             </div>
         `;
-        cartItemsContainer.appendChild(cartItem);
-    }
+        cartItemsContainer.appendChild(itemElement);
+    });
 
-    totalAmountElement.textContent = `Итого: ${totalAmount} ₽`;
-
-
-    // Если корзина пуста, скрываем её
-    if (Object.keys(cart).length === 0) {
-        document.getElementById("cartDropdown").style.display = "none";
-    }
+    totalAmount.textContent = `Итого: ${total} ₽`;
 }
+
 
     // Очищение корзины
     if (clearCartButton) {
