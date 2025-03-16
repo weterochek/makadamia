@@ -107,21 +107,24 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
-async function addToCart(productName, price) {
-    const response = await fetch(`/products/${encodeURIComponent(productName)}`);  // Запрос на сервер для получения товара по его названию
+async function addToCart(productId, price) {
+    const response = await fetch(`/products/${encodeURIComponent(productId)}`);  // Передаем ID для получения товара
 
     if (!response.ok) {
         console.error('Ошибка при получении товара');
         return;
     }
 
-    const product = await response.json();  // Получаем товар из базы данных
+    const product = await response.json();  // Получаем товар по ID
+
+    // Теперь у вас есть данные о товаре, включая productName
+    const productName = product.name; 
 
     // Добавляем товар в корзину
-    if (cart[product.name]) {
-        cart[product.name].quantity += 1;  // Если товар уже есть, увеличиваем количество
+    if (cart[productName]) {
+        cart[productName].quantity += 1;  // Если товар уже есть, увеличиваем количество
     } else {
-        cart[product.name] = { 
+        cart[productName] = { 
             name: product.name, 
             price: product.price, 
             quantity: 1 
@@ -131,8 +134,9 @@ async function addToCart(productName, price) {
     // Сохраняем корзину в localStorage
     saveCartToLocalStorage();
     updateCartDisplay();
-    replaceAddButtonWithControls(product.name);  // Обновляем кнопку на карточке товара
+    replaceAddButtonWithControls(productName);  // Обновляем кнопку на карточке товара
 }
+
 
 
 function updateQuantityDisplay(productName) {
