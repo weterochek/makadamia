@@ -80,21 +80,25 @@ const authMiddleware = (req, res, next) => {
 
 
 // Получение заказов пользователя
-app.get('/orders', authMiddleware, async (req, res) => {
-    const userId = req.user.id; // Получаем ID пользователя из токена
+app.get("/orders", async (req, res) => {
     try {
-        const orders = await Order.find({ userId })
-            .populate('items.productId', 'name price'); // Загружаем только нужные поля: name и price
-        res.json(orders); // Отправляем заказы в виде JSON
+        const orders = await Order.find().populate("items.productId", "name price");
+        res.status(200).json(orders);
     } catch (error) {
-        console.error("Ошибка получения заказов:", error);
-        res.status(500).json({ message: "Ошибка при получении заказов" });
+        console.error("Ошибка при получении заказов:", error);
+        res.status(500).json({ error: "Ошибка при загрузке заказов" });
     }
 });
-
-
-
-
+app.get("/user-orders/:userId", async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        const orders = await Order.find({ userId }).populate("items.productId", "name price");
+        res.status(200).json(orders);
+    } catch (error) {
+        console.error("Ошибка при получении заказов пользователя:", error);
+        res.status(500).json({ error: "Ошибка при загрузке заказов пользователя" });
+    }
+});
 async function fetchWithAuth(url, options = {}) {
     let accessToken = localStorage.getItem("accessToken");
 
@@ -232,44 +236,17 @@ function generateTokens(user, site) {
 
 const Order = require("./models/Order"); // Подключаем модель заказа
 
-app.post("/api/order", authMiddleware, async (req, res) => {
+app.post("/api/order", async (req, res) => {
     try {
-        const { items, address, additionalInfo } = req.body;
+        console.log("🔍 Полученные данные заказа:", req.body);
 
-        if (!items || items.length === 0) {
-            return res.status(400).json({ message: "Корзина не может быть пустой" });
-        }
-
-        const itemsDetails = [];
-
-        for (let item of items) {
-            const product = await Product.findOne({ name: item.productName });  // Ищем товар по имени
-            if (!product) {
-                return res.status(404).json({ message: `Товар ${item.productName} не найден` });
-            }
-
-            // Добавляем productId в item
-            itemsDetails.push({
-                productId: product._id,  // Используем _id товара
-                name: product.name,
-                price: product.price,
-                quantity: item.quantity
-            });
-        }
-
-        const newOrder = new Order({
-            userId: req.user.id,
-            items: itemsDetails,
-            address,
-            additionalInfo,
-            status: "Оформлен"
-        });
-
+        const newOrder = new Order(req.body);
         await newOrder.save();
-        res.status(201).json({ message: "Заказ успешно оформлен", order: newOrder });
+
+        res.status(201).json({ message: "Заказ успешно создан" });
     } catch (error) {
-        console.error("Ошибка при создании заказа:", error);
-        res.status(500).json({ message: "Ошибка сервера", error: error.message });
+        console.warn("❌ Ошибка при сохранении заказа:", error);
+        res.status(500).json({ error: "Ошибка при оформлении заказа" });
     }
 });
 
