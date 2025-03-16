@@ -109,7 +109,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 async function addToCart(productId, productPrice) {
     try {
-        // Используем /products/${productId} вместо /product/${productId}
+        // Используем /products/${productId} вместо /products/${productId}
         const response = await fetch(`/products/${productId}`);
         if (!response.ok) {
             throw new Error("Ошибка при получении товара");
