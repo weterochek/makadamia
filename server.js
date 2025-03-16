@@ -194,6 +194,20 @@ const userSchema = new mongoose.Schema({
   city: { type: String, default: "" }
 });
 const User = mongoose.model("User", userSchema);
+// Получение товара по ID
+app.get('/product/:id', async (req, res) => {
+    const productId = req.params.id;
+    try {
+        const product = await Product.findById(productId);  // Ищем товар по ID в базе данных
+        if (!product) {
+            return res.status(404).json({ message: 'Товар не найден' });
+        }
+        res.json(product);  // Отправляем информацию о товаре клиенту
+    } catch (error) {
+        console.error('Ошибка при получении товара:', error);
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
+});
 
 // Мидлвар для проверки токена
 
