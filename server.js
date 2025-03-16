@@ -197,30 +197,17 @@ const userSchema = new mongoose.Schema({
 const User = mongoose.model("User", userSchema);
 // Получение товара по ID
 // Маршрут для получения товара по ID
-app.get('/products/:id', async (req, res) => {
-    const productId = req.params.id;
+app.get("/product/:id", async (req, res) => {
+    const productId = req.params.id; // Получаем _id товара из URL
     try {
-        const product = await Products.findById(productId);  // Используем Products модель
+        const product = await Product.findById(productId); // Ищем по _id
         if (!product) {
-            return res.status(404).json({ message: 'Товар не найден' });
+            return res.status(404).json({ message: "Товар не найден" });
         }
-        res.json(product);  // Отправляем товар
-    } catch (error) {
-        console.error('Ошибка при получении товара:', error);
-        res.status(500).json({ message: 'Ошибка при получении товара' });
-    }
-});
-app.get('/products/name/:name', async (req, res) => {
-    const productName = req.params.name;
-    try {
-        const product = await Products.findOne({ name: productName });  // Используем Products модель
-        if (!product) {
-            return res.status(404).json({ message: 'Товар не найден' });
-        }
-        res.json(product);  // Отправляем товар
-    } catch (error) {
-        console.error('Ошибка при получении товара:', error);
-        res.status(500).json({ message: 'Ошибка при получении товара' });
+        res.json(product); // Отправляем товар
+    } catch (err) {
+        console.error("Ошибка при получении товара:", err);
+        res.status(500).json({ message: "Ошибка при получении товара" });
     }
 });
 
