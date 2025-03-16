@@ -252,26 +252,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (clearCartButton) {
         clearCartButton.addEventListener('click', () => {
-            cart = {};  // Очищаем корзину
-            localStorage.removeItem(`cart_${localStorage.getItem('username')}`);  // Удаляем localStorage
-            updateCartDisplay();  // Обновляем корзину
+            cart = {};  // Очистка корзины
+            localStorage.removeItem(`cart_${localStorage.getItem('username')}`);  // Удаление корзины из localStorage
+            updateCartDisplay();  // Обновление отображения корзины
             cartTotal.textContent = 'Итого: 0 ₽';
 
-            // ОБНОВЛЯЕМ карточки товаров
+            // ОБНОВЛЕНИЕ карточек товаров
             const productCards = document.querySelectorAll(".card-dish");
             productCards.forEach(card => {
                 const addButton = card.querySelector(".add-button-size");
                 const removeButton = card.querySelector(".quantity-control");
                 const addButtonControl = card.querySelector(".quantity-size-button");
-                const quantityDisplay = card.querySelector(".quantity"); // ЭЛЕМЕНТ С ЧИСЛОМ
+                const quantityDisplay = card.querySelector(".quantity-display"); // Элемент с количеством
 
+                // Скрытие всех кнопок и количества
                 if (addButton) addButton.style.display = "inline-block";
                 if (removeButton) removeButton.style.display = "none";
                 if (addButtonControl) addButtonControl.style.display = "none";
 
-                // ВАЖНО: обнуляем и скрываем количество
+                // Скрытие и очищение количества
                 if (quantityDisplay) {
-                    quantityDisplay.textContent = "";  // Очищаем число
+                    quantityDisplay.textContent = "";  // Очищаем количество
                     quantityDisplay.style.display = "none";  // Скрываем элемент
                 }
             });
