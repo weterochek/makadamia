@@ -109,7 +109,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 async function addToCart(productName) {
     const encodedProductName = encodeURIComponent(productName);  // Кодируем название продукта для URL
-    const response = await fetch(`/product/${encodedProductName}`);  // Запрос на сервер
+    const response = await fetch(`/products/${encodedProductName}`);  // Запрос на сервер
 
     if (!response.ok) {
         console.error('Ошибка при получении товара');
