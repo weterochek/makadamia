@@ -92,18 +92,20 @@ app.get('/orders', authMiddleware, async (req, res) => {
     }
 });
 
-app.get('/products/:id', async (req, res) => {
-    try {
-        const productId = req.params.id;
-        const product = await Product.findById(productId);  // Находим товар по ID
-        if (!product) {
-            return res.status(404).json({ message: "Товар не найден" });
-        }
-        res.json(product);  // Отправляем товар обратно в ответе
-    } catch (error) {
-        res.status(500).json({ message: "Ошибка при получении товара" });
+app.get("/products/:id", async (req, res) => {
+  const productId = req.params.id;
+  try {
+    const product = await Product.findById(productId); // Извлекаем продукт по ID
+    if (!product) {
+      return res.status(404).json({ message: "Товар не найден" });
     }
+    res.json(product);
+  } catch (error) {
+    console.error("Ошибка при получении товара:", error);
+    res.status(500).json({ message: "Ошибка при получении товара" });
+  }
 });
+
 
 
 
