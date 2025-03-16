@@ -107,9 +107,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
-async function addToCart(productId) {
-    const encodedProductId = encodeURIComponent(productId);  // Кодируем productId для URL
-    const response = await fetch(`/product/${encodedProductId}`);  // Запрос на сервер
+async function addToCart(productName) {
+    const encodedProductName = encodeURIComponent(productName);  // Кодируем название продукта для URL
+    const response = await fetch(`/product/${encodedProductName}`);  // Запрос на сервер
 
     if (!response.ok) {
         console.error('Ошибка при получении товара');
