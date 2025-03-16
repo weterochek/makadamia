@@ -301,14 +301,11 @@ function updateCartDisplay() {
     // Очищение корзины
     if (clearCartButton) {
     clearCartButton.addEventListener('click', () => {
-        const username = localStorage.getItem("username");
-        if (username) {
-            localStorage.removeItem(`cart_${username}`); // Удаляем корзину для текущего пользователя
-        }
-        localStorage.removeItem('cart'); // Если корзина также хранится под этим ключом
-        updateCartDisplay(); // Обновляем корзину на странице
-        cartTotal.textContent = 'Итого: 0 ₽';
-    });
+    cart = {};  // Очистка корзины
+    localStorage.removeItem('cart');  // Удаляем корзину из localStorage
+    updateCartDisplay();  // Обновляем отображение корзины
+    cartTotal.textContent = 'Итого: 0 ₽'; // Обновляем сумму
+});
 }
 
     // Инициализируем корзину при загрузке страницы
