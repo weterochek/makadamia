@@ -265,18 +265,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 const addButtonControl = card.querySelector(".quantity-size-button");
                 const quantityDisplay = card.querySelector(".quantity");
 
-                if (addButton) addButton.style.display = "inline-block";
-                if (removeButton) removeButton.style.display = "none";
-                if (addButtonControl) addButtonControl.style.display = "none";
+                // Скрываем количество и сбрасываем его
                 if (quantityDisplay) {
                     quantityDisplay.style.display = "none";
-                    quantityDisplay.textContent = '';
+                    quantityDisplay.textContent = '';  // Очищаем количество
+                }
+
+                if (addButton) {
+                    addButton.style.display = "inline-block";  // Показываем кнопку "Добавить"
+                }
+                if (removeButton) {
+                    removeButton.style.display = "none";  // Скрываем кнопку "-"
+                }
+                if (addButtonControl) {
+                    addButtonControl.style.display = "none";  // Скрываем кнопку "+"
                 }
             });
         });
     }
 });
-
 // Обновление отображения корзины после очистки
 function updateCartDisplay() {
     const cartItems = document.getElementById("cartItems");
