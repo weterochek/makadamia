@@ -234,37 +234,41 @@ const Order = require("./models/Order"); // Подключаем модель з
 
 app.post("/api/order", authMiddleware, async (req, res) => {
     try {
-        console.log("📦 Новый заказ:", req.body); // Логируем входящие данные
-
         const { items, address, additionalInfo } = req.body;
 
         if (!items || items.length === 0) {
-            console.error("❌ Корзина пуста");
             return res.status(400).json({ message: "Корзина не может быть пустой" });
         }
 
-        const userId = req.user.id; // Получаем ID пользователя из токена
+        const itemsDetails = [];
+        
+        for (let item of items) {
+            const product = await Product.findOne({ name: item.productName });  // Находим товар по имени
+            if (!product) {
+                return res.status(404).json({ message: `Товар ${item.productName} не найден` });
+            }
 
-        // Создание нового заказа
+            itemsDetails.push({
+                productId: product._id,  // Получаем _id товара
+                name: product.name,
+                price: product.price,
+                quantity: item.quantity
+            });
+        }
+
         const newOrder = new Order({
-            userId,
-            items: items.map(item => ({
-                productId: item.productId, // Получаем ID товара
-                name: item.name,           // Получаем название товара
-                price: item.price,         // Получаем цену товара
-                quantity: item.quantity    // Получаем количество товара
-            })),
+            userId: req.user.id,
+            items: itemsDetails,
             address,
             additionalInfo,
             status: "Оформлен"
         });
 
-        await newOrder.save(); // Сохраняем заказ в базе данных
-        console.log("✅ Заказ успешно сохранен:", newOrder);
+        await newOrder.save();
         res.status(201).json({ message: "Заказ успешно оформлен", order: newOrder });
     } catch (error) {
-        console.error("❌ Ошибка при сохранении заказа:", error);
-        res.status(500).json({ message: "Ошибка сервера" });
+        console.error("Ошибка при создании заказа:", error);
+        res.status(500).json({ message: "Ошибка сервера", error: error.message });
     }
 });
 
