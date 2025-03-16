@@ -134,15 +134,17 @@ const items = Object.keys(cart).map(productId => ({
     quantity: cart[productId].quantity
 }));
 
-const username = localStorage.getItem("username"); // или userId, если используешь
+const username = localStorage.getItem("username");
+const userId = localStorage.getItem("userId"); // предполагаем, что userId сохраняется после логина
 
 const orderData = {
-    username: username,
+    userId: userId, // Добавлено userId
     name: nameInput.value,
     address: addressInput.value,
     additionalInfo: additionalInfoInput.value,
     items: items
 };
+
 fetch("https://makadamia.onrender.com/api/order", {
     method: "POST",
     headers: {
