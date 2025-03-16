@@ -123,24 +123,25 @@ async function addToCart(productId, productPrice) {
             throw new Error("Товар не найден");
         }
 
-        // Логика добавления товара в корзину
-        const cart = JSON.parse(localStorage.getItem("cart")) || [];
-        const existingProductIndex = cart.findIndex(item => item.productId === productId);
+        // Проверяем, существует ли корзина в localStorage, если нет - создаем новую
+        let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+        // Проверяем, есть ли уже такой товар в корзине
+        const existingProductIndex = cart.findIndex(item => item._id === product._id);
 
         if (existingProductIndex > -1) {
             // Если товар уже есть в корзине, увеличиваем его количество
             cart[existingProductIndex].quantity += 1;
         } else {
             // Если товара нет в корзине, добавляем новый товар
-            cart.push({ productId: product._id, name: product.name, price: product.price, quantity: 1 });
+            cart.push({ _id: product._id, name: product.name, price: product.price, quantity: 1 });
         }
 
         // Сохраняем корзину в localStorage
         localStorage.setItem("cart", JSON.stringify(cart));
 
-        // Обновляем UI корзины
+        // Обновляем отображение корзины
         updateCartDisplay();
-
     } catch (error) {
         console.error("Ошибка при добавлении товара в корзину:", error);
     }
@@ -225,7 +226,10 @@ function updateCartDisplay() {
 
     if (!cartItemsContainer || !totalAmount) return;
 
+    // Очищаем контейнер товаров
     cartItemsContainer.innerHTML = '';
+
+    // Получаем корзину из localStorage
     const cart = JSON.parse(localStorage.getItem('cart')) || [];
     let total = 0;
 
@@ -241,8 +245,10 @@ function updateCartDisplay() {
         cartItemsContainer.appendChild(itemElement);
     });
 
+    // Обновляем итоговую сумму
     totalAmount.textContent = `Итого: ${total} ₽`;
 }
+
 
 
     // Очищение корзины
