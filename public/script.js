@@ -134,6 +134,7 @@ async function addToCart(productName, price) {
     replaceAddButtonWithControls(product.name);  // Обновляем кнопку на карточке товара
 }
 
+
 function updateQuantityDisplay(productName) {
     const quantityElement = document.getElementById(`quantity_${productName}`);
     if (quantityElement) {
@@ -215,22 +216,17 @@ function replaceAddButtonWithControls(productName) {
     const addButtonControl = document.getElementById(`addBtn_${productName}`);
     const quantityDisplay = document.getElementById(`quantity_${productName}`);
 
-    if (!addButton || !removeButton || !addButtonControl || !quantityDisplay) {
-        console.warn(`❌ Ошибка: Не найдены элементы для ${productName}`);
-        return;
-    }
-
     if (cart[productName] && cart[productName].quantity > 0) {
-        addButton.style.display = "none"; // Скрываем кнопку "Добавить"
-        removeButton.style.display = "inline-block"; // Показываем кнопку "-"
-        addButtonControl.style.display = "inline-block"; // Показываем кнопку "+"
-        quantityDisplay.style.display = "inline-block"; // Показываем количество
-        quantityDisplay.textContent = cart[productName].quantity; // Отображаем количество товара
+        addButton.style.display = "none";
+        removeButton.style.display = "inline-block";
+        addButtonControl.style.display = "inline-block";
+        quantityDisplay.style.display = "inline-block";
+        quantityDisplay.textContent = cart[productName].quantity;
     } else {
-        addButton.style.display = "inline-block"; // Показываем кнопку "Добавить"
-        removeButton.style.display = "none"; // Скрываем кнопку "-"
-        addButtonControl.style.display = "none"; // Скрываем кнопку "+"
-        quantityDisplay.style.display = "none"; // Скрываем количество
+        addButton.style.display = "inline-block";
+        removeButton.style.display = "none";
+        addButtonControl.style.display = "none";
+        quantityDisplay.style.display = "none";
     }
 }
 function revertControlsToAddButton(productName) {
@@ -258,15 +254,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (clearCartButton) {
         clearCartButton.addEventListener('click', () => {
-            // Очистка корзины
-            cart = {};  // Сброс корзины в памяти
+            cart = {};  // Очистка корзины
             localStorage.removeItem('cart');  // Удаляем корзину из localStorage
-
-            // Обновляем корзину и отображение на странице
-            updateCartDisplay(); 
+            updateCartDisplay();  // Обновляем отображение корзины
             cartTotal.textContent = 'Итого: 0 ₽'; // Обновляем сумму
 
-            // Сбрасываем карточки товара и убираем количество
+            // Скрываем кнопки на карточках товаров
             const productCards = document.querySelectorAll(".card-dish");
             productCards.forEach(card => {
                 const addButton = card.querySelector(".add-button-size");
@@ -274,7 +267,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const addButtonControl = card.querySelector(".quantity-size-button");
                 const quantityDisplay = card.querySelector(".quantity");
 
-                // Скрываем кнопки и сбрасываем количество
                 if (addButton) {
                     addButton.style.display = "inline-block";  // Показываем кнопку "Добавить"
                 }
@@ -289,14 +281,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     quantityDisplay.textContent = '';  // Очищаем количество
                 }
             });
-
-            // Убедимся, что корзина в localStorage также обновлена
-            saveCartToLocalStorage();
         });
     }
 });
 
-
+// Функция обновления отображения корзины
 function updateCartDisplay() {
     const cartItems = document.getElementById("cartItems");
     if (!cartItems) return;
@@ -304,14 +293,13 @@ function updateCartDisplay() {
     cartItems.innerHTML = ""; // Очищаем список товаров
     let totalAmount = 0;
 
-    // Добавляем товары в корзину на странице
     for (const productName in cart) {
         const itemTotal = cart[productName].price * cart[productName].quantity;
         totalAmount += itemTotal;
 
         const cartItem = document.createElement("div");
         cartItem.className = "cart-item";
-        cartItem.setAttribute("data-name", productName);
+        cartItem.setAttribute("data-name", productName); // Используем productName вместо item
         cartItem.innerHTML = `
             <div class="item-info">${productName} - ${itemTotal} ₽</div>
             <div class="cart-buttons">
@@ -330,7 +318,6 @@ function updateCartDisplay() {
         document.getElementById("cartDropdown").style.display = "none";
     }
 }
-
     // Очищение корзины
   
 
