@@ -283,7 +283,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Обновление отображения корзины
+// Обновление отображения корзины после очистки
 function updateCartDisplay() {
     const cartItems = document.getElementById("cartItems");
     if (!cartItems) return;
@@ -297,7 +297,7 @@ function updateCartDisplay() {
 
         const cartItem = document.createElement("div");
         cartItem.className = "cart-item";
-        cartItem.setAttribute("data-name", productName); // Используем productName вместо item
+        cartItem.setAttribute("data-name", productName); // Используем productName
         cartItem.innerHTML = `
             <div class="item-info">${productName} - ${itemTotal} ₽</div>
             <div class="cart-buttons">
@@ -316,6 +316,7 @@ function updateCartDisplay() {
         document.getElementById("cartDropdown").style.display = "none";
     }
 }
+
 // Обновление отображения корзины и количества товара на карточке
 function updateCartDisplay() {
     const cartItems = document.getElementById("cartItems");
