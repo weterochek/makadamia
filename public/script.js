@@ -112,48 +112,56 @@ function generateUniqueProductId() {
 }
 
 // Функция добавления товара в корзину
-function addToCart(itemName, itemPrice) {
-    const productId = generateUniqueProductId();  // Генерация уникального productId
+async function addToCart(productId) {
+    // Получаем товар по ID с сервера
+    const response = await fetch(`https://makadamia.onrender.com/product/${productId}`);
+    if (!response.ok) {
+        console.error('Ошибка при получении товара');
+        return;
+    }
+
+    const product = await response.json();  // Получаем данные о товаре
 
     // Добавляем товар в корзину
-    if (cart[itemName]) {
-        cart[itemName].quantity += 1;
+    if (cart[productId]) {
+        cart[productId].quantity += 1;
     } else {
-        cart[itemName] = { name: itemName, price: itemPrice, quantity: 1, productId: productId };
+        cart[productId] = {
+            name: product.name,  // Название товара
+            price: product.price,  // Цена товара
+            quantity: 1,  // Количество товара
+        };
     }
 
     // Сохраняем корзину в localStorage
     saveCartToLocalStorage();
-    updateCartDisplay();
-    replaceAddButtonWithControls(itemName);
+    updateCartDisplay();  // Обновляем отображение корзины
 }
-
 
 
 
 // Уменьшение количества товара
-function decrementItem(itemName) {
-    if (cart[itemName]) {
-        cart[itemName].quantity -= 1;
-
-        if (cart[itemName].quantity === 0) {
-            delete cart[itemName]; // Удаляем товар из корзины
-            revertControlsToAddButton(itemName); // Возвращаем кнопку "Добавить"
+function decrementItem(productId) {
+    if (cart[productId]) {
+        cart[productId].quantity -= 1;
+        if (cart[productId].quantity === 0) {
+            delete cart[productId];  // Удаляем товар, если его количество 0
         }
-
-        saveCartToLocalStorage(); // Сохраняем обновлённые данные
-        updateCartDisplay(); // Обновляем UI корзины
+        saveCartToLocalStorage();
+        updateCartDisplay();
     }
 }
 
 // Увеличение количества товара
-function incrementItem(itemName, itemPrice) {
-    addToCart(itemName, itemPrice); // При увеличении просто вызываем addToCart
-}
-
-// Увеличение количества товара
-function incrementItem(itemName, itemPrice) {
-    addToCart(itemName, itemPrice);
+function incrementItem(productId) {
+    if (cart[productId]) {
+        cart[productId].quantity += 1;
+    } else {
+        // Если товара нет в корзине, добавляем его
+        addToCart(productId);
+    }
+    saveCartToLocalStorage();
+    updateCartDisplay();
 }
 function getCookie(name) {
     const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
@@ -202,36 +210,38 @@ document.addEventListener('DOMContentLoaded', () => {
     const cartTotal = document.getElementById('totalAmount'); // Элемент с итоговой суммой
     const cartItemsContainer = document.getElementById('cartItems'); // Контейнер товаров в корзине
 
+
     // Функция обновления отображения корзины
-    // Функция обновления отображения корзины
+// Обновление отображения корзины
 function updateCartDisplay() {
     const cartItemsContainer = document.getElementById("cartItems");
     const totalAmountElement = document.getElementById("totalAmount");
 
     if (!cartItemsContainer || !totalAmountElement) return;
 
-    cartItemsContainer.innerHTML = ""; // Очищаем список
+    cartItemsContainer.innerHTML = "";  // Очищаем список товаров
     let totalAmount = 0;
 
-    for (const item in cart) {
-        const itemTotal = cart[item].price * cart[item].quantity;
+    for (const productId in cart) {
+        const item = cart[productId];
+        const itemTotal = item.price * item.quantity;
         totalAmount += itemTotal;
 
-        const cartItem = document.createElement("div");
-        cartItem.className = "cart-item";
-        cartItem.setAttribute("data-name", item); // Добавляем атрибут для поиска
+        const cartItem = document.createElement('div');
+        cartItem.className = 'cart-item';
         cartItem.innerHTML = `
-            <div class="item-info">${item} - ${itemTotal} ₽</div>
+            <div class="item-info">${item.name} - ${item.quantity} шт. по ${item.price} ₽</div>
             <div class="cart-buttons">
-                <button onclick="decrementItem('${item}')">-</button>
-                <span class="quantity">${cart[item].quantity}</span>
-                <button onclick="incrementItem('${item}', ${cart[item].price})">+</button>
+                <button onclick="decrementItem('${productId}')">-</button>
+                <span class="quantity">${item.quantity}</span>
+                <button onclick="incrementItem('${productId}')">+</button>
             </div>
         `;
         cartItemsContainer.appendChild(cartItem);
     }
 
-    document.getElementById("totalAmount").textContent = `Итого: ${totalAmount} ₽`;
+    totalAmountElement.textContent = `Итого: ${totalAmount} ₽`;
+
 
     // Если корзина пуста, скрываем её
     if (Object.keys(cart).length === 0) {
