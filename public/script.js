@@ -252,38 +252,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (clearCartButton) {
         clearCartButton.addEventListener('click', () => {
-            cart = {};  // Очистка корзины
-            localStorage.removeItem(`cart_${localStorage.getItem('username')}`);  // Удаляем корзину с уникальным ключом
-            updateCartDisplay();  // Обновляем отображение корзины
+            cart = {};  // Очищаем корзину
+            localStorage.removeItem(`cart_${localStorage.getItem('username')}`);  // Удаляем localStorage
+            updateCartDisplay();  // Обновляем корзину
             cartTotal.textContent = 'Итого: 0 ₽';
 
-            // Обновляем карточки товаров
+            // ОБНОВЛЯЕМ карточки товаров
             const productCards = document.querySelectorAll(".card-dish");
             productCards.forEach(card => {
                 const addButton = card.querySelector(".add-button-size");
                 const removeButton = card.querySelector(".quantity-control");
                 const addButtonControl = card.querySelector(".quantity-size-button");
-                const quantityDisplay = card.querySelector(".quantity");
+                const quantityDisplay = card.querySelector(".quantity"); // ЭЛЕМЕНТ С ЧИСЛОМ
 
-                // Скрываем количество и сбрасываем его
+                if (addButton) addButton.style.display = "inline-block";
+                if (removeButton) removeButton.style.display = "none";
+                if (addButtonControl) addButtonControl.style.display = "none";
+
+                // ВАЖНО: обнуляем и скрываем количество
                 if (quantityDisplay) {
-                    quantityDisplay.style.display = "none";
-                    quantityDisplay.textContent = '';  // Очищаем количество
-                }
-
-                if (addButton) {
-                    addButton.style.display = "inline-block";  // Показываем кнопку "Добавить"
-                }
-                if (removeButton) {
-                    removeButton.style.display = "none";  // Скрываем кнопку "-"
-                }
-                if (addButtonControl) {
-                    addButtonControl.style.display = "none";  // Скрываем кнопку "+"
+                    quantityDisplay.textContent = "";  // Очищаем число
+                    quantityDisplay.style.display = "none";  // Скрываем элемент
                 }
             });
         });
     }
 });
+
 // Обновление отображения корзины после очистки
 function updateCartDisplay() {
     const cartItems = document.getElementById("cartItems");
