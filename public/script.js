@@ -178,14 +178,14 @@ function getCookie(name) {
     return match ? match[2] : null;
 }
 // Преобразование кнопки "Добавить" в контролы "+", "-", и количество
-function replaceAddButtonWithControls(itemName) {
-    const addButton = document.getElementById(`addButton_${itemName}`);
-    const removeButton = document.getElementById(`removeBtn_${itemName}`);
-    const addButtonControl = document.getElementById(`addBtn_${itemName}`);
-    const quantityDisplay = document.getElementById(`quantity_${itemName}`);
+function replaceAddButtonWithControls(productId) {
+    const addButton = document.getElementById(`addButton_${productId}`);
+    const removeButton = document.getElementById(`removeBtn_${productId}`);
+    const addButtonControl = document.getElementById(`addBtn_${productId}`);
+    const quantityDisplay = document.getElementById(`quantity_${productId}`);
 
     if (!addButton || !removeButton || !addButtonControl || !quantityDisplay) {
-        console.warn(`❌ Ошибка: Не найдены элементы для ${itemName}`);
+        console.warn(`❌ Ошибка: Не найдены элементы для ${productId}`);
         return;
     }
 
@@ -193,19 +193,19 @@ function replaceAddButtonWithControls(itemName) {
     removeButton.style.display = "inline-block";
     addButtonControl.style.display = "inline-block";
     quantityDisplay.style.display = "inline-block";
-    quantityDisplay.textContent = cart[itemName].quantity;
+    quantityDisplay.textContent = cart[productId].quantity;
 }
 
 
 // Возвращение кнопки "Добавить" вместо контролов, если товара нет в корзине
-function revertControlsToAddButton(itemName) {
-    const addButton = document.getElementById(`addButton_${itemName}`);
-    const removeButton = document.getElementById(`removeBtn_${itemName}`);
-    const addButtonControl = document.getElementById(`addBtn_${itemName}`);
-    const quantityDisplay = document.getElementById(`quantity_${itemName}`);
+function revertControlsToAddButton(productId) {
+    const addButton = document.getElementById(`addButton_${productId}`);
+    const removeButton = document.getElementById(`removeBtn_${productId}`);
+    const addButtonControl = document.getElementById(`addBtn_${productId}`);
+    const quantityDisplay = document.getElementById(`quantity_${productId}`);
 
     if (!addButton || !removeButton || !addButtonControl || !quantityDisplay) {
-        console.warn(`⚠️ Ошибка: Не найдены элементы для товара ${itemName}`);
+        console.warn(`⚠️ Ошибка: Не найдены элементы для товара ${productId}`);
         return;
     }
 
@@ -221,35 +221,39 @@ document.addEventListener('DOMContentLoaded', () => {
     const cartItemsContainer = document.getElementById('cartItems'); // Контейнер товаров в корзине
 
 
-    // Функция обновления отображения корзины
 function updateCartDisplay() {
     const cartItemsContainer = document.getElementById("cartItems");
     const totalAmount = document.getElementById("totalAmount");
 
-    if (!cartItemsContainer || !totalAmount) return;
+    if (!cartItemsContainer || !totalAmount) {
+        console.warn("Ошибка: Не найдены элементы для отображения корзины.");
+        return;
+    }
 
-    // Очищаем контейнер товаров
-    cartItemsContainer.innerHTML = '';
-
-    // Получаем корзину из localStorage
-    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+    cartItemsContainer.innerHTML = "";  // Очистить контейнер корзины
     let total = 0;
 
+    const cart = JSON.parse(localStorage.getItem("cart")) || [];
+    
+    // Перебираем все товары в корзине и отображаем их
     cart.forEach(item => {
         total += item.price * item.quantity;
-        const itemElement = document.createElement('div');
-        itemElement.className = 'cart-item';
-        itemElement.innerHTML = `
-            <div class="cart-item-info">
-                <p>${item.name} - ${item.quantity} шт. по ${item.price} ₽</p>
-            </div>
+
+        const cartItem = document.createElement("div");
+        cartItem.classList.add("cart-item");
+        cartItem.innerHTML = `
+            <div>${item.name} - ${item.quantity} шт. по ${item.price} ₽</div>
+            <button onclick="decrementItem('${item._id}')">-</button>
+            <span class="quantity">${item.quantity}</span>
+            <button onclick="incrementItem('${item._id}')">+</button>
         `;
-        cartItemsContainer.appendChild(itemElement);
+        cartItemsContainer.appendChild(cartItem);
     });
 
     // Обновляем итоговую сумму
     totalAmount.textContent = `Итого: ${total} ₽`;
 }
+
 
 
     // Очищение корзины
@@ -323,8 +327,8 @@ function checkout() {
 
 // Сброс всех кнопок на исходное состояние "Добавить"
 function resetAddToCartButtons() {
-    for (const itemName in cart) {
-        revertControlsToAddButton(itemName);
+    for (const productId in cart) {
+        revertControlsToAddButton(productId);
     }
 }
 function loadCartFromLocalStorage() {
