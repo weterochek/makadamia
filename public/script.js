@@ -260,9 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
         clearCartButton.addEventListener('click', () => {
             // Очистка корзины
             cart = {};  // Сброс корзины в памяти
-
-            // Удаляем корзину из localStorage
-            localStorage.removeItem('cart');
+            localStorage.removeItem('cart');  // Удаляем корзину из localStorage
 
             // Обновляем корзину и отображение на странице
             updateCartDisplay(); 
@@ -298,10 +296,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-function saveCartToLocalStorage() {
-    // Сохраняем корзину в localStorage
-    localStorage.setItem('cart', JSON.stringify(cart));
-}
 
 function updateCartDisplay() {
     const cartItems = document.getElementById("cartItems");
