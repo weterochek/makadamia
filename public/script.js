@@ -222,7 +222,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // Функция обновления отображения корзины
-// Обновление отображения корзины
 function updateCartDisplay() {
     const cartItemsContainer = document.getElementById("cartItems");
     const totalAmount = document.getElementById("totalAmount");
@@ -251,6 +250,7 @@ function updateCartDisplay() {
     // Обновляем итоговую сумму
     totalAmount.textContent = `Итого: ${total} ₽`;
 }
+
 
 
 
