@@ -236,17 +236,41 @@ function generateTokens(user, site) {
 
 const Order = require("./models/Order"); // Подключаем модель заказа
 
-app.post("/api/order", async (req, res) => {
+app.post("/api/order", authMiddleware, async (req, res) => {
     try {
-        console.log("🔍 Полученные данные заказа:", req.body);
+        const { userId, items, address, additionalInfo, name } = req.body;
 
-        const newOrder = new Order(req.body);
+        if (!items || items.length === 0) {
+            return res.status(400).json({ message: "Корзина не может быть пустой" });
+        }
+
+        const itemsDetails = [];
+
+        for (let item of items) {
+            const product = await Product.findById(item.productId);
+            if (!product) {
+                return res.status(404).json({ message: `Товар с ID ${item.productId} не найден` });
+            }
+
+            itemsDetails.push({
+                productId: product._id,
+                quantity: item.quantity
+            });
+        }
+
+        const newOrder = new Order({
+            userId: userId,
+            name,
+            address,
+            additionalInfo,
+            items: itemsDetails
+        });
+
         await newOrder.save();
-
-        res.status(201).json({ message: "Заказ успешно создан" });
+        res.status(201).json({ message: "Заказ успешно оформлен", order: newOrder });
     } catch (error) {
-        console.warn("❌ Ошибка при сохранении заказа:", error);
-        res.status(500).json({ error: "Ошибка при оформлении заказа" });
+        console.error("Ошибка при создании заказа:", error);
+        res.status(500).json({ message: "Ошибка сервера", error: error.message });
     }
 });
 
