@@ -109,26 +109,33 @@ document.addEventListener("DOMContentLoaded", function () {
 
 async function addToCart(productName, itemPrice) {
     const encodedProductName = encodeURIComponent(productName);
-    const response = await fetch(`/products/${encodedProductName}`);  // Запрос на сервер
+    const response = await fetch(`/products/${encodedProductName}`);
 
     if (!response.ok) {
         console.error('Ошибка при получении товара');
         return;
     }
 
-    const product = await response.json();  // Преобразуем ответ в JSON
+    const product = await response.json();
 
-    // Добавляем товар в корзину
     if (cart[product.name]) {
-        cart[product.name].quantity += 1;  // Если товар уже есть, увеличиваем количество
+        cart[product.name].quantity += 1;  // Если товар есть, увеличиваем количество
     } else {
-        cart[product.name] = { name: product.name, price: product.price, quantity: 1 };  // Если товара нет, добавляем его
+        cart[product.name] = { name: product.name, price: product.price, quantity: 1 };
     }
 
     // Сохраняем корзину в localStorage
     saveCartToLocalStorage();
     updateCartDisplay();
-    updateQuantityDisplay(product.name);  // Обновляем отображение количества товара
+    updateQuantityDisplay(product.name);  // Обновляем количество товара на странице
+    replaceAddButtonWithControls(product.name);  // Заменяем кнопку "Добавить" на кнопки + и -
+}
+
+function updateQuantityDisplay(productName) {
+    const quantityElement = document.getElementById(`quantity_${productName}`);
+    if (quantityElement) {
+        quantityElement.textContent = cart[productName].quantity; // обновляем отображаемое количество
+    }
 }
 function checkForEmptyCart(productName) {
     const quantity = cart[productName] ? cart[productName].quantity : 0;
