@@ -92,7 +92,7 @@ app.get('/orders', authMiddleware, async (req, res) => {
     }
 });
 
-app.get("/products/:id", async (req, res) => {
+app.get("/product/:id", async (req, res) => {
     const productId = req.params.id;  // Берем id из URL
     try {
         const product = await Product.findById(productId);  // Ищем товар по _id
