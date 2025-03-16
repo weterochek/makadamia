@@ -92,7 +92,19 @@ app.get('/orders', authMiddleware, async (req, res) => {
     }
 });
 
-
+app.get("/product/:id", async (req, res) => {
+    const productId = req.params.id; // Получаем _id товара из URL
+    try {
+        const product = await Products.findById(productId); // Ищем товар в коллекции products
+        if (!product) {
+            return res.status(404).json({ message: "Товар не найден" });
+        }
+        res.json(product); // Отправляем товар
+    } catch (err) {
+        console.error("Ошибка при получении товара:", err);
+        res.status(500).json({ message: "Ошибка при получении товара" });
+    }
+});
 
 
 async function fetchWithAuth(url, options = {}) {
