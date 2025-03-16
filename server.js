@@ -196,7 +196,7 @@ const userSchema = new mongoose.Schema({
 const User = mongoose.model("User", userSchema);
 // Получение товара по ID
 app.get('/product/:id', async (req, res) => {
-    const productId = req.params.id;
+    const productId = req.params.id;  // Получаем ID товара из URL
     try {
         const product = await Product.findById(productId);  // Ищем товар по ID в базе данных
         if (!product) {
