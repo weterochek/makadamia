@@ -241,15 +241,16 @@ app.post("/api/order", authMiddleware, async (req, res) => {
         }
 
         const itemsDetails = [];
-        
+
         for (let item of items) {
-            const product = await Product.findOne({ name: item.productName });  // Находим товар по имени
+            const product = await Product.findOne({ name: item.productName });  // Ищем товар по имени
             if (!product) {
                 return res.status(404).json({ message: `Товар ${item.productName} не найден` });
             }
 
+            // Добавляем productId в item
             itemsDetails.push({
-                productId: product._id,  // Получаем _id товара
+                productId: product._id,  // Используем _id товара
                 name: product.name,
                 price: product.price,
                 quantity: item.quantity
@@ -271,6 +272,7 @@ app.post("/api/order", authMiddleware, async (req, res) => {
         res.status(500).json({ message: "Ошибка сервера", error: error.message });
     }
 });
+
 
 // Регистрация пользователя
 app.post('/register', async (req, res) => {
