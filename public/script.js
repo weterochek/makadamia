@@ -117,6 +117,8 @@ async function addToCart(productId, productPrice) {
 
         const product = await response.json();  // Получаем информацию о товаре
 
+        console.log("Полученный товар:", product);  // Логируем товар для проверки
+
         if (!product) {
             throw new Error("Товар не найден");
         }
@@ -143,6 +145,7 @@ async function addToCart(productId, productPrice) {
         console.error("Ошибка при добавлении товара в корзину:", error);
     }
 }
+
 // Уменьшение количества товара
 function decrementItem(productId) {
     if (cart[productId]) {
