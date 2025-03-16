@@ -248,43 +248,54 @@ document.addEventListener('DOMContentLoaded', () => {
     const cartTotal = document.getElementById('totalAmount'); // Элемент с итоговой суммой
     const cartItemsContainer = document.getElementById('cartItems'); // Контейнер товаров в корзине
 
+document.addEventListener("DOMContentLoaded", () => {
+    const clearCartButton = document.getElementById('clear-cart');
+    const cartTotal = document.getElementById('totalAmount'); // Элемент с итоговой суммой
+    const cartItemsContainer = document.getElementById('cartItems'); // Контейнер товаров в корзине
 
+    if (clearCartButton) {
+        clearCartButton.addEventListener('click', () => {
+            cart = {};  // Очистка корзины
+            localStorage.removeItem('cart');  // Удаляем корзину из localStorage
+            updateCartDisplay();  // Обновляем отображение корзины
+            cartTotal.textContent = 'Итого: 0 ₽'; // Обновляем сумму
+        });
+    }
+});
 // Обновление отображения корзины
-// Обновление корзины
 function updateCartDisplay() {
     const cartItems = document.getElementById("cartItems");
     if (!cartItems) return;
 
-    cartItems.innerHTML = ""; // Очищаем список товаров в корзине
+    cartItems.innerHTML = ""; // Очищаем список товаров
     let totalAmount = 0;
 
     for (const productName in cart) {
-        totalAmount += cart[productName].price * cart[productName].quantity;
+        const itemTotal = cart[productName].price * cart[productName].quantity;
+        totalAmount += itemTotal;
 
-        // Создаем элемент для товара
         const cartItem = document.createElement("div");
         cartItem.className = "cart-item";
-        cartItem.setAttribute("data-name", productName);  // Атрибут для поиска
-
+        cartItem.setAttribute("data-name", productName); // Используем productName вместо item
         cartItem.innerHTML = `
-            <div class="item-info">${cart[productName].name} - ${cart[productName].price * cart[productName].quantity} ₽</div>
+            <div class="item-info">${productName} - ${itemTotal} ₽</div>
             <div class="cart-buttons">
                 <button onclick="decrementItem('${productName}')">-</button>
                 <span class="quantity">${cart[productName].quantity}</span>
                 <button onclick="incrementItem('${productName}', ${cart[productName].price})">+</button>
             </div>
         `;
-
         cartItems.appendChild(cartItem);
     }
 
     document.getElementById("totalAmount").textContent = `Итого: ${totalAmount} ₽`;
 
-    // Если корзина пуста, скрываем ее
+    // Если корзина пуста, скрываем её
     if (Object.keys(cart).length === 0) {
         document.getElementById("cartDropdown").style.display = "none";
     }
 }
+
 
 
     // Очищение корзины
