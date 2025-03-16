@@ -154,29 +154,33 @@ function checkForEmptyCart(productName) {
  replaceAddButtonWithControls(product.name);
 // Уменьшение количества товара
 function decrementItem(productName) {
-    if (cart[productName] && cart[productName].quantity > 1) {
+    if (cart[productName]) {
         cart[productName].quantity -= 1;
-        updateCartDisplay(); // Обновляем корзину на странице
 
-        // Обновляем отображение количества товара на карточке
         const quantityDisplay = document.getElementById(`quantity_${productName}`);
         const addButton = document.getElementById(`addButton_${productName}`);
         const removeButton = document.getElementById(`removeBtn_${productName}`);
         const addButtonControl = document.getElementById(`addBtn_${productName}`);
 
-        if (quantityDisplay) {
-            quantityDisplay.textContent = cart[productName].quantity;
-        }
+        if (cart[productName].quantity === 0) {
+            // Удаляем товар из корзины
+            delete cart[productName];
 
-        // Если количество товара 1, заменяем кнопки "+" и "-" на "Добавить" и скрываем число
-        if (cart[productName].quantity === 1) {
+            // Показываем кнопку "Добавить", скрываем контролы и количество
             addButton.style.display = "inline-block";
             removeButton.style.display = "none";
             addButtonControl.style.display = "none";
-            quantityDisplay.style.display = "none";  // Скрываем число
+            quantityDisplay.style.display = "none";
+        } else {
+            // Обновляем количество товара на карточке
+            if (quantityDisplay) {
+                quantityDisplay.textContent = cart[productName].quantity;
+                quantityDisplay.style.display = "inline-block";
+            }
         }
 
-        saveCartToLocalStorage(); // Сохраняем обновленные данные в localStorage
+        saveCartToLocalStorage();
+        updateCartDisplay();
     }
 }
 // Увеличение количества товара
@@ -217,9 +221,10 @@ function replaceAddButtonWithControls(productName) {
     addButton.style.display = "none";
     removeButton.style.display = "inline-block";
     addButtonControl.style.display = "inline-block";
-    quantityDisplay.style.display = "inline-block";  // Отображаем число
+    quantityDisplay.style.display = "inline-block";
     quantityDisplay.textContent = cart[productName].quantity;
 }
+
 function revertControlsToAddButton(productName) {
     const addButton = document.getElementById(`addButton_${productName}`);
     const removeButton = document.getElementById(`removeBtn_${productName}`);
