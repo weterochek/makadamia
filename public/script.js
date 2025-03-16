@@ -109,29 +109,34 @@ document.addEventListener("DOMContentLoaded", function () {
 
 async function addToCart(productId, productPrice) {
     try {
-        // Отправляем запрос на сервер для получения товара по его ID
+        // Отправляем запрос на сервер для получения товара по его productId
         const response = await fetch(`/product/${productId}`);
         if (!response.ok) {
-            throw new Error('Ошибка при получении товара');
+            throw new Error("Ошибка при получении товара");
         }
-        const product = await response.json();
 
-        // Здесь добавляем товар в корзину
-        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        const product = await response.json();  // Получаем информацию о товаре
+
+        if (!product) {
+            throw new Error("Товар не найден");
+        }
+
+        // Логика добавления товара в корзину
+        const cart = JSON.parse(localStorage.getItem("cart")) || [];
         const existingProductIndex = cart.findIndex(item => item.productId === productId);
 
         if (existingProductIndex > -1) {
-            // Если товар уже есть в корзине, увеличиваем количество
+            // Если товар уже есть в корзине, увеличиваем его количество
             cart[existingProductIndex].quantity += 1;
         } else {
-            // Если товара нет в корзине, добавляем новый
+            // Если товара нет в корзине, добавляем новый товар
             cart.push({ productId: product._id, name: product.name, price: product.price, quantity: 1 });
         }
 
         // Сохраняем корзину в localStorage
-        localStorage.setItem('cart', JSON.stringify(cart));
+        localStorage.setItem("cart", JSON.stringify(cart));
 
-        // Обновляем UI корзины (по желанию)
+        // Обновляем UI корзины
         updateCartDisplay();
 
     } catch (error) {
