@@ -262,6 +262,33 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 });
+    document.addEventListener('DOMContentLoaded', () => {
+    const clearCartButton = document.getElementById('clear-cart');
+    const cartTotal = document.getElementById('totalAmount'); // Элемент с итоговой суммой
+    const cartItemsContainer = document.getElementById('cartItems'); // Контейнер товаров в корзине
+
+    if (clearCartButton) {
+        clearCartButton.addEventListener('click', () => {
+            cart = {};  // Очистка корзины
+            localStorage.removeItem('cart');  // Удаляем корзину из localStorage
+            updateCartDisplay();  // Обновляем отображение корзины
+            cartTotal.textContent = 'Итого: 0 ₽'; // Обновляем сумму
+
+            // Сброс отображаемого количества товара на карточке
+            const productCards = document.querySelectorAll(".card-dish");
+            productCards.forEach(card => {
+                const quantityDisplay = card.querySelector(".quantity");
+                if (quantityDisplay) {
+                    quantityDisplay.style.display = "none"; // Скрываем отображение количества
+                }
+                const addButton = card.querySelector(".add-button-size");
+                if (addButton) {
+                    addButton.style.display = "inline-block"; // Показываем кнопку "Добавить"
+                }
+            });
+        });
+    }
+});
 // Обновление отображения корзины
 function updateCartDisplay() {
     const cartItems = document.getElementById("cartItems");
@@ -271,18 +298,18 @@ function updateCartDisplay() {
     let totalAmount = 0;
 
     for (const productName in cart) {
-        const itemTotal = cart[productName].price * cart[productName].quantity;
+        const item = cart[productName];
+        const itemTotal = item.price * item.quantity;
         totalAmount += itemTotal;
 
         const cartItem = document.createElement("div");
         cartItem.className = "cart-item";
-        cartItem.setAttribute("data-name", productName); // Используем productName вместо item
         cartItem.innerHTML = `
             <div class="item-info">${productName} - ${itemTotal} ₽</div>
             <div class="cart-buttons">
                 <button onclick="decrementItem('${productName}')">-</button>
-                <span class="quantity">${cart[productName].quantity}</span>
-                <button onclick="incrementItem('${productName}', ${cart[productName].price})">+</button>
+                <span class="quantity">${item.quantity}</span>
+                <button onclick="incrementItem('${productName}', ${item.price})">+</button>
             </div>
         `;
         cartItems.appendChild(cartItem);
