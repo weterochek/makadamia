@@ -6,4 +6,4 @@ const productSchema = new mongoose.Schema({
   // Добавьте другие поля, если необходимо
 });
 
-module.exports = mongoose.model("Product", productSchema);
+module.exports = mongoose.model("Products", productSchema);
