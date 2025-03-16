@@ -168,13 +168,7 @@ function incrementItem(productName, price) {
     saveCartToLocalStorage();
     updateCartDisplay();
     updateQuantityDisplay(productName);
-    checkForEmptyCart(productName);  // Проверка, если товар в корзине не равен 0
-}
-function updateQuantityDisplay(productName) {
-    const quantityElement = document.getElementById(`quantity_${productName}`);
-    if (quantityElement) {
-        quantityElement.textContent = cart[productName].quantity;
-    }
+    checkForEmptyCart(productName);
 }
 function getCookie(name) {
     const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
