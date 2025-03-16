@@ -151,7 +151,7 @@ function checkForEmptyCart(productName) {
         if (controls) controls.style.display = 'none';  // Скрываем кнопки "+" и "-"
     }
 }
- replaceAddButtonWithControls(product.name);
+
 // Уменьшение количества товара
 function decrementItem(productName) {
     if (cart[productName]) {
@@ -181,6 +181,7 @@ function decrementItem(productName) {
 
         saveCartToLocalStorage();
         updateCartDisplay();
+        replaceAddButtonWithControls(productName);  // исправлено
     }
 }
 // Увеличение количества товара
