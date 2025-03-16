@@ -165,15 +165,15 @@ loginForm.addEventListener("submit", async (e) => {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username, password }),
-            credentials: "include", // Включаем куки
+            credentials: "include",
         });
 
         const data = await response.json();
         if (response.ok) {
             localStorage.setItem("token", data.accessToken);
             localStorage.setItem("username", username);
+            localStorage.setItem("userId", data.userId); // сохраняем userId
 
-            // Редирект без всплывающего окна
             window.location.href = "/index.html";
         } else {
             alert(data.message || "Ошибка входа.");
@@ -183,6 +183,7 @@ loginForm.addEventListener("submit", async (e) => {
         alert("Произошла ошибка. Попробуйте снова.");
     }
 });
+
 
 async function addToCart(productId, quantity) {
     const token = localStorage.getItem("token");
