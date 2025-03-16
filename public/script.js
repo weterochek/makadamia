@@ -268,7 +268,7 @@ document.addEventListener('DOMContentLoaded', () => {
             updateCartDisplay(); 
             cartTotal.textContent = 'Итого: 0 ₽'; // Обновляем сумму
 
-            // Скрываем количество и сбрасываем карточки товара
+            // Сбрасываем карточки товара и убираем количество
             const productCards = document.querySelectorAll(".card-dish");
             productCards.forEach(card => {
                 const addButton = card.querySelector(".add-button-size");
@@ -276,7 +276,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const addButtonControl = card.querySelector(".quantity-size-button");
                 const quantityDisplay = card.querySelector(".quantity");
 
-                // Скрываем кнопки и количество
+                // Скрываем кнопки и сбрасываем количество
                 if (addButton) {
                     addButton.style.display = "inline-block";  // Показываем кнопку "Добавить"
                 }
@@ -299,10 +299,10 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function saveCartToLocalStorage() {
-    // Обновляем корзину в localStorage
+    // Сохраняем корзину в localStorage
     localStorage.setItem('cart', JSON.stringify(cart));
 }
-// Обновление отображения корзины
+
 function updateCartDisplay() {
     const cartItems = document.getElementById("cartItems");
     if (!cartItems) return;
@@ -336,6 +336,7 @@ function updateCartDisplay() {
         document.getElementById("cartDropdown").style.display = "none";
     }
 }
+
     // Очищение корзины
    document.addEventListener('DOMContentLoaded', () => {
     const clearCartButton = document.getElementById('clear-cart');
