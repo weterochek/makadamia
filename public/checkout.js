@@ -116,84 +116,63 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Кнопка "Оформить заказ"
-    const checkoutForm = document.getElementById("checkoutForm");
-    if (checkoutForm) {
-        checkoutForm.addEventListener("submit", async function (e) {
-            e.preventDefault();
-            const token = localStorage.getItem("token");
+   checkoutForm.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    const token = localStorage.getItem("token");
 
-            if (!token) {
-                alert("Вы не авторизованы!");
-                return;
-            }
+    if (!token) {
+        alert("Вы не авторизованы!");
+        return;
+    }
 
-            // Формируем данные заказа
-const cart = JSON.parse(localStorage.getItem('cart')) || {}; // Корзина
-const items = Object.keys(cart).map(productId => ({
-    productId: productId,
-    quantity: cart[productId].quantity
-}));
-const nameInput = document.getElementById('customerName');
-const addressInput = document.getElementById('customerAddress');
-const additionalInfoInput = document.getElementById('additionalInfo');
-const username = localStorage.getItem("username");
-const userId = localStorage.getItem("userId"); // предполагаем, что userId сохраняется после логина
+    // Формируем данные заказа
+    const items = Object.keys(cart).map(productId => ({
+        productId: productId,
+        quantity: cart[productId].quantity
+    }));
 
-const orderData = {
-    userId: userId, // Добавлено userId
-    name: nameInput.value,
-    address: addressInput.value,
-    additionalInfo: additionalInfoInput.value,
-    items: items
-};
+ const nameInput = document.getElementById('customerName');
+    const addressInput = document.getElementById('customerAddress');
+    const additionalInfoInput = document.getElementById('additionalInfo');
+    const userId = localStorage.getItem("userId"); // Сохраняли userId после логина
 
-fetch("https://makadamia.onrender.com/api/order", {
-    method: "POST",
-    headers: {
-        "Content-Type": "application/json"
-    },
-    body: JSON.stringify(orderData)
-})
-.then(response => response.json())
-.then(data => {
-    console.log("Ответ от сервера:", data);
-})
-.catch(error => {
-    console.error("Ошибка при оформлении заказа:", error);
-});
+    const orderData = {
+        userId: userId,
+        name: nameInput.value,
+        address: addressInput.value,
+        additionalInfo: additionalInfoInput.value,
+        items: items
+    };
 
+    console.log("📡 Отправка данных заказа:", orderData);
 
-            console.log("📡 Отправка данных заказа:", orderData);
-
-            try {
-                const response = await fetch("https://makadamia.onrender.com/api/order", {
-                    method: "POST",
-                    headers: {
-                        "Authorization": `Bearer ${token}`,
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(orderData)
-                });
-
-                console.log("📥 Ответ от сервера:", response);
-
-                if (!response.ok) {
-                    console.error(`❌ Ошибка ${response.status}:`, response.statusText);
-                    alert("Ошибка при оформлении заказа.");
-                    return;
-                }
-
-                const responseData = await response.json();
-                console.log("✅ Заказ успешно оформлен:", responseData);
-
-                alert("🎉 Заказ успешно оформлен!");
-                cart = {}; // Очищаем корзину
-                saveCartToLocalStorage();
-                window.location.href = "index.html";
-            } catch (error) {
-                console.error("❌ Ошибка сети или сервера:", error);
-                alert("Ошибка при оформлении заказа. Проверьте соединение.");
-            }
+    try {
+        const response = await fetch("https://makadamia.onrender.com/api/order", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`, // Передаём токен
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(orderData)
         });
+
+        console.log("📥 Ответ от сервера:", response);
+
+        if (!response.ok) {
+            console.error(`❌ Ошибка ${response.status}:`, response.statusText);
+            alert("Ошибка при оформлении заказа.");
+            return;
+        }
+
+        const responseData = await response.json();
+        console.log("✅ Заказ успешно оформлен:", responseData);
+
+        alert("🎉 Заказ успешно оформлен!");
+        cart = {}; // Очищаем корзину
+        saveCartToLocalStorage();
+        window.location.href = "index.html";
+    } catch (error) {
+        console.error("❌ Ошибка сети или сервера:", error);
+        alert("Ошибка при оформлении заказа. Проверьте соединение.");
     }
 });
