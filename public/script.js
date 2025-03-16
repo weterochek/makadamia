@@ -106,36 +106,29 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log("⚠️ Пользователь не принял cookies. Запрос не отправлен.");
     }
 });
-// Функция генерации уникального productId
-function generateUniqueProductId() {
-    return 'prod_' + Math.random().toString(36).substr(2, 9);  // Генерация уникального ID
-}
 
-// Функция добавления товара в корзину
 async function addToCart(productId) {
-    const encodedProductId = encodeURIComponent(productId);
-    const response = await fetch(`/product/${encodedProductId}`);
+    const encodedProductId = encodeURIComponent(productId);  // Кодируем productId для URL
+    const response = await fetch(`/product/${encodedProductId}`);  // Запрос на сервер
 
     if (!response.ok) {
         console.error('Ошибка при получении товара');
         return;
     }
 
-    const product = await response.json();
+    const product = await response.json();  // Преобразуем ответ в JSON
 
-    // Добавление товара в корзину
+    // Добавляем товар в корзину
     if (cart[product.name]) {
-        cart[product.name].quantity += 1;
+        cart[product.name].quantity += 1;  // Если товар уже есть, увеличиваем количество
     } else {
-        cart[product.name] = { name: product.name, price: product.price, quantity: 1 };
+        cart[product.name] = { name: product.name, price: product.price, quantity: 1 };  // Если товара нет, добавляем его
     }
 
     // Сохраняем корзину в localStorage
     saveCartToLocalStorage();
     updateCartDisplay();
 }
-
-
 
 // Уменьшение количества товара
 function decrementItem(productId) {
