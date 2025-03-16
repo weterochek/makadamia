@@ -9,6 +9,7 @@ const cookieParser = require("cookie-parser");
 const Joi = require("joi");
 const app = express();
 const orderRoutes = require("./routes/orderRoutes");
+const Products = require("./models/Products");  // Подключаем модель "Products"
 
 // Настройка CORS
 const allowedOrigins = [
@@ -196,19 +197,23 @@ const userSchema = new mongoose.Schema({
 const User = mongoose.model("User", userSchema);
 // Получение товара по ID
 // Маршрут для получения товара по ID
-app.get('/products/:id', async (req, res) => {
-    const productId = req.params.id;
+app.get('/product/:id', async (req, res) => {
+    const productId = req.params.id;  // Получаем ID из параметров URL
     try {
-        const product = await Product.findById(productId);
+        // Используем модель "Products" для поиска товара по ID
+        const product = await Products.findById(productId);  // Заменили "Product" на "Products"
+        
         if (!product) {
             return res.status(404).json({ message: 'Товар не найден' });
         }
-        res.json(product); // Возвращаем весь объект товара
+        
+        res.json(product);  // Отправляем товар в ответ
     } catch (error) {
         console.error('Ошибка при получении товара:', error);
         res.status(500).json({ message: 'Ошибка при получении товара' });
     }
 });
+
 
 // Мидлвар для проверки токена
 
