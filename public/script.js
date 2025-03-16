@@ -113,31 +113,26 @@ function generateUniqueProductId() {
 
 // Функция добавления товара в корзину
 async function addToCart(productId) {
-    // Кодируем productId перед отправкой
     const encodedProductId = encodeURIComponent(productId);
+    const response = await fetch(`/product/${encodedProductId}`);
 
-    const response = await fetch(`https://makadamia.onrender.com/product/${encodedProductId}`);
     if (!response.ok) {
         console.error('Ошибка при получении товара');
         return;
     }
 
-    const product = await response.json();  // Получаем данные о товаре
+    const product = await response.json();
 
-    // Добавляем товар в корзину
-    if (cart[productId]) {
-        cart[productId].quantity += 1;
+    // Добавление товара в корзину
+    if (cart[product.name]) {
+        cart[product.name].quantity += 1;
     } else {
-        cart[productId] = {
-            name: product.name,  // Название товара
-            price: product.price,  // Цена товара
-            quantity: 1,  // Количество товара
-        };
+        cart[product.name] = { name: product.name, price: product.price, quantity: 1 };
     }
 
     // Сохраняем корзину в localStorage
     saveCartToLocalStorage();
-    updateCartDisplay();  // Обновляем отображение корзины
+    updateCartDisplay();
 }
 
 
