@@ -248,14 +248,14 @@ function revertControlsToAddButton(productName) {
 //ощичение корзины
 document.addEventListener('DOMContentLoaded', () => {
     const clearCartButton = document.getElementById('clear-cart');
-    const cartTotal = document.getElementById('totalAmount'); // Элемент с итоговой суммой
+    const cartTotal = document.getElementById('totalAmount');
 
     if (clearCartButton) {
         clearCartButton.addEventListener('click', () => {
             cart = {};  // Очистка корзины
-            localStorage.removeItem('cart');  // Удаляем корзину из localStorage
+            localStorage.removeItem(`cart_${localStorage.getItem('username')}`);  // Удаляем корзину с уникальным ключом
             updateCartDisplay();  // Обновляем отображение корзины
-            cartTotal.textContent = 'Итого: 0 ₽'; // Обновляем сумму
+            cartTotal.textContent = 'Итого: 0 ₽';
 
             // Обновляем карточки товаров
             const productCards = document.querySelectorAll(".card-dish");
@@ -265,18 +265,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 const addButtonControl = card.querySelector(".quantity-size-button");
                 const quantityDisplay = card.querySelector(".quantity");
 
-                if (addButton) {
-                    addButton.style.display = "inline-block";  // Показываем кнопку "Добавить"
-                }
-                if (removeButton) {
-                    removeButton.style.display = "none";  // Скрываем кнопку "-"
-                }
-                if (addButtonControl) {
-                    addButtonControl.style.display = "none";  // Скрываем кнопку "+"
-                }
+                if (addButton) addButton.style.display = "inline-block";
+                if (removeButton) removeButton.style.display = "none";
+                if (addButtonControl) addButtonControl.style.display = "none";
                 if (quantityDisplay) {
-                    quantityDisplay.style.display = "none";  // Скрываем количество
-                    quantityDisplay.textContent = '';  // Очищаем количество
+                    quantityDisplay.style.display = "none";
+                    quantityDisplay.textContent = '';
                 }
             });
         });
