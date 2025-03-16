@@ -133,7 +133,9 @@ const items = Object.keys(cart).map(productId => ({
     productId: productId,
     quantity: cart[productId].quantity
 }));
-
+const nameInput = document.getElementById('nameInput');
+const addressInput = document.getElementById('addressInput');
+const additionalInfoInput = document.getElementById('additionalInfoInput');
 const username = localStorage.getItem("username");
 const userId = localStorage.getItem("userId"); // предполагаем, что userId сохраняется после логина
 
