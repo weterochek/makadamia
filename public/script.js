@@ -325,8 +325,6 @@ function updateCartDisplay() {
     }
 }
 
-
-
     // Очищение корзины
     if (clearCartButton) {
     clearCartButton.addEventListener('click', () => {
@@ -334,6 +332,19 @@ function updateCartDisplay() {
     localStorage.removeItem('cart');  // Удаляем корзину из localStorage
     updateCartDisplay();  // Обновляем отображение корзины
     cartTotal.textContent = 'Итого: 0 ₽'; // Обновляем сумму
+
+    // Сброс отображаемого количества товара на карточке
+    const productCards = document.querySelectorAll(".card-dish");
+    productCards.forEach(card => {
+        const quantityDisplay = card.querySelector(".quantity");
+        if (quantityDisplay) {
+            quantityDisplay.style.display = "none"; // Скрываем отображение количества
+        }
+        const addButton = card.querySelector(".add-button-size");
+        if (addButton) {
+            addButton.style.display = "inline-block"; // Показываем кнопку "Добавить"
+        }
+    });
 });
 }
 
