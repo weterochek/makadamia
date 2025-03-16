@@ -128,15 +128,33 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             // Формируем данные заказа
+const cart = JSON.parse(localStorage.getItem('cart')) || {}; // Корзина
+const items = Object.keys(cart).map(productId => ({
+    productId: productId,
+    quantity: cart[productId].quantity
+}));
+
 const orderData = {
-    name: document.getElementById("customerName").value,
-    address: document.getElementById("customerAddress").value,
-    additionalInfo: document.getElementById("additionalInfo").value,
-    items: Object.values(cart).map(item => ({
-        productName: item.name,  // Используем productName
-        quantity: item.quantity
-    }))
+    name: nameInput.value,
+    address: addressInput.value,
+    additionalInfo: additionalInfoInput.value,
+    items: items
 };
+
+fetch("https://makadamia.onrender.com/api/order", {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json"
+    },
+    body: JSON.stringify(orderData)
+})
+.then(response => response.json())
+.then(data => {
+    console.log("Ответ от сервера:", data);
+})
+.catch(error => {
+    console.error("Ошибка при оформлении заказа:", error);
+});
 
 
             console.log("📡 Отправка данных заказа:", orderData);
