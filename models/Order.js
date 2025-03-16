@@ -1,18 +1,17 @@
-const mongoose = require("mongoose");
+// Пример модели Order
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
-const OrderSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  items: [
-    {
-      productId: { type: String, required: true },  // Изменено на String
-      quantity: { type: Number, required: true },
-    }
-  ],
-  address: { type: String, required: true },
-  additionalInfo: { type: String },
-  status: { type: String, enum: ["Оформлен", "Отправлен", "Доставлен"], default: "Оформлен" },
-  createdAt: { type: Date, default: Date.now }
+const orderSchema = new Schema({
+    name: { type: String, required: true },
+    address: { type: String, required: true },
+    additionalInfo: { type: String, default: '' },
+    items: [{
+        productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },  // Замените productName на productId
+        quantity: { type: Number, required: true }
+    }]
 });
 
-module.exports = mongoose.model("Orders", OrderSchema);
+const Order = mongoose.model('Order', orderSchema);
 
+module.exports = Order;
