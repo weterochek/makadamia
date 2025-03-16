@@ -168,11 +168,12 @@ function decrementItem(productName) {
             quantityDisplay.textContent = cart[productName].quantity;
         }
 
-        // Если количество товара 1, заменяем кнопки "+" и "-" на "Добавить"
+        // Если количество товара 1, заменяем кнопки "+" и "-" на "Добавить" и скрываем число
         if (cart[productName].quantity === 1) {
             addButton.style.display = "inline-block";
             removeButton.style.display = "none";
             addButtonControl.style.display = "none";
+            quantityDisplay.style.display = "none";  // Скрываем число
         }
 
         saveCartToLocalStorage(); // Сохраняем обновленные данные в localStorage
@@ -202,32 +203,31 @@ function getCookie(name) {
     return match ? match[2] : null;
 }
 // Преобразование кнопки "Добавить" в контролы "+", "-", и количество
-function replaceAddButtonWithControls(productId) {
-    const addButton = document.getElementById(`addButton_${productId}`);
-    const removeButton = document.getElementById(`removeBtn_${productId}`);
-    const addButtonControl = document.getElementById(`addBtn_${productId}`);
-    const quantityDisplay = document.getElementById(`quantity_${productId}`);
+function replaceAddButtonWithControls(productName) {
+    const addButton = document.getElementById(`addButton_${productName}`);
+    const removeButton = document.getElementById(`removeBtn_${productName}`);
+    const addButtonControl = document.getElementById(`addBtn_${productName}`);
+    const quantityDisplay = document.getElementById(`quantity_${productName}`);
 
     if (!addButton || !removeButton || !addButtonControl || !quantityDisplay) {
-        console.warn(`❌ Ошибка: Не найдены элементы для товара ${productId}`);
+        console.warn(`❌ Ошибка: Не найдены элементы для ${productName}`);
         return;
     }
 
-    addButton.style.display = "none";  // Скрываем кнопку "Добавить"
-    removeButton.style.display = "inline-block";  // Показываем кнопку "-"
-    addButtonControl.style.display = "inline-block";  // Показываем кнопку "+"
-    quantityDisplay.style.display = "inline-block";  // Показываем количество
-    quantityDisplay.textContent = cart[productId].quantity;  // Обновляем количество
+    addButton.style.display = "none";
+    removeButton.style.display = "inline-block";
+    addButtonControl.style.display = "inline-block";
+    quantityDisplay.style.display = "inline-block";  // Отображаем число
+    quantityDisplay.textContent = cart[productName].quantity;
 }
-
-function revertControlsToAddButton(productId) {
-    const addButton = document.getElementById(`addButton_${productId}`);
-    const removeButton = document.getElementById(`removeBtn_${productId}`);
-    const addButtonControl = document.getElementById(`addBtn_${productId}`);
-    const quantityDisplay = document.getElementById(`quantity_${productId}`);
+function revertControlsToAddButton(productName) {
+    const addButton = document.getElementById(`addButton_${productName}`);
+    const removeButton = document.getElementById(`removeBtn_${productName}`);
+    const addButtonControl = document.getElementById(`addBtn_${productName}`);
+    const quantityDisplay = document.getElementById(`quantity_${productName}`);
 
     if (!addButton || !removeButton || !addButtonControl || !quantityDisplay) {
-        console.warn(`❌ Ошибка: Не найдены элементы для товара ${productId}`);
+        console.warn(`❌ Ошибка: Не найдены элементы для товара ${productName}`);
         return;
     }
 
