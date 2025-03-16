@@ -256,41 +256,37 @@ document.addEventListener('DOMContentLoaded', () => {
     const cartTotal = document.getElementById('totalAmount'); // Элемент с итоговой суммой
     const cartItemsContainer = document.getElementById('cartItems'); // Контейнер товаров в корзине
 
-document.addEventListener("DOMContentLoaded", () => {
-    const clearCartButton = document.getElementById('clear-cart');
-    const cartTotal = document.getElementById('totalAmount'); // Элемент с итоговой суммой
-    const cartItemsContainer = document.getElementById('cartItems'); // Контейнер товаров в корзине
-
     if (clearCartButton) {  // Проверка, что кнопка очистки корзины существует
-    clearCartButton.addEventListener('click', () => {
-        cart = {};  // Очистка корзины
-        localStorage.removeItem('cart');  // Удаляем корзину из localStorage
-        updateCartDisplay();  // Обновляем отображение корзины
-        cartTotal.textContent = 'Итого: 0 ₽'; // Обновляем сумму
+        clearCartButton.addEventListener('click', () => {
+            cart = {};  // Очистка корзины
+            localStorage.removeItem('cart');  // Удаляем корзину из localStorage
+            updateCartDisplay();  // Обновляем отображение корзины
+            cartTotal.textContent = 'Итого: 0 ₽'; // Обновляем сумму
 
-        // Скрываем кнопки на карточках товаров
-        const productCards = document.querySelectorAll(".card-dish");  // Получаем все карточки товаров
-        productCards.forEach(card => {
-            const addButton = card.querySelector(".add-button-size");
-            const removeButton = card.querySelector(".quantity-control");
-            const addButtonControl = card.querySelector(".quantity-size-button");
-            const quantityDisplay = card.querySelector(".quantity");
+            // Скрываем кнопки на карточках товаров
+            const productCards = document.querySelectorAll(".card-dish");  // Получаем все карточки товаров
+            productCards.forEach(card => {
+                const addButton = card.querySelector(".add-button-size");
+                const removeButton = card.querySelector(".quantity-control");
+                const addButtonControl = card.querySelector(".quantity-size-button");
+                const quantityDisplay = card.querySelector(".quantity");
 
-            if (addButton) {
-                addButton.style.display = "inline-block";  // Показываем кнопку "Добавить"
-            }
-            if (removeButton) {
-                removeButton.style.display = "none";  // Скрываем кнопку "-"
-            }
-            if (addButtonControl) {
-                addButtonControl.style.display = "none";  // Скрываем кнопку "+"
-            }
-            if (quantityDisplay) {
-                quantityDisplay.style.display = "none";  // Скрываем количество
-            }
+                if (addButton) {
+                    addButton.style.display = "inline-block";  // Показываем кнопку "Добавить"
+                }
+                if (removeButton) {
+                    removeButton.style.display = "none";  // Скрываем кнопку "-"
+                }
+                if (addButtonControl) {
+                    addButtonControl.style.display = "none";  // Скрываем кнопку "+"
+                }
+                if (quantityDisplay) {
+                    quantityDisplay.style.display = "none";  // Скрываем количество
+                }
+            });
         });
-    });
-}
+    }
+});
 
 // Обновление отображения корзины
 function updateCartDisplay() {
