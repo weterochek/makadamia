@@ -213,18 +213,18 @@ function getCookie(name) {
     return match ? match[2] : null;
 }
 // Преобразование кнопки "Добавить" в контролы "+", "-", и количество
-function replaceAddButtonWithControls(productName) {
-    const addButton = document.getElementById(`addButton_${productName}`);
-    const removeButton = document.getElementById(`removeBtn_${productName}`);
-    const addButtonControl = document.getElementById(`addBtn_${productName}`);
-    const quantityDisplay = document.getElementById(`quantity_${productName}`);
+function replaceAddButtonWithControls(productId) {
+    const addButton = document.getElementById(`addButton_${productId}`);
+    const removeButton = document.getElementById(`removeBtn_${productId}`);
+    const addButtonControl = document.getElementById(`addBtn_${productId}`);
+    const quantityDisplay = document.getElementById(`quantity_${productId}`);
 
-    if (cart[productName] && cart[productName].quantity > 0) {
+    if (cart[productId] && cart[productId].quantity > 0) {
         addButton.style.display = "none";
         removeButton.style.display = "inline-block";
         addButtonControl.style.display = "inline-block";
         quantityDisplay.style.display = "inline-block";
-        quantityDisplay.textContent = cart[productName].quantity;
+        quantityDisplay.textContent = cart[productId].quantity;
     } else {
         addButton.style.display = "inline-block";
         removeButton.style.display = "none";
@@ -232,14 +232,15 @@ function replaceAddButtonWithControls(productName) {
         quantityDisplay.style.display = "none";
     }
 }
-function revertControlsToAddButton(productName) {
-    const addButton = document.getElementById(`addButton_${productName}`);
-    const removeButton = document.getElementById(`removeBtn_${productName}`);
-    const addButtonControl = document.getElementById(`addBtn_${productName}`);
-    const quantityDisplay = document.getElementById(`quantity_${productName}`);
+
+function revertControlsToAddButton(productId) {
+    const addButton = document.getElementById(`addButton_${productId}`);
+    const removeButton = document.getElementById(`removeBtn_${productId}`);
+    const addButtonControl = document.getElementById(`addBtn_${productId}`);
+    const quantityDisplay = document.getElementById(`quantity_${productId}`);
 
     if (!addButton || !removeButton || !addButtonControl || !quantityDisplay) {
-        console.warn(`❌ Ошибка: Не найдены элементы для товара ${productName}`);
+        console.warn(`❌ Ошибка: Не найдены элементы для товара ${productId}`);
         return;
     }
 
@@ -249,6 +250,7 @@ function revertControlsToAddButton(productName) {
     addButtonControl.style.display = "none";  // Скрываем кнопку "+"
     quantityDisplay.style.display = "none";  // Скрываем количество
 }
+
 //ощичение корзины
 document.addEventListener('DOMContentLoaded', () => {
     const clearCartButton = document.getElementById('clear-cart');
@@ -283,6 +285,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
 
 // Обновление отображения корзины после очистки
 function updateCartDisplay() {
