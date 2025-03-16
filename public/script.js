@@ -113,8 +113,10 @@ function generateUniqueProductId() {
 
 // Функция добавления товара в корзину
 async function addToCart(productId) {
-    // Получаем товар по ID с сервера
-    const response = await fetch(`https://makadamia.onrender.com/product/${productId}`);
+    // Кодируем productId перед отправкой
+    const encodedProductId = encodeURIComponent(productId);
+
+    const response = await fetch(`https://makadamia.onrender.com/product/${encodedProductId}`);
     if (!response.ok) {
         console.error('Ошибка при получении товара');
         return;
