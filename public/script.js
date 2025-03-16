@@ -107,29 +107,37 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
-async function addToCart(productName) {
-    const encodedProductName = encodeURIComponent(productName);
-    const response = await fetch(`/product/${encodedProductName}`);
+async function addToCart(productId, productPrice) {
+    try {
+        // Отправляем запрос на сервер для получения товара по его ID
+        const response = await fetch(`/product/${productId}`);
+        if (!response.ok) {
+            throw new Error('Ошибка при получении товара');
+        }
+        const product = await response.json();
 
-    if (!response.ok) {
-        console.error('Ошибка при получении товара');
-        return;
+        // Здесь добавляем товар в корзину
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        const existingProductIndex = cart.findIndex(item => item.productId === productId);
+
+        if (existingProductIndex > -1) {
+            // Если товар уже есть в корзине, увеличиваем количество
+            cart[existingProductIndex].quantity += 1;
+        } else {
+            // Если товара нет в корзине, добавляем новый
+            cart.push({ productId: product._id, name: product.name, price: product.price, quantity: 1 });
+        }
+
+        // Сохраняем корзину в localStorage
+        localStorage.setItem('cart', JSON.stringify(cart));
+
+        // Обновляем UI корзины (по желанию)
+        updateCartDisplay();
+
+    } catch (error) {
+        console.error("Ошибка при добавлении товара в корзину:", error);
     }
-
-    const product = await response.json();  // Преобразуем ответ в JSON
-
-    // Добавляем товар в корзину
-    if (cart[product.name]) {
-        cart[product.name].quantity += 1;  // Если товар уже есть, увеличиваем количество
-    } else {
-        cart[product.name] = { name: product.name, price: product.price, quantity: 1 };  // Если товара нет, добавляем его
-    }
-
-    // Сохраняем корзину в localStorage
-    saveCartToLocalStorage();
-    updateCartDisplay();
 }
-
 // Уменьшение количества товара
 function decrementItem(productId) {
     if (cart[productId]) {
