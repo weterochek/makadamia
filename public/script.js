@@ -260,31 +260,39 @@ function updateCartDisplay() {
 
 // Обновление отображения корзины и количества товара на карточке
 function updateCartDisplay() {
-    const cartItems = document.getElementById("cartItems");
-    if (!cartItems) return;
+    const cartItemsContainer = document.getElementById("cartItems");
+    const totalAmountElement = document.getElementById("totalAmount");
 
-    cartItems.innerHTML = ""; // Очищаем список товаров
+    if (!cartItemsContainer || !totalAmountElement) return;
+
+    cartItemsContainer.innerHTML = "";  // Очищаем список товаров
     let totalAmount = 0;
 
-    for (const item in cart) {
-        const itemTotal = cart[item].price * cart[item].quantity;
+    for (const productId in cart) {
+        const item = cart[productId];
+        const itemTotal = item.price * item.quantity;
         totalAmount += itemTotal;
 
-        const cartItem = document.createElement("div");
-        cartItem.className = "cart-item";
-        cartItem.setAttribute("data-name", item); // Добавляем атрибут для поиска
+        const cartItem = document.createElement('div');
+        cartItem.className = 'cart-item';
         cartItem.innerHTML = `
-            <div class="item-info">${item} - ${itemTotal} ₽</div>
+            <div class="item-info">${item.name} - ${item.quantity} шт. по ${item.price} ₽</div>
             <div class="cart-buttons">
-                <button onclick="decrementItem('${item}')">-</button>
-                <span class="quantity">${cart[item].quantity}</span>
-                <button onclick="incrementItem('${item}', ${cart[item].price})">+</button>
+                <button onclick="decrementItem('${productId}')">-</button>
+                <span class="quantity" id="quantity_${productId}">${item.quantity}</span>  <!-- Этот элемент обновляется -->
+                <button onclick="incrementItem('${productId}')">+</button>
             </div>
         `;
-        cartItems.appendChild(cartItem);
+        cartItemsContainer.appendChild(cartItem);
+
+        // Обновляем количество товара на карточке товара на странице
+        const quantityDisplay = document.getElementById(`quantity_${productId}`);
+        if (quantityDisplay) {
+            quantityDisplay.textContent = item.quantity;  // Обновляем отображение
+        }
     }
 
-    document.getElementById("totalAmount").textContent = `Итого: ${totalAmount} ₽`;
+    totalAmountElement.textContent = `Итого: ${totalAmount} ₽`;
 
     // Если корзина пуста, скрываем её
     if (Object.keys(cart).length === 0) {
