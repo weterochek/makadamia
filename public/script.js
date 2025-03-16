@@ -219,6 +219,7 @@ function replaceAddButtonWithControls(productName) {
         return;
     }
 
+    // Если товар есть в корзине, заменяем кнопку "Добавить" на управление количеством
     addButton.style.display = "none";
     removeButton.style.display = "inline-block";
     addButtonControl.style.display = "inline-block";
@@ -237,6 +238,7 @@ function revertControlsToAddButton(productName) {
         return;
     }
 
+    // Если количество товара 0, показываем кнопку "Добавить" и скрываем кнопки управления количеством
     addButton.style.display = "inline-block";  // Показываем кнопку "Добавить"
     removeButton.style.display = "none";  // Скрываем кнопку "-"
     addButtonControl.style.display = "none";  // Скрываем кнопку "+"
@@ -262,7 +264,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 });
-    document.addEventListener('DOMContentLoaded', () => {
+   document.addEventListener('DOMContentLoaded', () => {
     const clearCartButton = document.getElementById('clear-cart');
     const cartTotal = document.getElementById('totalAmount'); // Элемент с итоговой суммой
     const cartItemsContainer = document.getElementById('cartItems'); // Контейнер товаров в корзине
