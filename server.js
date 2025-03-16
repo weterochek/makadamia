@@ -197,22 +197,23 @@ const userSchema = new mongoose.Schema({
 const User = mongoose.model("User", userSchema);
 // Получение товара по ID
 // Маршрут для получения товара по ID
-app.get('/product/:id', async (req, res) => {
-    const productId = req.params.id;  // Получаем ID из параметров URL
+app.get('/product/:name', async (req, res) => {
+    const productName = req.params.name;  // Получаем название продукта из параметров URL
     try {
-        // Используем модель "Products" для поиска товара по ID
-        const product = await Products.findById(productId);  // Заменили "Product" на "Products"
-        
+        // Используем модель "Products" для поиска товара по названию
+        const product = await Products.findOne({ name: productName });  // Заменили "findById" на "findOne" и ищем по названию
+
         if (!product) {
             return res.status(404).json({ message: 'Товар не найден' });
         }
-        
+
         res.json(product);  // Отправляем товар в ответ
     } catch (error) {
         console.error('Ошибка при получении товара:', error);
         res.status(500).json({ message: 'Ошибка при получении товара' });
     }
 });
+
 
 
 // Мидлвар для проверки токена
