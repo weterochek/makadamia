@@ -150,6 +150,7 @@ async function addToCart(productId, productPrice) {
     }
 }
 
+
 // Уменьшение количества товара
 function decrementItem(productId) {
     if (cart[productId]) {
@@ -250,8 +251,6 @@ function updateCartDisplay() {
     // Обновляем итоговую сумму
     totalAmount.textContent = `Итого: ${total} ₽`;
 }
-
-
 
 
     // Очищение корзины
