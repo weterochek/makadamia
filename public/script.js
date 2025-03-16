@@ -249,7 +249,6 @@ function revertControlsToAddButton(productName) {
 document.addEventListener('DOMContentLoaded', () => {
     const clearCartButton = document.getElementById('clear-cart');
     const cartTotal = document.getElementById('totalAmount'); // Элемент с итоговой суммой
-    const cartItemsContainer = document.getElementById('cartItems'); // Контейнер товаров в корзине
 
     if (clearCartButton) {
         clearCartButton.addEventListener('click', () => {
@@ -258,7 +257,7 @@ document.addEventListener('DOMContentLoaded', () => {
             updateCartDisplay();  // Обновляем отображение корзины
             cartTotal.textContent = 'Итого: 0 ₽'; // Обновляем сумму
 
-            // Скрываем кнопки на карточках товаров
+            // Обновляем карточки товаров
             const productCards = document.querySelectorAll(".card-dish");
             productCards.forEach(card => {
                 const addButton = card.querySelector(".add-button-size");
