@@ -285,7 +285,45 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+document.addEventListener("DOMContentLoaded", () => {
+    const userId = localStorage.getItem("userId"); // Сохраняется после логина
 
+    if (!userId) {
+        console.log("Пользователь не авторизован");
+        return;
+    }
+
+    fetch(`https://makadamia.onrender.com/user-orders/${userId}`)
+        .then(res => res.json())
+        .then(orders => {
+            const container = document.getElementById("ordersContainer"); // Сделай блок с таким id
+            if (orders.length === 0) {
+                container.innerHTML = "<p>У вас пока нет заказов.</p>";
+                return;
+            }
+
+            orders.forEach(order => {
+                const orderDiv = document.createElement("div");
+                orderDiv.classList.add("order");
+
+                orderDiv.innerHTML = `
+                    <h3>Заказ №${order._id}</h3>
+                    <p>Адрес: ${order.address}</p>
+                    <p>Дата: ${new Date(order.createdAt).toLocaleDateString()}</p>
+                    <ul>
+                        ${order.items.map(item => `
+                            <li>${item.productId.name} — ${item.quantity} шт. (${item.productId.price} ₽)</li>
+                        `).join("")}
+                    </ul>
+                    <hr>
+                `;
+                container.appendChild(orderDiv);
+            });
+        })
+        .catch(err => {
+            console.error("Ошибка загрузки заказов:", err);
+        });
+});
 
 // Обновление отображения корзины после очистки
 function updateCartDisplay() {
