@@ -257,38 +257,31 @@ document.addEventListener('DOMContentLoaded', () => {
     const cartTotal = document.getElementById('totalAmount');
 
     if (clearCartButton) {
-    clearCartButton.addEventListener('click', () => {
-        cart = {};  
-        const username = localStorage.getItem("username") || "guest";
-        localStorage.removeItem(`cart_${username}`); 
-        updateCartDisplay();  
-        cartTotal.textContent = 'Итого: 0 ₽';
+        clearCartButton.addEventListener('click', () => {
+            cart = {};  
+            const username = localStorage.getItem("username") || "guest";
+            localStorage.removeItem(`cart_${username}`); 
+            updateCartDisplay();  
+            cartTotal.textContent = 'Итого: 0 ₽';
 
-        const productCards = document.querySelectorAll(".card-dish");
-        productCards.forEach(card => {
-            const addButton = card.querySelector(".add-button-size");
-            const removeButton = card.querySelector(".quantity-control");
-            const addButtonControl = card.querySelector(".quantity-size-button");
-            const quantityDisplay = card.querySelector(".quantity-display");
+            const productCards = document.querySelectorAll(".card-dish");
+            productCards.forEach(card => {
+                const addButton = card.querySelector(".add-button-size");
+                const removeButton = card.querySelector(".quantity-control");
+                const addButtonControl = card.querySelector(".quantity-size-button");
+                const quantityDisplay = card.querySelector(".quantity-display");
 
-            if (addButton) addButton.style.display = "inline-block";
-            if (removeButton) removeButton.style.display = "none";
-            if (addButtonControl) addButtonControl.style.display = "none";
-            if (quantityDisplay) {
-                quantityDisplay.textContent = "";
-                quantityDisplay.style.display = "none";
-            }
-        });
-    });  // ЭТОТ закрыл
-} // ВОТ ЭТОТ ЗАБЫТ!
-
-// Должно быть:
-
-if (clearCartButton) {
-    clearCartButton.addEventListener('click', () => {
-        // Весь код...
-    });
-}
+                if (addButton) addButton.style.display = "inline-block";
+                if (removeButton) removeButton.style.display = "none";
+                if (addButtonControl) addButtonControl.style.display = "none";
+                if (quantityDisplay) {
+                    quantityDisplay.textContent = "";
+                    quantityDisplay.style.display = "none";
+                }
+            });
+        });  
+    }  // <-- ВОТ ЭТО ДОБАВЛЯЕШЬ!
+});
 
 document.addEventListener("DOMContentLoaded", () => {
     const token = localStorage.getItem("accessToken");
