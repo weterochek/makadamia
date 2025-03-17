@@ -338,7 +338,8 @@ function decrementItem(button) {
 
 
 function decrementItem(productId) {
-    let cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+    let cartData = localStorage.getItem('cartItems');
+    let cartItems = Array.isArray(JSON.parse(cartData)) ? JSON.parse(cartData) : [];
     const itemIndex = cartItems.findIndex(item => item.productId === productId);
 
     if (itemIndex > -1) {
