@@ -527,23 +527,6 @@ async function refreshAccessToken() {
 }
 
 
-async function loadUserData(token) {
-    const response = await fetch("/account", {
-        headers: {
-            "Authorization": `Bearer ${token}`  // Передаем токен в заголовке
-        }
-    });
-
-    if (response.ok) {
-        const data = await response.json();
-        document.getElementById("username").textContent = data.username;  // Отображаем данные пользователя
-    } else {
-        localStorage.removeItem('accessToken');  // Если токен недействителен, удаляем его
-    }
-}
-
-
-
 function generateTokens(user, site) {
     const issuedAt = Math.floor(Date.now() / 1000);
     
