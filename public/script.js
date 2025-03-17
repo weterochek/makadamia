@@ -207,38 +207,52 @@ function initializeAddToCartButtons() {
         }
     });
 }
-document.addEventListener('DOMContentLoaded', () => {
-    const addToCartButtons = document.querySelectorAll('.add-to-cart');
-    
-    addToCartButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            const productId = button.dataset.id;
-            const productName = button.dataset.name;
-            const productPrice = parseFloat(button.dataset.price);
-            
-            let cartItems = localStorage.getItem('cartItems');
-            cartItems = cartItems ? JSON.parse(cartItems) : [];
+function addToCart(productId, productName, price) {
+    let cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
 
-            const existingItem = cartItems.find(item => item.productId === productId);
+    const existingItem = cartItems.find(item => item.productId === productId);
 
-            if (existingItem) {
-                existingItem.quantity += 1;
-            } else {
-                cartItems.push({
-                    productId,
-                    productName,
-                    price: productPrice,
-                    quantity: 1
-                });
-            }
-
-            localStorage.setItem('cartItems', JSON.stringify(cartItems));
-            alert('Товар добавлен в корзину!');
+    if (existingItem) {
+        existingItem.quantity += 1;
+    } else {
+        cartItems.push({
+            productId,
+            productName,
+            price,
+            quantity: 1
         });
+    }
+
+    localStorage.setItem('cartItems', JSON.stringify(cartItems));
+    renderCart();
+}
+function renderCart() {
+    const cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+    const cartContainer = document.getElementById('cartItems');
+    const totalAmountElement = document.getElementById('totalAmount');
+
+    cartContainer.innerHTML = '';
+    let total = 0;
+
+    cartItems.forEach(item => {
+        const itemTotal = item.price * item.quantity;
+        total += itemTotal;
+
+        const cartElement = document.createElement('div');
+        cartElement.classList.add('cart-item');
+        cartElement.innerHTML = `
+            <div class="item-info">${item.productName} - ${item.quantity} шт. - ${itemTotal} ₽</div>
+            <div class="cart-buttons">
+                <button onclick="decrementItem('${item.productId}')">-</button>
+                <span class="quantity">${item.quantity}</span>
+                <button onclick="incrementItem('${item.productId}', '${item.productName}', ${item.price})">+</button>
+            </div>
+        `;
+        cartContainer.appendChild(cartElement);
     });
-});
 
-
+    totalAmountElement.textContent = `Итого: ${total} ₽`;
+}
 
 function updateQuantityDisplay(productName) {
     const quantityElement = document.getElementById(`quantity_${productName}`);
@@ -291,18 +305,39 @@ function decrementItem(productName) {
     }
 }
 // Увеличение количества товара
-function incrementItem(productName, price) {
-    if (cart[productName]) {
-        cart[productName].quantity += 1;
+function incrementItem(productId, productName, price) {
+    let cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+    const existingItem = cartItems.find(item => item.productId === productId);
+
+    if (existingItem) {
+        existingItem.quantity += 1;
     } else {
-        cart[productName] = { name: productName, price: price, quantity: 1 };
+        cartItems.push({
+            productId,
+            productName,
+            price,
+            quantity: 1
+        });
     }
 
-    saveCartToLocalStorage();
-    updateCartDisplay();
-    updateQuantityDisplay(productName);
-    checkForEmptyCart(productName);  // Проверка, если товар в корзине не равен 0
+    localStorage.setItem('cartItems', JSON.stringify(cartItems));
+    renderCart();
 }
+
+function decrementItem(productId) {
+    let cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+    const itemIndex = cartItems.findIndex(item => item.productId === productId);
+
+    if (itemIndex > -1) {
+        cartItems[itemIndex].quantity -= 1;
+        if (cartItems[itemIndex].quantity === 0) {
+            cartItems.splice(itemIndex, 1);
+        }
+        localStorage.setItem('cartItems', JSON.stringify(cartItems));
+        renderCart();
+    }
+}
+
 function updateQuantityDisplay(productName) {
     const quantityElement = document.getElementById(`quantity_${productName}`);
     if (quantityElement) {
