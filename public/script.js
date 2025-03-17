@@ -208,64 +208,44 @@ function initializeAddToCartButtons() {
     });
 }
 function addToCart(button) {
-    const productId = button.getAttribute('data-id');
-    const productName = button.getAttribute('data-name');
-    const productPrice = parseFloat(button.getAttribute('data-price'));
+    const controls = button.closest('.controls');
+    const productId = controls.dataset.id;
+    const productName = controls.dataset.name;
+    const price = parseInt(controls.dataset.price);
 
-    let cart = JSON.parse(localStorage.getItem('cart')) || {};
-
-    if (cart[productId]) {
-        cart[productId].quantity += 1;
+    if (!cart[productId]) {
+        cart[productId] = { name: productName, price: price, quantity: 1 };
     } else {
-        cart[productId] = {
-            id: productId,
-            name: productName,
-            price: productPrice,
-            quantity: 1
-        };
+        cart[productId].quantity += 1;
     }
 
-    localStorage.setItem('cart', JSON.stringify(cart));
-    renderCart();
+    saveCartToLocalStorage();
+    updateCartDisplay();
 
-    // Меняем кнопку
-    button.outerHTML = `
-        <div class="cart-buttons">
-            <button onclick="decrementItem('${productId}')">-</button>
-            <span class="quantity">${cart[productId].quantity}</span>
-            <button onclick="incrementItem('${productId}')">+</button>
-        </div>
-    `;
+    // Показать + - и количество
+    controls.querySelector('.add-button').style.display = "none";
+    controls.querySelector('.quantity-controls').style.display = "inline-flex";
+    controls.querySelector('.quantity').textContent = cart[productId].quantity;
 }
 
 function renderCart() {
-    const cart = JSON.parse(localStorage.getItem('cart')) || {};
-    const cartItems = document.querySelector('.cart-items');
-    const totalAmountElement = document.getElementById('totalAmount');
-    cartItems.innerHTML = '';
-
-    let totalAmount = 0;
+    const cartContainer = document.getElementById("cartItems");
+    cartContainer.innerHTML = "";
+    let total = 0;
 
     for (const productId in cart) {
         const item = cart[productId];
         const itemTotal = item.price * item.quantity;
-        totalAmount += itemTotal;
+        total += itemTotal;
 
-        const cartItem = document.createElement('div');
-        cartItem.className = 'cart-item';
-        cartItem.innerHTML = `
-            <div>${item.name} - ${item.quantity} шт. - ${itemTotal} ₽</div>
-            <div class="cart-buttons">
-                <button onclick="decrementItem('${productId}')">-</button>
-                <span class="quantity">${item.quantity}</span>
-                <button onclick="incrementItem('${productId}')">+</button>
-            </div>
-        `;
-        cartItems.appendChild(cartItem);
+        const itemDiv = document.createElement("div");
+        itemDiv.innerHTML = `${item.name} - ${item.quantity} шт. - ${itemTotal} ₽`;
+        cartContainer.appendChild(itemDiv);
     }
 
-    totalAmountElement.textContent = totalAmount + ' ₽';
+    document.getElementById("totalAmount").textContent = `Итого: ${total} ₽`;
 }
+
 
 
 function updateQuantityDisplay(productName) {
@@ -319,21 +299,32 @@ function decrementItem(productName) {
     }
 }
 // Увеличение количества товара
-function incrementItem(productId) {
-    const cart = JSON.parse(localStorage.getItem('cart'));
+function incrementItem(button) {
+    const controls = button.closest('.controls');
+    const productId = controls.dataset.id;
+
     cart[productId].quantity += 1;
-    localStorage.setItem('cart', JSON.stringify(cart));
-    renderCart();
+    saveCartToLocalStorage();
+    updateCartDisplay();
+    controls.querySelector('.quantity').textContent = cart[productId].quantity;
 }
 
-function decrementItem(productId) {
-    const cart = JSON.parse(localStorage.getItem('cart'));
+function decrementItem(button) {
+    const controls = button.closest('.controls');
+    const productId = controls.dataset.id;
+
     cart[productId].quantity -= 1;
-    if (cart[productId].quantity <= 0) {
+
+    if (cart[productId].quantity === 0) {
         delete cart[productId];
+        controls.querySelector('.add-button').style.display = "inline-block";
+        controls.querySelector('.quantity-controls').style.display = "none";
+    } else {
+        controls.querySelector('.quantity').textContent = cart[productId].quantity;
     }
-    localStorage.setItem('cart', JSON.stringify(cart));
-    renderCart();
+
+    saveCartToLocalStorage();
+    updateCartDisplay();
 }
 
 
