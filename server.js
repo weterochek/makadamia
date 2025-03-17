@@ -78,31 +78,6 @@ const authMiddleware = (req, res, next) => {
     }
 };
 
-
-// Получение заказов пользователя
-app.get("/orders", async (req, res) => {
-    try {
-        const orders = await Order.find().populate("items.productId", "name price");
-        res.status(200).json(orders);
-    } catch (error) {
-        console.error("Ошибка при получении заказов:", error);
-        res.status(500).json({ error: "Ошибка при загрузке заказов" });
-    }
-});
-
-
-app.get("/user-orders", authMiddleware, async (req, res) => {
-    try {
-        const userId = req.user.id; // Получаем userId из токена
-        const orders = await Order.find({ userId }).populate("items.productId", "name price");
-        res.status(200).json(orders);
-    } catch (error) {
-        console.error("Ошибка при получении заказов пользователя:", error);
-        res.status(500).json({ error: "Ошибка при загрузке заказов пользователя" });
-    }
-});
-
-
 // Функция проверки срока жизни токена
 function isTokenExpired(token) {
     try {
@@ -209,45 +184,6 @@ function generateTokens(user, site) {
 const authMiddleware = require('./middlewares/authMiddleware');
 const Order = require('./models/Order');
 const Product = require('./models/Products');
-
-app.post("/api/order", authMiddleware, async (req, res) => {
-    try {
-        const { items, address, additionalInfo } = req.body;
-
-        if (!items || items.length === 0) {
-            return res.status(400).json({ message: "Корзина не может быть пустой" });
-        }
-
-        const populatedItems = [];
-
-        for (let item of items) {
-            const product = await Product.findById(item.productId);
-            if (!product) {
-                return res.status(404).json({ message: `Товар не найден` });
-            }
-
-            populatedItems.push({
-                productId: product._id,
-                quantity: item.quantity
-            });
-        }
-
-        const newOrder = new Order({
-            userId: req.user.id, // Извлекаем из токена
-            name: req.user.username,
-            address,
-            additionalInfo,
-            items: populatedItems
-        });
-
-        await newOrder.save();
-
-        res.status(201).json({ message: "Заказ успешно создан", order: newOrder });
-    } catch (error) {
-        console.error("❌ Ошибка при сохранении заказа:", error);
-        res.status(500).json({ message: "Ошибка сервера", error: error.message });
-    }
-});
 
 
 // Регистрация пользователя
