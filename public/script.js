@@ -814,14 +814,8 @@ async function loadUserData(token) {
     }
 }
 
-function handleAuthClick() {
-    const token = localStorage.getItem("accessToken");
-    if (token) {
-        window.location.href = 'account.html'; // Если пользователь авторизован, переходим в личный кабинет
-    } else {
-        window.location.href = 'login.html'; // Если нет, перенаправляем на страницу входа
-    }
-}
+
+
 
 // Убедитесь, что этот код в `script.js` загружен перед его вызовом в HTML
 document.addEventListener("DOMContentLoaded", function () {
@@ -858,7 +852,14 @@ async function loadOrders() {
         alert("Ошибка при загрузке заказов");
     }
 }
-
+function handleAuthClick() {
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+        window.location.href = 'account.html';
+    } else {
+        window.location.href = 'login.html';
+    }
+}
 // Отображение заказов на странице
 function displayOrders(orders) {
     const ordersContainer = document.getElementById("ordersContainer");
