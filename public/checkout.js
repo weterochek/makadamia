@@ -74,7 +74,7 @@ function incrementItem(itemName, itemPrice) {
 
 // Загрузка данных пользователя
 async function loadUserData() {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("accessToken");
     if (!token) {
         alert("Вы не авторизованы! Пожалуйста, войдите в аккаунт.");
         window.location.href = "login.html";
@@ -118,7 +118,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Кнопка "Оформить заказ"
    checkoutForm.addEventListener("submit", async function (e) {
     e.preventDefault();
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("accessToken");
 
     if (!token) {
         alert("Вы не авторизованы!");
