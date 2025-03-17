@@ -339,23 +339,25 @@ function updateCartDisplay() {
     cartItems.innerHTML = ""; // Очищаем список товаров
     let totalAmount = 0;
 
-    for (const productName in cart) {
-        const itemTotal = cart[productName].price * cart[productName].quantity;
-        totalAmount += itemTotal;
+    for (const productId in cart) {
+    const item = cart[productId]; // item = { name, price, quantity }
+    const itemTotal = item.price * item.quantity;
+    totalAmount += itemTotal;
 
-        const cartItem = document.createElement("div");
-        cartItem.className = "cart-item";
-        cartItem.setAttribute("data-name", productName); // Используем productName
-        cartItem.innerHTML = `
-            <div class="item-info">${productName} - ${itemTotal} ₽</div>
-            <div class="cart-buttons">
-                <button onclick="decrementItem('${productName}')">-</button>
-                <span class="quantity">${cart[productName].quantity}</span>
-                <button onclick="incrementItem('${productName}', ${cart[productName].price})">+</button>
-            </div>
-        `;
-        cartItems.appendChild(cartItem);
-    }
+    const cartItem = document.createElement("div");
+    cartItem.className = "cart-item";
+    cartItem.setAttribute("data-id", productId); // Назовём честно productId, а не name
+    cartItem.innerHTML = `
+        <div class="item-info">${item.name} - ${itemTotal} ₽</div>
+        <div class="cart-buttons">
+            <button onclick="decrementItem('${productId}')">-</button>
+            <span class="quantity">${item.quantity}</span>
+            <button onclick="incrementItem('${productId}', ${item.price})">+</button>
+        </div>
+    `;
+    cartItems.appendChild(cartItem);
+}
+
 
     document.getElementById("totalAmount").textContent = `Итого: ${totalAmount} ₽`;
 
