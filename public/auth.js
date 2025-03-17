@@ -170,9 +170,10 @@ loginForm.addEventListener("submit", async (e) => {
 
         const data = await response.json();
         if (response.ok) {
-            localStorage.setItem("token", data.accessToken);
-            localStorage.setItem("username", username);
-            localStorage.setItem("userId", data.userId);
+            localStorage.setItem("accessToken", data.accessToken);
+localStorage.setItem("refreshToken", data.refreshToken); // если сервер выдаёт refreshToken
+localStorage.setItem("username", username);
+localStorage.setItem("userId", data.userId);
 
             window.location.href = "/index.html";
         } else {
