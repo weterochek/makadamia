@@ -10,6 +10,9 @@ const Joi = require("joi");
 const app = express();
 const orderRoutes = require("./routes/orderRoutes");
 const Products = require("./models/Products");  // Подключаем модель "Products"
+const authMiddleware = require('./middlewares/authMiddleware');
+const Order = require('./models/Order');
+const Product = require('./models/Products');
 
 // Настройка CORS
 const allowedOrigins = [
@@ -158,9 +161,7 @@ function generateTokens(user, site) {
     return { accessToken, refreshToken };
 }
 
-const authMiddleware = require('./middlewares/authMiddleware');
-const Order = require('./models/Order');
-const Product = require('./models/Products');
+
 
 
 // Регистрация пользователя
