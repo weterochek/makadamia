@@ -55,29 +55,6 @@ mongoose.connect(mongoURI, {
 
 // Middleware для обработки JSON
 
-const authMiddleware = (req, res, next) => {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-        console.warn("Ошибка 401: Токен отсутствует");
-        return res.status(401).json({ message: "Токен не предоставлен" });
-    }
-
-    const token = authHeader.split(" ")[1];
-    if (!token) {
-        console.warn("Ошибка 401: Некорректный формат заголовка Authorization");
-        return res.status(401).json({ message: "Некорректный формат токена" });
-    }
-
-    try {
-        const decoded = jwt.verify(token, JWT_SECRET);
-        req.user = decoded;
-        next();
-    } catch (err) {
-        console.warn("Ошибка 401: Недействительный токен", err.message);
-        return res.status(401).json({ message: "Недействительный токен" });
-    }
-};
-
 // Функция проверки срока жизни токена
 function isTokenExpired(token) {
     try {
