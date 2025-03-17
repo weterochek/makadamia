@@ -124,9 +124,11 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             const items = Object.keys(cart).map(productId => ({
-                productId: productId,
-                quantity: cart[productId].quantity
-            }));
+            productId: productId,
+            quantity: cart[productId].quantity,
+            name: cart[productId].name,
+            price: cart[productId].price
+        }));
 
             const nameInput = document.getElementById('customerName');
             const addressInput = document.getElementById('customerAddress');
