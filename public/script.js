@@ -698,7 +698,14 @@ async function logout() {
 }
 
 
-
+function handleAuthClick() {
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+        window.location.href = 'account.html';
+    } else {
+        window.location.href = 'login.html';
+    }
+}
 
 // Переход на страницу личного кабинета
 function openCabinet() {
@@ -853,14 +860,7 @@ async function loadOrders() {
         alert("Ошибка при загрузке заказов");
     }
 }
-function handleAuthClick() {
-    const token = localStorage.getItem('accessToken');
-    if (token) {
-        window.location.href = 'account.html';
-    } else {
-        window.location.href = 'login.html';
-    }
-}
+
 // Отображение заказов на странице
 function displayOrders(orders) {
     const ordersContainer = document.getElementById("ordersContainer");
