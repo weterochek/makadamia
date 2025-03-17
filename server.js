@@ -89,9 +89,11 @@ app.get("/orders", async (req, res) => {
         res.status(500).json({ error: "Ошибка при загрузке заказов" });
     }
 });
-app.get("/user-orders/:userId", async (req, res) => {
+const authMiddleware = require('./middlewares/authMiddleware'); // Если ещё не подключен
+
+app.get("/user-orders", authMiddleware, async (req, res) => {
     try {
-        const userId = req.params.userId;
+        const userId = req.user.id; // Получаем userId из токена
         const orders = await Order.find({ userId }).populate("items.productId", "name price");
         res.status(200).json(orders);
     } catch (error) {
@@ -99,6 +101,7 @@ app.get("/user-orders/:userId", async (req, res) => {
         res.status(500).json({ error: "Ошибка при загрузке заказов пользователя" });
     }
 });
+
 async function fetchWithAuth(url, options = {}) {
     let accessToken = localStorage.getItem("accessToken");
 
