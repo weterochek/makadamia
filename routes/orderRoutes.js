@@ -38,13 +38,22 @@ router.post("/order", authMiddleware, async (req, res) => {
 
 
 // Получение заказов пользователя
-router.get("/orders", authMiddleware, async (req, res) => {
+app.get("/orders", async (req, res) => {
     try {
-        const orders = await Order.find({ userId: req.user.id });
-        res.json(orders);
+        const orders = await Order.find().populate("items.productId", "name price");
+        res.status(200).json(orders);
     } catch (error) {
-        console.error("Ошибка загрузки заказов:", error);
-        res.status(500).json({ message: "Ошибка сервера" });
+        res.status(500).json({ error: "Ошибка при загрузке заказов" });
+    }
+});
+
+app.get("/user-orders/:userId", async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        const orders = await Order.find({ userId }).populate("items.productId", "name price");
+        res.status(200).json(orders);
+    } catch (error) {
+        res.status(500).json({ error: "Ошибка при загрузке заказов пользователя" });
     }
 });
 
