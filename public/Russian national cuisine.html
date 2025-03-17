@@ -59,28 +59,27 @@
         <section class="popular-dishes">
             <div class="grid-dishes">
                 <div class="card-dish">
-                    <div class="image-container">  
-                            <div class="menu-item">
-                <img src="images/Russia/борщ.webp" alt="борщ">
-                <p><b>Борщ </b><span class="small-text">(350гр)</span></p>
-                <p><span class="textcolor">Классический густой овощной суп, главный ингредиент которого – свекла</span></p>
-                                <div class="price-container" >
+    <div class="image-container">  
+        <div class="menu-item">
+            <img src="images/Russia/борщ.webp" alt="борщ">
+            <p><b>Борщ </b><span class="small-text">(350гр)</span></p>
+            <p><span class="textcolor">Классический густой овощной суп, главный ингредиент которого – свекла</span></p>
+            <div class="price-container">
                 <p><b>380 ₽</b></p>
-               <div class="cart-controls" id="controls_67d65e52d2a191f58d6e8486">
-                                <button 
-                                    class="add-button-size" 
-                                    onclick="addToCart(this)" 
-                                    data-id="67d65e52d2a191f58d6e8486" 
-                                    data-name="Борщ" 
-                                    data-price="380">
-                                    Добавить
-                                </button>
-                                <!-- Эти кнопки будут подставляться скриптом -->
-                            </div>
-                                </div>
-                            </div>
-                        </div>
+                
+                <div class="controls" data-id="67d65e52d2a191f58d6e8486" data-name="Борщ" data-price="380">
+                    <button class="add-button" onclick="addToCart(this)">Добавить</button>
+                    <div class="quantity-controls" style="display: none;">
+                        <button class="decrement" onclick="decrementItem(this)">-</button>
+                        <span class="quantity">1</span>
+                        <button class="increment" onclick="incrementItem(this)">+</button>
+                    </div>
+                </div>
 
+            </div>
+        </div>
+    </div>
+</div>
              
             
             
