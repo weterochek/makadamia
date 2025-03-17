@@ -819,9 +819,6 @@ async function loadUserData(accessToken) {
 }
 
 
-
-
-
 // Убедитесь, что этот код в `script.js` загружен перед его вызовом в HTML
 document.addEventListener("DOMContentLoaded", function () {
     const authButton = document.getElementById("authButton");
