@@ -207,6 +207,17 @@ function initializeAddToCartButtons() {
         }
     });
 }
+function getCartItems() {
+    const stored = localStorage.getItem('cartItems');
+    if (!stored) return [];
+    try {
+        const parsed = JSON.parse(stored);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (err) {
+        return [];
+    }
+}
+
 function updateProductControls(productName, price) {
     document.getElementById(`addButton_${productName}`).style.display = 'none';
     document.getElementById(`removeBtn_${productName}`).style.display = 'inline-block';
@@ -220,18 +231,25 @@ function updateProductControls(productName, price) {
 }
 
 function addToCart(productId, productName, price) {
-    const existingItem = cartItems.find(item => item.productId === productId);
+    let cartItems = getCartItems();
 
+    const existingItem = cartItems.find(item => item.productId === productId);
     if (existingItem) {
         existingItem.quantity += 1;
     } else {
-        cartItems.push({ productId, productName, price, quantity: 1 });
+        cartItems.push({
+            productId: productId,
+            productName: productName,
+            price: price,
+            quantity: 1
+        });
     }
 
-    saveCartToLocalStorage();
+    localStorage.setItem('cartItems', JSON.stringify(cartItems));
     renderCart();
-    updateProductControls(productName, price); // показываем + и - в карточке
+    updateCardControls(productId); // чтобы кнопки поменялись
 }
+
 
 function renderCart() {
     const cartContainer = document.getElementById('cart-items');
