@@ -102,37 +102,6 @@ app.get("/user-orders", authMiddleware, async (req, res) => {
     }
 });
 
-async function fetchWithAuth(url, options = {}) {
-    let accessToken = localStorage.getItem("accessToken");
-
-    if (!accessToken || isTokenExpired(accessToken)) {
-        console.log("Токен устарел, обновляем...");
-        accessToken = await refreshAccessToken();
-    }
-
-    const res = await fetch(url, {
-        ...options,
-        headers: {
-            ...options.headers,
-            Authorization: `Bearer ${accessToken}`
-        }
-    });
-
-    if (res.status === 401) {
-        console.log("Ошибка 401: Токен недействителен, пробуем обновить...");
-        accessToken = await refreshAccessToken();
-
-        return fetch(url, {
-            ...options,
-            headers: {
-                ...options.headers,
-                Authorization: `Bearer ${accessToken}`
-            }
-        });
-    }
-
-    return res;
-}
 
 // Функция проверки срока жизни токена
 function isTokenExpired(token) {
@@ -241,7 +210,7 @@ const Order = require("./models/Order"); // Подключаем модель з
 
 app.post("/api/order", authMiddleware, async (req, res) => {
     try {
-        const { userId, items, address, additionalInfo, name } = req.body;
+        const userId = req.user.id;
 
         if (!items || items.length === 0) {
             return res.status(400).json({ message: "Корзина не может быть пустой" });
@@ -330,7 +299,7 @@ app.post('/login', async (req, res) => {
         maxAge: 30 * 24 * 60 * 60 * 1000  // Устанавливаем refreshToken на 30 дней
     });
 
-    res.json({ accessToken });
+    res.json({ accessToken, userId: user._id });
 });
 
 
