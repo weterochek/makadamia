@@ -207,44 +207,53 @@ function initializeAddToCartButtons() {
         }
     });
 }
-function addToCart(button) {
-    const controls = button.closest('.controls');
-    const productId = controls.dataset.id;
-    const productName = controls.dataset.name;
-    const price = parseInt(controls.dataset.price);
+function updateProductControls(productName, price) {
+    document.getElementById(`addButton_${productName}`).style.display = 'none';
+    document.getElementById(`removeBtn_${productName}`).style.display = 'inline-block';
+    document.getElementById(`quantity_${productName}`).style.display = 'inline-block';
+    document.getElementById(`addBtn_${productName}_inc`).style.display = 'inline-block';
 
-    if (!cart[productId]) {
-        cart[productId] = { name: productName, price: price, quantity: 1 };
+    const item = cartItems.find(item => item.productName === productName);
+    if (item) {
+        document.getElementById(`quantity_${productName}`).innerText = item.quantity;
+    }
+}
+
+function addToCart(productId, productName, price) {
+    const existingItem = cartItems.find(item => item.productId === productId);
+
+    if (existingItem) {
+        existingItem.quantity += 1;
     } else {
-        cart[productId].quantity += 1;
+        cartItems.push({ productId, productName, price, quantity: 1 });
     }
 
     saveCartToLocalStorage();
-    updateCartDisplay();
-
-    // Показать + - и количество
-    controls.querySelector('.add-button').style.display = "none";
-    controls.querySelector('.quantity-controls').style.display = "inline-flex";
-    controls.querySelector('.quantity').textContent = cart[productId].quantity;
+    renderCart();
+    updateProductControls(productName, price); // показываем + и - в карточке
 }
 
 function renderCart() {
-    const cartContainer = document.getElementById("cartItems");
-    cartContainer.innerHTML = "";
-    let total = 0;
+    const cartContainer = document.getElementById('cart-items');
+    cartContainer.innerHTML = '';
 
-    for (const productId in cart) {
-        const item = cart[productId];
-        const itemTotal = item.price * item.quantity;
-        total += itemTotal;
+    cartItems.forEach(item => {
+        const itemElement = document.createElement('div');
+        itemElement.innerHTML = `
+            ${item.productName} - ${item.quantity} шт. - ${item.price * item.quantity} ₽
+            <button class="quantity-control quantity-button-size" onclick="decrementItem('${item.productName}')">-</button>
+            <span>${item.quantity}</span>
+            <button class="quantity-control quantity-button-size" onclick="incrementItem('${item.productName}', ${item.price})">+</button>
+        `;
+        cartContainer.appendChild(itemElement);
 
-        const itemDiv = document.createElement("div");
-        itemDiv.innerHTML = `${item.name} - ${item.quantity} шт. - ${itemTotal} ₽`;
-        cartContainer.appendChild(itemDiv);
-    }
+        // Обновляем кнопки в карточке
+        updateProductControls(item.productName, item.price);
+    });
 
-    document.getElementById("totalAmount").textContent = `Итого: ${total} ₽`;
+    updateTotal();
 }
+
 
 
 
