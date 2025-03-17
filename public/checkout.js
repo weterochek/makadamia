@@ -145,6 +145,27 @@ document.addEventListener("DOMContentLoaded", () => {
             window.location.href = "index.html";
         });
     }
+function loadCartFromLocalStorage() {
+    const cart = JSON.parse(localStorage.getItem('cart')) || {};
+    const orderSummary = document.getElementById('orderSummary');
+    orderSummary.innerHTML = '';
+
+    let totalAmount = 0;
+
+    for (const productId in cart) {
+        const item = cart[productId];
+        const itemTotal = item.price * item.quantity;
+        totalAmount += itemTotal;
+
+        const orderItem = document.createElement('div');
+        orderItem.innerHTML = `${item.name} - ${item.quantity} шт. - ${itemTotal} ₽`;
+        orderSummary.appendChild(orderItem);
+    }
+
+    document.getElementById('totalOrderAmount').textContent = totalAmount + ' ₽';
+}
+
+document.addEventListener('DOMContentLoaded', loadCartFromLocalStorage);
 
     const checkoutForm = document.getElementById("checkoutForm");
     if (checkoutForm) {
