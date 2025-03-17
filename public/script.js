@@ -279,7 +279,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 quantityDisplay.style.display = "none";
             }
         });
-    }); // ✅ Тут всё ок!
+    });  // ЭТОТ закрыл
+} // ВОТ ЭТОТ ЗАБЫТ!
+
+// Должно быть:
+
+if (clearCartButton) {
+    clearCartButton.addEventListener('click', () => {
+        // Весь код...
+    });
 }
 
 document.addEventListener("DOMContentLoaded", () => {
