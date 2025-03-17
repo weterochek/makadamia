@@ -207,23 +207,36 @@ function initializeAddToCartButtons() {
         }
     });
 }
-function addToCart(productId, productName, productPrice) {
-    const cart = loadCartFromLocalStorage();
+document.addEventListener('DOMContentLoaded', () => {
+    const addToCartButtons = document.querySelectorAll('.add-to-cart');
+    
+    addToCartButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const productId = button.dataset.id;
+            const productName = button.dataset.name;
+            const productPrice = parseFloat(button.dataset.price);
+            
+            let cartItems = localStorage.getItem('cartItems');
+            cartItems = cartItems ? JSON.parse(cartItems) : [];
 
-    if (cart[productId]) {
-        cart[productId].quantity += 1;
-    } else {
-        cart[productId] = {
-            name: productName,
-            price: productPrice,
-            quantity: 1
-        };
-    }
+            const existingItem = cartItems.find(item => item.productId === productId);
 
-    saveCartToLocalStorage(cart);
-    renderCheckoutCart();
-    updateAddToCartButton(productId);
-}
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cartItems.push({
+                    productId,
+                    productName,
+                    price: productPrice,
+                    quantity: 1
+                });
+            }
+
+            localStorage.setItem('cartItems', JSON.stringify(cartItems));
+            alert('Товар добавлен в корзину!');
+        });
+    });
+});
 
 
 
