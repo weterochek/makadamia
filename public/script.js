@@ -257,30 +257,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const cartTotal = document.getElementById('totalAmount');
 
     if (clearCartButton) {
-clearCartButton.addEventListener('click', () => {
-    cart = {};  // Очистка корзины
-    const username = localStorage.getItem("username") || "guest";
-    localStorage.removeItem(`cart_${username}`); // Удаление корзины
+    clearCartButton.addEventListener('click', () => {
+        cart = {};  
+        const username = localStorage.getItem("username") || "guest";
+        localStorage.removeItem(`cart_${username}`); 
+        updateCartDisplay();  
+        cartTotal.textContent = 'Итого: 0 ₽';
 
-    updateCartDisplay();  // Обновление отображения
-    cartTotal.textContent = 'Итого: 0 ₽';
+        const productCards = document.querySelectorAll(".card-dish");
+        productCards.forEach(card => {
+            const addButton = card.querySelector(".add-button-size");
+            const removeButton = card.querySelector(".quantity-control");
+            const addButtonControl = card.querySelector(".quantity-size-button");
+            const quantityDisplay = card.querySelector(".quantity-display");
 
-    const productCards = document.querySelectorAll(".card-dish");
-    productCards.forEach(card => {
-        const addButton = card.querySelector(".add-button-size");
-        const removeButton = card.querySelector(".quantity-control");
-        const addButtonControl = card.querySelector(".quantity-size-button");
-        const quantityDisplay = card.querySelector(".quantity-display");
-
-        if (addButton) addButton.style.display = "inline-block";
-        if (removeButton) removeButton.style.display = "none";
-        if (addButtonControl) addButtonControl.style.display = "none";
-        if (quantityDisplay) {
-            quantityDisplay.textContent = "";
-            quantityDisplay.style.display = "none";
-        }
-    });
-});
+            if (addButton) addButton.style.display = "inline-block";
+            if (removeButton) removeButton.style.display = "none";
+            if (addButtonControl) addButtonControl.style.display = "none";
+            if (quantityDisplay) {
+                quantityDisplay.textContent = "";
+                quantityDisplay.style.display = "none";
+            }
+        });
+    }); // ✅ Тут всё ок!
+}
 
 document.addEventListener("DOMContentLoaded", () => {
     const token = localStorage.getItem("accessToken");
