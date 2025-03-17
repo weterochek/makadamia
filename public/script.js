@@ -124,11 +124,12 @@ async function addToCart(productId, price) {
     if (cart[productName]) {
         cart[productName].quantity += 1;  // Если товар уже есть, увеличиваем количество
     } else {
-        cart[productName] = { 
-            name: product.name, 
-            price: product.price, 
-            quantity: 1 
-        };  // Если товара нет, добавляем его
+        cart[product._id] = { 
+        productId: product._id,
+        name: product.name, 
+        price: product.price, 
+        quantity: 1 
+        };
     }
 
     // Сохраняем корзину в localStorage
