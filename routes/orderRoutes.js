@@ -1,44 +1,49 @@
 const express = require("express");
 const router = express.Router();
-const Order = require("../models/Order"); // Подключаем модель заказа
+const Order = require("../models/Order");
+const Product = require("../models/Products");
 const authMiddleware = require("../middleware/authMiddleware");
 
 // Создание заказа
-
 router.post("/order", authMiddleware, async (req, res) => {
     try {
-        console.log("🔍 Полученные данные заказа:", req.body); // Логируем приходящие данные
-
         const { items, address, additionalInfo } = req.body;
-
-        // Проверка на пустую корзину
         if (!items || items.length === 0) {
-            console.error("❌ Корзина пуста");
             return res.status(400).json({ message: "Корзина не может быть пустой" });
         }
 
-        const userId = req.user.id;
+        const populatedItems = [];
+
+        for (let item of items) {
+            const product = await Product.findById(item.productId);
+            if (!product) {
+                return res.status(404).json({ message: `Товар не найден` });
+            }
+            populatedItems.push({
+                productId: product._id,
+                quantity: item.quantity
+            });
+        }
+
         const newOrder = new Order({
-            userId,
-            items,
+            userId: req.user.id,
+            name: req.user.username,
             address,
             additionalInfo,
+            items: populatedItems,
             status: "Оформлен"
         });
 
         await newOrder.save();
-        console.log("✅ Заказ успешно сохранен:", newOrder);
-        res.status(201).json({ message: "Заказ успешно оформлен" });
+        res.status(201).json({ message: "Заказ успешно оформлен", order: newOrder });
     } catch (error) {
         console.error("❌ Ошибка при сохранении заказа:", error);
-        res.status(500).json({ message: "Ошибка сервера" });
+        res.status(500).json({ message: "Ошибка сервера", error: error.message });
     }
 });
 
-
-
-// Получение заказов пользователя
-app.get("/orders", async (req, res) => {
+// Получение всех заказов
+router.get("/orders", async (req, res) => {
     try {
         const orders = await Order.find().populate("items.productId", "name price");
         res.status(200).json(orders);
@@ -47,9 +52,10 @@ app.get("/orders", async (req, res) => {
     }
 });
 
-app.get("/user-orders/:userId", async (req, res) => {
+// Получение заказов текущего пользователя
+router.get("/user-orders", authMiddleware, async (req, res) => {
     try {
-        const userId = req.params.userId;
+        const userId = req.user.id;
         const orders = await Order.find({ userId }).populate("items.productId", "name price");
         res.status(200).json(orders);
     } catch (error) {
