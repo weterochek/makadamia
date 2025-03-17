@@ -210,7 +210,8 @@ const Order = require("./models/Order"); // Подключаем модель з
 
 app.post("/api/order", authMiddleware, async (req, res) => {
     try {
-        const userId = req.user.id;
+        console.log("🔍 Полученные данные заказа:", JSON.stringify(req.body, null, 2));
+        const { items, address, additionalInfo, userId } = req.body;
 
         if (!items || items.length === 0) {
             return res.status(400).json({ message: "Корзина не может быть пустой" });
@@ -226,22 +227,24 @@ app.post("/api/order", authMiddleware, async (req, res) => {
 
             itemsDetails.push({
                 productId: product._id,
+                name: product.name,
+                price: product.price,
                 quantity: item.quantity
             });
         }
 
         const newOrder = new Order({
-            userId: userId,
-            name,
+            userId,
+            items: itemsDetails,
             address,
             additionalInfo,
-            items: itemsDetails
+            status: "Оформлен"
         });
 
         await newOrder.save();
         res.status(201).json({ message: "Заказ успешно оформлен", order: newOrder });
     } catch (error) {
-        console.error("Ошибка при создании заказа:", error);
+        console.error("❌ Ошибка при создании заказа:", error);
         res.status(500).json({ message: "Ошибка сервера", error: error.message });
     }
 });
