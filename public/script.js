@@ -16,10 +16,10 @@ window.onload = function () {
 };
 
 console.log("Отправка запроса на /refresh");
-console.log("Токен перед запросом:", localStorage.getItem("token"));
+console.log("Токен перед запросом:", localStorage.getItem("accessToken"));
 
 document.addEventListener("DOMContentLoaded", async function () {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("accessToken");
 
     if (!token && !sessionStorage.getItem("authChecked")) {
     sessionStorage.setItem("authChecked", "true");
@@ -80,7 +80,7 @@ function showCookieBanner() {
 
 document.addEventListener("DOMContentLoaded", function () {
     if (localStorage.getItem("cookiesAccepted") === "true") {
-        const token = localStorage.getItem("token"); // Получаем токен
+        const token = localStorage.getItem("accessToken"); // Получаем токен
 
         if (!token) {
             console.warn("❌ Нет токена, не запрашиваем /account");
@@ -286,7 +286,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 document.addEventListener("DOMContentLoaded", () => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("accessToken");
 
     if (!token) {
         console.log("Пользователь не авторизован");
@@ -500,7 +500,7 @@ function getTokenExp(token) {
 async function refreshAccessToken() {
     console.log("🔄 Запрос на обновление токена...");
 
-    const token = localStorage.getItem("token"); // Проверка наличия токена
+    const token = localStorage.getItem("accessToken"); // Проверка наличия токена
     if (!token) {
         console.warn("❌ Нет токена, пропускаем обновление");
         return null; // Если токена нет, не отправляем запрос на обновление
@@ -601,7 +601,7 @@ function editField(field) {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${localStorage.getItem("token")}`
+                Authorization: `Bearer ${localStorage.getItem("accessToken")}`
             },
             body: JSON.stringify({ [field]: input.value }) // Отправляем данные на сервер
         })
@@ -615,7 +615,7 @@ function editField(field) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("accessToken");
 
     if (!token) {
         console.warn("❌ Нет токена, не запрашиваем /account");
@@ -664,7 +664,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 // Проверка состояния авторизации
 function checkAuthStatus() {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("accessToken");
     const username = localStorage.getItem("username");
     const authButton = document.getElementById("authButton");
     const cabinetButton = document.getElementById("cabinetButton");
@@ -688,7 +688,7 @@ function checkAuthStatus() {
 
 
 async function logout() {
-    const token = localStorage.getItem("token"); // Получаем токен
+    const token = localStorage.getItem("accessToken"); // Получаем токен
 
     try {
         const response = await fetch("https://makadamia.onrender.com/logout", {
@@ -849,7 +849,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 async function loadOrders() {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("accessToken");
     if (!token) {
         alert("Вы не авторизованы!");
         return;
