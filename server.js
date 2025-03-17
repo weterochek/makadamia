@@ -89,7 +89,7 @@ app.get("/orders", async (req, res) => {
         res.status(500).json({ error: "Ошибка при загрузке заказов" });
     }
 });
-const authMiddleware = require('./middlewares/authMiddleware'); // Если ещё не подключен
+
 
 app.get("/user-orders", authMiddleware, async (req, res) => {
     try {
