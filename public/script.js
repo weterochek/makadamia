@@ -255,18 +255,20 @@ function renderCart() {
     const cartContainer = document.getElementById('cart-items');
     cartContainer.innerHTML = '';
 
+    const cartItems = getCartItems(); // исправлено
+
     cartItems.forEach(item => {
         const itemElement = document.createElement('div');
         itemElement.innerHTML = `
             ${item.productName} - ${item.quantity} шт. - ${item.price * item.quantity} ₽
-            <button class="quantity-control quantity-button-size" onclick="decrementItem('${item.productName}')">-</button>
+            <button class="quantity-control quantity-button-size" onclick="decrementItem('${item.productId}')">-</button>
             <span>${item.quantity}</span>
-            <button class="quantity-control quantity-button-size" onclick="incrementItem('${item.productName}', ${item.price})">+</button>
+            <button class="quantity-control quantity-button-size" onclick="incrementItem('${item.productId}', ${item.price})">+</button>
         `;
         cartContainer.appendChild(itemElement);
 
         // Обновляем кнопки в карточке
-        updateProductControls(item.productName, item.price);
+        updateProductControls(item.productId, item.price);
     });
 
     updateTotal();
@@ -326,33 +328,31 @@ function decrementItem(productName) {
     }
 }
 // Увеличение количества товара
-function incrementItem(button) {
-    const controls = button.closest('.controls');
-    const productId = controls.dataset.id;
+function incrementItem(productId) {
+    let cartItems = getCartItems();
+    const itemIndex = cartItems.findIndex(item => item.productId === productId);
 
-    cart[productId].quantity += 1;
-    saveCartToLocalStorage();
-    updateCartDisplay();
-    controls.querySelector('.quantity').textContent = cart[productId].quantity;
-}
-
-function decrementItem(button) {
-    const controls = button.closest('.controls');
-    const productId = controls.dataset.id;
-
-    cart[productId].quantity -= 1;
-
-    if (cart[productId].quantity === 0) {
-        delete cart[productId];
-        controls.querySelector('.add-button').style.display = "inline-block";
-        controls.querySelector('.quantity-controls').style.display = "none";
-    } else {
-        controls.querySelector('.quantity').textContent = cart[productId].quantity;
+    if (itemIndex !== -1) {
+        cartItems[itemIndex].quantity += 1;
+        localStorage.setItem('cartItems', JSON.stringify(cartItems));
+        renderCart();
     }
-
-    saveCartToLocalStorage();
-    updateCartDisplay();
 }
+
+function decrementItem(productId) {
+    let cartItems = getCartItems();
+    const itemIndex = cartItems.findIndex(item => item.productId === productId);
+
+    if (itemIndex !== -1) {
+        cartItems[itemIndex].quantity -= 1;
+        if (cartItems[itemIndex].quantity === 0) {
+            cartItems.splice(itemIndex, 1);
+        }
+        localStorage.setItem('cartItems', JSON.stringify(cartItems));
+        renderCart();
+    }
+}
+
 
 
 function decrementItem(productId) {
@@ -387,12 +387,15 @@ function replaceAddButtonWithControls(productId) {
     const addButtonControl = document.getElementById(`addBtn_${productId}`);
     const quantityDisplay = document.getElementById(`quantity_${productId}`);
 
-    if (cart[productId] && cart[productId].quantity > 0) {
+    let cartItems = getCartItems();
+    const item = cartItems.find(item => item.productId === productId);
+
+    if (item) {
         addButton.style.display = "none";
         removeButton.style.display = "inline-block";
         addButtonControl.style.display = "inline-block";
         quantityDisplay.style.display = "inline-block";
-        quantityDisplay.textContent = cart[productId].quantity;
+        quantityDisplay.textContent = item.quantity;
     } else {
         addButton.style.display = "inline-block";
         removeButton.style.display = "none";
@@ -597,6 +600,15 @@ function renderCheckoutCart() {
 
     cartTotalPrice.textContent = totalPrice.toFixed(2) + " ₽";
 }
+function updateTotal() {
+    const cartItems = getCartItems();
+    const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const totalAmount = document.getElementById('totalAmount');
+    if (totalAmount) {
+        totalAmount.textContent = `Итого: ${total} ₽`;
+    }
+}
+
 // Оформление заказа
 function checkout() {
     alert("Ваш заказ оформлен!");
