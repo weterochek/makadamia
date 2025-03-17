@@ -106,36 +106,123 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log("⚠️ Пользователь не принял cookies. Запрос не отправлен.");
     }
 });
+function updateAddToCartButton(productId) {
+    const addToCartButton = document.querySelector(`.add-to-cart-button[data-id="${productId}"]`);
+    if (addToCartButton) {
+        addToCartButton.textContent = "В корзине";
+        addToCartButton.disabled = true;
+    }
+}
+async function handleCheckoutFormSubmit(event) {
+    event.preventDefault();
+    const token = localStorage.getItem("accessToken");
 
-async function addToCart(productId, price) {
-    const response = await fetch(`/products/${encodeURIComponent(productId)}`);  // Передаем ID для получения товара
-
-    if (!response.ok) {
-        console.error('Ошибка при получении товара');
+    if (!token) {
+        alert("Вы не авторизованы!");
         return;
     }
 
-    const product = await response.json();  // Получаем товар по ID
+    const cart = loadCartFromLocalStorage();
+    const items = Object.keys(cart).map(productId => ({
+        productId: productId,
+        quantity: cart[productId].quantity
+    }));
 
-    // Теперь у вас есть данные о товаре, включая productName
-    const productName = product.name; 
+    const nameInput = document.getElementById('customerName');
+    const addressInput = document.getElementById('customerAddress');
+    const additionalInfoInput = document.getElementById('additionalInfo');
+    const userId = localStorage.getItem("userId");
 
-    // Добавляем товар в корзину
-    if (cart[productName]) {
-        cart[productName].quantity += 1;  // Если товар уже есть, увеличиваем количество
-    } else {
-        cart[product._id] = { 
-    productId: product._id, 
-    name: product.name, 
-    price: product.price, 
-    quantity: 1 
-};
+    const orderData = {
+        userId: userId,
+        name: nameInput.value,
+        address: addressInput.value,
+        additionalInfo: additionalInfoInput.value,
+        items: items
+    };
+
+    console.log("📡 Отправка данных заказа:", orderData);
+
+    try {
+        const response = await fetch("https://makadamia.onrender.com/api/order", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(orderData)
+        });
+
+        console.log("📥 Ответ от сервера:", response);
+
+        if (!response.ok) {
+            console.error(`❌ Ошибка ${response.status}:`, response.statusText);
+            alert("Ошибка при оформлении заказа.");
+            return;
+        }
+
+        const responseData = await response.json();
+        console.log("✅ Заказ успешно оформлен:", responseData);
+
+        alert("🎉 Заказ успешно оформлен!");
+        saveCartToLocalStorage({});
+        window.location.href = "index.html";
+    } catch (error) {
+        console.error("❌ Ошибка сети или сервера:", error);
+        alert("Ошибка при оформлении заказа. Проверьте соединение.");
+    }
+}
+document.addEventListener("DOMContentLoaded", () => {
+    renderCheckoutCart();
+    loadUserData();
+    initializeAddToCartButtons();
+
+    const backToShoppingButton = document.getElementById("backToShopping");
+    if (backToShoppingButton) {
+        backToShoppingButton.addEventListener("click", () => {
+            window.location.href = "index.html";
+        });
     }
 
-    // Сохраняем корзину в localStorage
-    saveCartToLocalStorage();
-    updateCartDisplay();
-    replaceAddButtonWithControls(productName);  // Обновляем кнопку на карточке товара
+    const checkoutForm = document.getElementById("checkoutForm");
+    if (checkoutForm) {
+        checkoutForm.addEventListener("submit", handleCheckoutFormSubmit);
+    }
+});
+function initializeAddToCartButtons() {
+    const addToCartButtons = document.querySelectorAll(".add-to-cart-button");
+    addToCartButtons.forEach(button => {
+        const productId = button.getAttribute("data-id");
+        const productName = button.getAttribute("data-name");
+        const productPrice = parseFloat(button.getAttribute("data-price"));
+
+        button.addEventListener("click", () => {
+            addToCart(productId, productName, productPrice);
+        });
+
+        // Проверяем, есть ли товар в корзине, чтобы обновить состояние кнопки
+        const cart = loadCartFromLocalStorage();
+        if (cart[productId]) {
+            updateAddToCartButton(productId);
+        }
+    });
+}
+function addToCart(productId, productName, productPrice) {
+    const cart = loadCartFromLocalStorage();
+
+    if (cart[productId]) {
+        cart[productId].quantity += 1;
+    } else {
+        cart[productId] = {
+            name: productName,
+            price: productPrice,
+            quantity: 1
+        };
+    }
+
+    saveCartToLocalStorage(cart);
+    renderCheckoutCart();
+    updateAddToCartButton(productId);
 }
 
 
@@ -402,13 +489,34 @@ function updateCartDisplay() {
 }
 
 // Сохранение корзины в localStorage
-function saveCartToLocalStorage() {
-    const username = localStorage.getItem("username");
-    if (username) {
-        localStorage.setItem(`cart_${username}`, JSON.stringify(cart)); // Сохраняем с уникальным ключом
-    }
+function saveCartToLocalStorage(cart) {
+    localStorage.setItem(`cart_${localStorage.getItem("username")}`, JSON.stringify(cart));
 }
+function renderCheckoutCart() {
+    const cart = loadCartFromLocalStorage();
+    const cartItemsContainer = document.getElementById("cartItems");
+    const cartTotalPrice = document.getElementById("cartTotalPrice");
 
+    cartItemsContainer.innerHTML = "";
+    let totalPrice = 0;
+
+    for (const productId in cart) {
+        const item = cart[productId];
+        const itemTotalPrice = item.price * item.quantity;
+        totalPrice += itemTotalPrice;
+
+        const cartItemElement = document.createElement("div");
+        cartItemElement.className = "cart-item";
+        cartItemElement.innerHTML = `
+            <span class="item-name">${item.name}</span>
+            <span class="item-quantity">${item.quantity} шт.</span>
+            <span class="item-price">${itemTotalPrice.toFixed(2)} ₽</span>
+        `;
+        cartItemsContainer.appendChild(cartItemElement);
+    }
+
+    cartTotalPrice.textContent = totalPrice.toFixed(2) + " ₽";
+}
 // Оформление заказа
 function checkout() {
     alert("Ваш заказ оформлен!");
@@ -426,14 +534,8 @@ function resetAddToCartButtons() {
     }
 }
 function loadCartFromLocalStorage() {
-    const username = localStorage.getItem("username");
-    if (username) {
-        const storedCart = JSON.parse(localStorage.getItem(`cart_${username}`)); // Загружаем корзину с уникальным ключом
-        if (storedCart) {
-            cart = storedCart;
-        }
-        updateCartDisplay(); // Обновляем отображение корзины
-    }
+    const storedCart = JSON.parse(localStorage.getItem(`cart_${localStorage.getItem("username")}`)) || {};
+    return storedCart;
 }
 // Загрузка корзины из localStorage при загрузке страницы
 document.addEventListener("DOMContentLoaded", () => {
@@ -801,17 +903,16 @@ async function updateAccount(newUsername, newPassword) {
   console.log("Ответ от сервера:", data);
 }
 
-async function loadUserData(accessToken) {
-    const response = await fetch('/account', {
-        headers: { 'Authorization': `Bearer ${accessToken}` },
-    });
+function loadUserData() {
+    const customerNameInput = document.getElementById("customerName");
+    const customerAddressInput = document.getElementById("customerAddress");
+    const additionalInfoInput = document.getElementById("additionalInfo");
 
-    if (response.ok) {
-        const userData = await response.json();
-        document.getElementById('username').textContent = userData.username;
-    } else {
-        localStorage.removeItem('accessToken');
-    }
+    const userData = JSON.parse(localStorage.getItem("userData")) || {};
+
+    if (customerNameInput) customerNameInput.value = userData.name || "";
+    if (customerAddressInput) customerAddressInput.value = userData.address || "";
+    if (additionalInfoInput) additionalInfoInput.value = userData.additionalInfo || "";
 }
 
 
