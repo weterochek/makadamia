@@ -796,17 +796,6 @@ async function updateAccount(newUsername, newPassword) {
   const data = await response.json();
   console.log("Ответ от сервера:", data);
 }
-document.addEventListener('DOMContentLoaded', async () => {
-    const accessToken = localStorage.getItem('accessToken');
-    const authButton = document.getElementById('authButton');  // Кнопка Вход/Личный кабинет
-
-    if (accessToken) {
-        authButton.textContent = 'Личный кабинет';
-        await loadUserData(accessToken);  // Загрузить данные аккаунта
-    } else {
-        authButton.textContent = 'Вход';
-    }
-});
 
 async function loadUserData(accessToken) {
     const response = await fetch('/account', {
