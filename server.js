@@ -10,7 +10,7 @@ const Joi = require("joi");
 const app = express();
 const orderRoutes = require("./routes/orderRoutes");
 const Products = require("./models/Products");  // Подключаем модель "Products"
-const authMiddleware = require('./middlewares/authMiddleware');
+const authMiddleware = require('./middleware/authMiddleware');
 const Order = require('./models/Order');
 const Product = require('./models/Products');
 
