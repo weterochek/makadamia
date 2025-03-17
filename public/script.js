@@ -257,48 +257,47 @@ document.addEventListener('DOMContentLoaded', () => {
     const cartTotal = document.getElementById('totalAmount');
 
     if (clearCartButton) {
-        clearCartButton.addEventListener('click', () => {
-            cart = {};  // Очистка корзины
-            localStorage.removeItem(`cart_${localStorage.getItem('username')}`);  // Удаление корзины из localStorage
-            updateCartDisplay();  // Обновление отображения корзины
-            cartTotal.textContent = 'Итого: 0 ₽';
+clearCartButton.addEventListener('click', () => {
+    cart = {};  // Очистка корзины
+    const username = localStorage.getItem("username") || "guest";
+    localStorage.removeItem(`cart_${username}`); // Удаление корзины
 
-            // ОБНОВЛЕНИЕ карточек товаров
-            const productCards = document.querySelectorAll(".card-dish");
-            productCards.forEach(card => {
-                const addButton = card.querySelector(".add-button-size");
-                const removeButton = card.querySelector(".quantity-control");
-                const addButtonControl = card.querySelector(".quantity-size-button");
-                const quantityDisplay = card.querySelector(".quantity-display"); // Элемент с количеством
+    updateCartDisplay();  // Обновление отображения
+    cartTotal.textContent = 'Итого: 0 ₽';
 
-                // Скрытие всех кнопок и количества
-                if (addButton) addButton.style.display = "inline-block";
-                if (removeButton) removeButton.style.display = "none";
-                if (addButtonControl) addButtonControl.style.display = "none";
+    const productCards = document.querySelectorAll(".card-dish");
+    productCards.forEach(card => {
+        const addButton = card.querySelector(".add-button-size");
+        const removeButton = card.querySelector(".quantity-control");
+        const addButtonControl = card.querySelector(".quantity-size-button");
+        const quantityDisplay = card.querySelector(".quantity-display");
 
-                // Скрытие и очищение количества
-                if (quantityDisplay) {
-                    quantityDisplay.textContent = "";  // Очищаем количество
-                    quantityDisplay.style.display = "none";  // Скрываем элемент
-                }
-            });
-        });
-    }
+        if (addButton) addButton.style.display = "inline-block";
+        if (removeButton) removeButton.style.display = "none";
+        if (addButtonControl) addButtonControl.style.display = "none";
+        if (quantityDisplay) {
+            quantityDisplay.textContent = "";
+            quantityDisplay.style.display = "none";
+        }
+    });
 });
+
 document.addEventListener("DOMContentLoaded", () => {
     const token = localStorage.getItem("accessToken");
+    const userId = localStorage.getItem("userId"); // Получаем userId
 
-    if (!token) {
+    if (!token || !userId) {
         console.log("Пользователь не авторизован");
         return;
     }
 
-    fetch("https://makadamia.onrender.com/user-orders", {
+    fetch(`https://makadamia.onrender.com/user-orders/${userId}`, { 
         method: "GET",
         headers: {
             "Authorization": `Bearer ${token}`
         }
     })
+
     .then(res => res.json())
     .then(orders => {
         const container = document.getElementById("ordersContainer"); // Блок с таким id
@@ -519,7 +518,7 @@ async function refreshAccessToken() {
 
         const data = await response.json();
         console.log("✅ Новый токен получен:", data.accessToken);
-        localStorage.setItem("token", data.accessToken);  // Сохраняем новый токен
+        localStorage.setItem("accessToken", data.accessToken);  // Сохраняем новый токен
         return data.accessToken;
     } catch (error) {
         console.error("❌ Ошибка при обновлении токена:", error);
@@ -664,7 +663,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 // Проверка состояния авторизации
 function checkAuthStatus() {
-    const token = localStorage.getItem("accessToken");
+    const token = localStorage.getItem("accessToken"); // Должно быть accessToken
     const username = localStorage.getItem("username");
     const authButton = document.getElementById("authButton");
     const cabinetButton = document.getElementById("cabinetButton");
@@ -682,10 +681,9 @@ function checkAuthStatus() {
         console.log("⚠️ Пользователь не авторизован");
         authButton.style.display = "inline-block";
         cabinetButton.style.display = "none";
-        sessionStorage.removeItem("authChecked"); // Убедитесь, что снова проверите авторизацию
+        sessionStorage.removeItem("authChecked");
     }
 }
-
 
 async function logout() {
     const token = localStorage.getItem("accessToken"); // Получаем токен
@@ -701,8 +699,9 @@ async function logout() {
 
         if (response.ok) {
             // Очистка токенов и cookies
-            localStorage.removeItem('token');
-            sessionStorage.removeItem('token');
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('userId');
+            localStorage.removeItem('username');
             document.cookie = "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
             document.cookie = "refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
             
@@ -720,7 +719,7 @@ async function logout() {
 
 // Переход на страницу личного кабинета
 function openCabinet() {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('accessToken');
     const username = localStorage.getItem('username');
 
    if (!token && !sessionStorage.getItem("authFailed")) {
@@ -759,7 +758,7 @@ function goToCheckoutPage() {
 
 
 document.addEventListener("DOMContentLoaded", () => {
-    const token = localStorage.getItem('token'); // Получаем токен из localStorage
+    const token = localStorage.getItem('accessToken'); // Получаем токен из localStorage
     if (!token) {
         document.getElementById('usernameDisplay').innerText = "Гость";
         return;
@@ -833,7 +832,7 @@ async function loadUserData(token) {
 }
 
 function handleAuthClick() {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("accessToken");
     if (token) {
         window.location.href = 'account.html'; // Если пользователь авторизован, переходим в личный кабинет
     } else {
