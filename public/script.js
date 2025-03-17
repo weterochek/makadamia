@@ -801,9 +801,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-async function loadUserData(token) {
+async function loadUserData(accessToken) {
     const response = await fetch('/account', {
-        headers: { 'Authorization': `Bearer ${token}` },
+        headers: { 'Authorization': `Bearer ${accessToken}` },
     });
 
     if (response.ok) {
@@ -813,6 +813,7 @@ async function loadUserData(token) {
         localStorage.removeItem('accessToken');
     }
 }
+
 
 
 
