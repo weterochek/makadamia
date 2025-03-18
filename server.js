@@ -153,7 +153,6 @@ app.get('/api/products', async (req, res) => {
     }
 });
 // Мидлвар для проверки токена
-const Order = require('./models/Order'); // Убедись, что путь правильный!
 
 app.get('/user-orders/:userId', authMiddleware, async (req, res) => {
     try {
