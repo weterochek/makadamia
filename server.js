@@ -152,16 +152,15 @@ app.get('/api/products', async (req, res) => {
         res.status(500).json({ message: "Ошибка сервера" });
     }
 });
+app.get('/orders', authMiddleware, async (req, res) => {
+    const orders = await Order.find().populate('items.productId');
+    res.json(orders);
+});
 // Мидлвар для проверки токена
 
 app.get('/user-orders/:userId', authMiddleware, async (req, res) => {
-    try {
-        const orders = await Order.find({ userId: req.params.userId }).populate('items.productId');
-        res.json(orders);
-    } catch (error) {
-        console.error("Ошибка при получении заказов:", error);
-        res.status(500).json({ message: "Ошибка сервера" });
-    }
+    const orders = await Order.find({ userId: req.params.userId }).populate('items.productId');
+    res.json(orders);
 });
 
 function generateTokens(user, site) {
