@@ -16,14 +16,16 @@ window.onload = function () {
 };
 async function loadProductMap() {
     try {
-        const response = await fetch('https://makadamia.onrender.com/api/products');
+        const response = await fetch("/api/products");
         const products = await response.json();
+
         products.forEach(product => {
             productMap[product._id] = { name: product.name, price: product.price };
         });
+
         console.log("✅ Product Map загружен:", productMap);
     } catch (error) {
-        console.error("Ошибка загрузки productMap:", error);
+        console.error("Ошибка загрузки продуктов:", error);
     }
 }
 
@@ -243,48 +245,53 @@ function updateProductControls(productName, price) {
     }
 }
 
-function addToCart(productId, productName, price) {
-    let cartItems = getCartItems();
-
+function addToCart(productId, productName, productPrice) {
+    let cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
     const existingItem = cartItems.find(item => item.productId === productId);
+
     if (existingItem) {
         existingItem.quantity += 1;
     } else {
-        cartItems.push({
-            productId: productId,
-            productName: productName,
-            price: price,
-            quantity: 1
-        });
+        cartItems.push({ productId: productId, quantity: 1 });
     }
 
     localStorage.setItem('cartItems', JSON.stringify(cartItems));
     renderCart();
-    updateCardControls(productId); // чтобы кнопки поменялись
 }
 
 
-function renderCart() {
-    const cartContainer = document.getElementById('cart-items');
-    cartContainer.innerHTML = '';
 
-    const cartItems = getCartItems(); // исправлено
+function renderCart() {
+    const cartItemsContainer = document.getElementById('cartItems');
+    const totalAmountElement = document.getElementById('totalAmount');
+
+    if (!cartItemsContainer || !totalAmountElement) return;
+
+    cartItemsContainer.innerHTML = "";
+    let totalAmount = 0;
+    const cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
 
     cartItems.forEach(item => {
-        const itemElement = document.createElement('div');
-        itemElement.innerHTML = `
-            ${item.productName} - ${item.quantity} шт. - ${item.price * item.quantity} ₽
-            <button class="quantity-control quantity-button-size" onclick="decrementItem('${item.productId}')">-</button>
-            <span>${item.quantity}</span>
-            <button class="quantity-control quantity-button-size" onclick="incrementItem('${item.productId}', ${item.price})">+</button>
-        `;
-        cartContainer.appendChild(itemElement);
+        const product = productMap[item.productId];
+        if (!product) return;
 
-        // Обновляем кнопки в карточке
-        updateProductControls(item.productId, item.price);
+        const itemTotal = product.price * item.quantity;
+        totalAmount += itemTotal;
+
+        const cartItem = document.createElement('div');
+        cartItem.className = 'cart-item';
+        cartItem.innerHTML = `
+            <div>${product.name} - ${item.quantity} шт. - ${itemTotal} ₽</div>
+            <div>
+                <button onclick="decrementItem('${item.productId}')">-</button>
+                <span>${item.quantity}</span>
+                <button onclick="incrementItem('${item.productId}', ${product.price})">+</button>
+            </div>
+        `;
+        cartItemsContainer.appendChild(cartItem);
     });
 
-    updateTotal();
+    totalAmountElement.textContent = `Итого: ${totalAmount} ₽`;
 }
 
 
