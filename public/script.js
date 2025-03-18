@@ -18,7 +18,7 @@ async function loadProductMap() {
     try {
         const response = await fetch("/api/products");
         const products = await response.json();
-ф
+
         products.forEach(product => {
             productMap[product._id] = { name: product.name, price: product.price };
         });
@@ -390,7 +390,7 @@ function incrementItem(productId, productName) {
     if (cart[productId]) {
         cart[productId].quantity += 1;
         localStorage.setItem(cartKey, JSON.stringify(cart));
-        updateCartItemControls(productId, productName);
+        updateCartDisplay(productId, productName);
         renderCartDropdown();
     }
 }
@@ -412,7 +412,8 @@ function decrementItem(productId, productName) {
             restoreAddButton(productName);
         }
         localStorage.setItem(cartKey, JSON.stringify(cart));
-        updateCartItemControls(productId, productName);
+        updateCartDisplay(productId, productName);
+
         renderCartDropdown();
     }
 }
