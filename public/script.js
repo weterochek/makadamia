@@ -33,13 +33,7 @@ async function loadProductMap() {
 console.log("Отправка запроса на /refresh");
 console.log("Токен перед запросом:", localStorage.getItem("accessToken"));
 
-document.addEventListener("DOMContentLoaded", async function () {
-    const token = localStorage.getItem("accessToken");
 
-    if (!token && !sessionStorage.getItem("authChecked")) {
-    sessionStorage.setItem("authChecked", "true");
-    await refreshAccessToken();
-}
 
     const cartButton = document.getElementById("cartButton");
     const cartDropdown = document.getElementById("cartDropdown");
@@ -70,11 +64,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 });
 
-document.addEventListener("DOMContentLoaded", function () {
-    if (!localStorage.getItem("cookiesAccepted")) {
-        showCookieBanner();
-    }
-});
 
 function showCookieBanner() {
     const banner = document.createElement("div");
@@ -93,34 +82,7 @@ function showCookieBanner() {
 }
 
 
-document.addEventListener("DOMContentLoaded", function () {
-    if (localStorage.getItem("cookiesAccepted") === "true") {
-        const token = localStorage.getItem("accessToken"); // Получаем токен
 
-        if (!token) {
-            console.warn("❌ Нет токена, не запрашиваем /account");
-            return;
-        }
-
-        fetch("https://makadamia.onrender.com/account", {
-            method: "GET", // ✅ Добавляем явное указание метода
-            credentials: "include", // ✅ Передаем cookies
-            headers: {
-                "Authorization": `Bearer ${token}` // ✅ Передаем токен
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`Ошибка HTTP: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => console.log("✅ Данные аккаунта:", data))
-        .catch(error => console.error("❌ Ошибка загрузки аккаунта:", error));
-    } else {
-        console.log("⚠️ Пользователь не принял cookies. Запрос не отправлен.");
-    }
-});
 function updateAddToCartButton(productId) {
     const addToCartButton = document.querySelector(`.add-to-cart-button[data-id="${productId}"]`);
     if (addToCartButton) {
@@ -187,14 +149,7 @@ async function handleCheckoutFormSubmit(event) {
         alert("Ошибка при оформлении заказа. Проверьте соединение.");
     }
 }
-document.addEventListener("DOMContentLoaded", () => {
-    loadProductMap().then(() => {
-        loadCartFromLocalStorage();
-        renderCart();
-        loadUserData(); // если есть
-        setupAuthButtons(); // если есть кнопки авторизации
-    });
-});
+
 
     const backToShoppingButton = document.getElementById("backToShopping");
     if (backToShoppingButton) {
@@ -447,52 +402,9 @@ function revertControlsToAddButton(productId) {
 }
 
 //ощичение корзины
-document.addEventListener('DOMContentLoaded', () => {
-    const clearCartButton = document.getElementById('clear-cart');
-    const cartTotal = document.getElementById('totalAmount');
 
-    if (clearCartButton) {
-        clearCartButton.addEventListener('click', () => {
-            cart = {};  
-            const username = localStorage.getItem("username") || "guest";
-            localStorage.removeItem(`cart_${username}`); 
-            updateCartDisplay();  
-            cartTotal.textContent = 'Итого: 0 ₽';
 
-            const productCards = document.querySelectorAll(".card-dish");
-            productCards.forEach(card => {
-                const addButton = card.querySelector(".add-button-size");
-                const removeButton = card.querySelector(".quantity-control");
-                const addButtonControl = card.querySelector(".quantity-size-button");
-                const quantityDisplay = card.querySelector(".quantity-display");
 
-                if (addButton) addButton.style.display = "inline-block";
-                if (removeButton) removeButton.style.display = "none";
-                if (addButtonControl) addButtonControl.style.display = "none";
-                if (quantityDisplay) {
-                    quantityDisplay.textContent = "";
-                    quantityDisplay.style.display = "none";
-                }
-            });
-        });  
-    }  // <-- ВОТ ЭТО ДОБАВЛЯЕШЬ!
-});
-
-document.addEventListener("DOMContentLoaded", () => {
-    const token = localStorage.getItem("accessToken");
-    const userId = localStorage.getItem("userId"); // Получаем userId
-
-    if (!token || !userId) {
-        console.log("Пользователь не авторизован");
-        return;
-    }
-
-    fetch(`https://makadamia.onrender.com/user-orders/${userId}`, { 
-        method: "GET",
-        headers: {
-            "Authorization": `Bearer ${token}`
-        }
-    })
 
     .then(res => res.json())
     .then(orders => {
@@ -654,11 +566,6 @@ function loadCartFromLocalStorage() {
     return storedCart;
 }
 // Загрузка корзины из localStorage при загрузке страницы
-document.addEventListener("DOMContentLoaded", () => {
-    loadCartFromLocalStorage();
-    const cartModal = document.getElementById("cartModal");
-    if (cartModal) cartModal.style.display = "none";
-});
 
 // Функция загрузки корзины
 function getCookie(name) {
@@ -696,16 +603,6 @@ async function fetchWithAuth(url, options = {}) {
 
     return res;
 }
-document.addEventListener('DOMContentLoaded', async () => {
-    const accessToken = localStorage.getItem('accessToken');  // Получаем токен из localStorage
-
-    if (accessToken) {
-        document.getElementById('authButton').textContent = 'Личный кабинет';  // Изменяем кнопку
-        await loadUserData(accessToken);  // Загружаем данные пользователя
-    } else {
-        document.getElementById('authButton').textContent = 'Вход';  // Если токен отсутствует, отображаем "Вход"
-    }
-});
 
 
 function getTokenExp(token) {
@@ -818,54 +715,7 @@ function editField(field) {
     }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-    const token = localStorage.getItem("accessToken");
 
-    if (!token) {
-        console.warn("❌ Нет токена, не запрашиваем /account");
-        return;
-    }
-
-    fetch("https://makadamia.onrender.com/account", {
-        method: "GET", // ✅ Добавляем явное указание метода
-        headers: { 
-            "Authorization": `Bearer ${token}` // ✅ Передаем токен
-        }
-    })
-    .then(res => {
-        if (!res.ok) {
-            throw new Error(`Ошибка HTTP: ${res.status}`);
-        }
-        return res.json();
-    })
-    .then(data => {
-        const nameInput = document.getElementById("nameInput");
-        const cityInput = document.getElementById("cityInput");
-
-        if (nameInput) nameInput.value = data.name || "";
-        if (cityInput) cityInput.value = data.city || "";
-    })
-    .catch(error => console.error("❌ Ошибка загрузки профиля:", error));
-});
-
-document.addEventListener("DOMContentLoaded", () => {
-    console.log("Страница загружена");
-
-    const editNameBtn = document.getElementById("editName");
-    const editCityBtn = document.getElementById("editCity");
-
-    if (editNameBtn) {
-        editNameBtn.addEventListener("click", () => editField("name"));
-    } else {
-        console.warn("Кнопка editName не найдена!");
-    }
-
-    if (editCityBtn) {
-        editCityBtn.addEventListener("click", () => editField("city"));
-    } else {
-        console.warn("Кнопка editCity не найдена!");
-    }
-});
 // Проверка состояния авторизации
 function checkAuthStatus() {
     const token = localStorage.getItem("accessToken"); // Должно быть accessToken
@@ -943,9 +793,7 @@ function openCabinet() {
     }
 }
 
-// Инициализация авторизации и кнопок при загрузке страницы
-document.addEventListener("DOMContentLoaded", function () {
-    checkAuthStatus();
+
 
     // Убеждаемся, что кнопка "Выход" отображается только в личном кабинете
     const logoutButton = document.getElementById('logoutButton');
@@ -969,40 +817,7 @@ function goToCheckoutPage() {
 }
 
 
-document.addEventListener("DOMContentLoaded", () => {
-    const token = localStorage.getItem('accessToken'); // Получаем токен из localStorage
-    if (!token) {
-        document.getElementById('usernameDisplay').innerText = "Гость";
-        return;
-    }
 
-    fetch("https://makadamia.onrender.com/account", {
-        method: "GET",
-        credentials: "include", // ✅ Добавляем передачу cookies
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
-    })
-    .then(res => {
-        if (!res.ok) {
-            throw new Error(`Ошибка HTTP: ${res.status}`);
-        }
-        return res.json();
-    })
-    .then(data => {
-        if (data.username) {
-            document.getElementById('usernameDisplay').innerText = data.username;
-            document.getElementById('authButton').style.display = 'none'; // Скрываем "Вход"
-            document.getElementById('cabinetButton').style.display = 'inline-block'; // Показываем "Личный кабинет"
-        } else {
-            document.getElementById('usernameDisplay').innerText = "Ошибка загрузки";
-        }
-    })
-    .catch(error => {
-        console.error("Ошибка загрузки аккаунта:", error);
-        document.getElementById('usernameDisplay').innerText = "Ошибка загрузки";
-    });
-});
 async function updateAccount(newUsername, newPassword) {
   const token = localStorage.getItem("accessToken");
 
@@ -1030,15 +845,19 @@ function loadUserData() {
     if (customerAddressInput) customerAddressInput.value = userData.address || "";
     if (additionalInfoInput) additionalInfoInput.value = userData.additionalInfo || "";
 }
-
-
-// Убедитесь, что этот код в `script.js` загружен перед его вызовом в HTML
-document.addEventListener("DOMContentLoaded", function () {
-    const authButton = document.getElementById("authButton");
-    if (authButton) {
-        authButton.onclick = handleAuthClick;
-    }
+document.addEventListener("DOMContentLoaded", async () => {
+    await loadProductMap();  // Загружаем продукты
+    loadCartFromLocalStorage();  // Загружаем корзину из localStorage
+    renderCart();  // Отображаем корзину
+    checkAuthStatus(); // Проверяем авторизацию
+    loadUserData(); // Загружаем данные пользователя, если есть
+    initializeAddToCartButtons(); // Настраиваем кнопки "Добавить в корзину"
+    setupAuthButtons(); // Настраиваем кнопки авторизации (если есть)
+    loadOrders(); // Загружаем заказы для личного кабинета (если есть)
 });
+
+
+
 async function loadOrders() {
     const token = localStorage.getItem("accessToken");
     if (!token) {
