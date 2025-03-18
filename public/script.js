@@ -188,9 +188,13 @@ async function handleCheckoutFormSubmit(event) {
     }
 }
 document.addEventListener("DOMContentLoaded", () => {
-    renderCheckoutCart();
-    loadUserData();
-    initializeAddToCartButtons();
+    loadProductMap().then(() => {
+        loadCartFromLocalStorage();
+        renderCart();
+        loadUserData(); // если есть
+        setupAuthButtons(); // если есть кнопки авторизации
+    });
+});
 
     const backToShoppingButton = document.getElementById("backToShopping");
     if (backToShoppingButton) {
