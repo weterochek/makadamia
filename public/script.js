@@ -1,5 +1,5 @@
 let cart = {};
-
+let productMap = {}; // Будет заполнен динамически
 window.onload = function () {
     const userAgent = navigator.userAgent.toLowerCase();
     const currentURL = window.location.href;
@@ -14,6 +14,19 @@ window.onload = function () {
         window.location.href = "https://makadamia.onrender.com";
     }
 };
+async function loadProductMap() {
+    try {
+        const response = await fetch('https://makadamia.onrender.com/api/products');
+        const products = await response.json();
+        products.forEach(product => {
+            productMap[product._id] = { name: product.name, price: product.price };
+        });
+        console.log("✅ Product Map загружен:", productMap);
+    } catch (error) {
+        console.error("Ошибка загрузки productMap:", error);
+    }
+}
+
 
 console.log("Отправка запроса на /refresh");
 console.log("Токен перед запросом:", localStorage.getItem("accessToken"));
