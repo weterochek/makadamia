@@ -273,24 +273,6 @@ function checkForEmptyCart(productName) {
     }
 }
 
-// Уменьшение количества товара
-
-function decrementItem(productId) {
-    let cartItems = getCartItems();
-    const itemIndex = cartItems.findIndex(item => item.productId === productId);
-
-    if (itemIndex !== -1) {
-        cartItems[itemIndex].quantity -= 1;
-        if (cartItems[itemIndex].quantity === 0) {
-            cartItems.splice(itemIndex, 1);
-        }
-        localStorage.setItem('cartItems', JSON.stringify(cartItems));
-        renderCart();
-    }
-}
-
-
-
 function updateQuantityDisplay(productName) {
     const quantityElement = document.getElementById(`quantity_${productName}`);
     if (quantityElement) {
@@ -731,7 +713,7 @@ function openCabinet() {
     if (logoutButton && window.location.pathname !== '/account.html') {
         logoutButton.style.display = 'none';
     }
-});
+
 
 // Расчет баланса на основе корзины
 function calculateBalance() {
