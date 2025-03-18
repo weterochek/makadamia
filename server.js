@@ -140,7 +140,17 @@ app.get('/products/:id', async (req, res) => {
     res.status(500).json({ message: 'Ошибка при получении товара' });
   }
 });
+const Product = require('./models/Products'); // Путь к твоей модели продуктов (уточни путь!)
 
+app.get('/api/products', async (req, res) => {
+    try {
+        const products = await Product.find({}, '_id name price'); // Забираем id, name, price
+        res.json(products);
+    } catch (error) {
+        console.error("Ошибка при получении продуктов:", error);
+        res.status(500).json({ message: "Ошибка сервера" });
+    }
+});
 // Мидлвар для проверки токена
 
 function generateTokens(user, site) {
