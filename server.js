@@ -12,7 +12,7 @@ const orderRoutes = require("./routes/orderRoutes");
 const Products = require("./models/Products");  // Подключаем модель "Products"
 const authMiddleware = require('./middleware/authMiddleware');
 const Order = require('./models/Order');
-const Product = require('./models/Products');
+
 
 // Настройка CORS
 const allowedOrigins = [
