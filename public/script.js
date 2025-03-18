@@ -18,7 +18,7 @@ async function loadProductMap() {
     try {
         const response = await fetch("/api/products");
         const products = await response.json();
-
+ф
         products.forEach(product => {
             productMap[product._id] = { name: product.name, price: product.price };
         });
@@ -242,56 +242,63 @@ function updateProductControls(productName, price) {
 }
 
 function addToCart(productId, productName, productPrice) {
-    let cartItems = loadCartFromLocalStorage();
-    const existingItem = cartItems.find(item => item.productId === productId);
-
-    if (existingItem) {
-        existingItem.quantity += 1;
-    } else {
-        cartItems.push({
-            productId: productId,
-            quantity: 1
-        });
+    const username = localStorage.getItem("username");
+    if (!username) {
+        alert("Пожалуйста, войдите в систему, чтобы добавить товары в корзину.");
+        return;
     }
 
-    saveCartToLocalStorage(cartItems);
+    const cartKey = `cart_${username}`;
+    let cart = JSON.parse(localStorage.getItem(cartKey)) || {};
+
+    if (cart[productId]) {
+        cart[productId].quantity += 1;
+    } else {
+        cart[productId] = {
+            name: productName,
+            price: productPrice,
+            quantity: 1
+        };
+    }
+
+    localStorage.setItem(cartKey, JSON.stringify(cart));
     renderCart();
-    updateAddToCartButton(productId);
-    replaceAddButtonWithControls(productId); // Появляются + и -
+    replaceAddButtonWithControls(productId, productName);
 }
 
 
 function renderCart() {
-    const cartItemsContainer = document.getElementById('cartItems');
-    const totalAmountElement = document.getElementById('totalAmount');
+    const username = localStorage.getItem("username");
+    if (!username) return;
 
-    if (!cartItemsContainer || !totalAmountElement) return;
+    const cartKey = `cart_${username}`;
+    const cart = JSON.parse(localStorage.getItem(cartKey)) || {};
+    const cartContainer = document.getElementById("cartItems");
+    const totalPriceElement = document.getElementById("totalPrice");
 
-    cartItemsContainer.innerHTML = "";
-    let totalAmount = 0;
-    const cartItems = loadCartFromLocalStorage();
+    if (!cartContainer || !totalPriceElement) return;
 
-    cartItems.forEach(item => {
-        const product = productMap[item.productId];
-        if (!product) return;
+    cartContainer.innerHTML = "";
+    let totalPrice = 0;
 
-        const itemTotal = product.price * item.quantity;
-        totalAmount += itemTotal;
+    for (const productId in cart) {
+        if (cart.hasOwnProperty(productId)) {
+            const item = cart[productId];
+            const itemTotal = item.price * item.quantity;
+            totalPrice += itemTotal;
 
-        const cartItem = document.createElement('div');
-        cartItem.className = 'cart-item';
-        cartItem.innerHTML = `
-            <div>${product.name} - ${item.quantity} шт. - ${itemTotal} ₽</div>
-            <div>
-                <button onclick="decrementItem('${item.productId}')">-</button>
-                <span>${item.quantity}</span>
-                <button onclick="incrementItem('${item.productId}')">+</button>
-            </div>
-        `;
-        cartItemsContainer.appendChild(cartItem);
-    });
+            const cartItem = document.createElement("div");
+            cartItem.className = "cart-item";
+            cartItem.innerHTML = `
+                <span class="cart-item-name">${item.name}</span>
+                <span class="cart-item-quantity">${item.quantity} x ${item.price} руб.</span>
+                <span class="cart-item-total">${itemTotal} руб.</span>
+            `;
+            cartContainer.appendChild(cartItem);
+        }
+    }
 
-    totalAmountElement.textContent = `Итого: ${totalAmount} ₽`;
+    totalPriceElement.textContent = `Итого: ${totalPrice} руб.`;
 }
 
 
@@ -324,28 +331,32 @@ function getCookie(name) {
     return match ? match[2] : null;
 }
 // Преобразование кнопки "Добавить" в контролы "+", "-", и количество
-function replaceAddButtonWithControls(productId) {
-    const addButton = document.getElementById(`addButton_${productId}`);
-    const removeButton = document.getElementById(`removeBtn_${productId}`);
-    const addButtonControl = document.getElementById(`addBtn_${productId}`);
-    const quantityDisplay = document.getElementById(`quantity_${productId}`);
+function replaceAddButtonWithControls(productId, productName) {
+    const addButton = document.getElementById(`addButton_${productName}`);
+    const removeBtn = document.getElementById(`removeBtn_${productName}`);
+    const quantityDisplay = document.getElementById(`quantity_${productName}`);
+    const addBtn = document.getElementById(`addBtn_${productName}`);
 
-    let cartItems = getCartItems();
-    const item = cartItems.find(item => item.productId === productId);
-
-    if (item) {
-        addButton.style.display = "none";
-        removeButton.style.display = "inline-block";
-        addButtonControl.style.display = "inline-block";
+    if (addButton) addButton.style.display = "none";
+    if (removeBtn) removeBtn.style.display = "inline-block";
+    if (quantityDisplay) {
         quantityDisplay.style.display = "inline-block";
-        quantityDisplay.textContent = item.quantity;
-    } else {
-        addButton.style.display = "inline-block";
-        removeButton.style.display = "none";
-        addButtonControl.style.display = "none";
-        quantityDisplay.style.display = "none";
+        quantityDisplay.textContent = getProductQuantity(productId);
     }
+    if (addBtn) addBtn.style.display = "inline-block";
 }
+function restoreAddButton(productName) {
+    const addButton = document.getElementById(`addButton_${productName}`);
+    const removeBtn = document.getElementById(`removeBtn_${productName}`);
+    const quantityDisplay = document.getElementById(`quantity_${productName}`);
+    const addBtn = document.getElementById(`addBtn_${productName}`);
+
+    if (addButton) addButton.style.display = "inline-block";
+    if (removeBtn) removeBtn.style.display = "none";
+    if (quantityDisplay) quantityDisplay.style.display = "none";
+    if (addBtn) addBtn.style.display = "none";
+}
+
 
 function revertControlsToAddButton(productId) {
     const addButton = document.getElementById(`addButton_${productId}`);
@@ -366,29 +377,54 @@ function revertControlsToAddButton(productId) {
 }
 
 
-function incrementItem(productId) {
-    let cartItems = loadCartFromLocalStorage();
-    const item = cartItems.find(item => item.productId === productId);
-    if (item) {
-        item.quantity += 1;
+function incrementItem(productId, productName) {
+    const username = localStorage.getItem("username");
+    if (!username) {
+        alert("Пожалуйста, войдите в систему, чтобы управлять корзиной.");
+        return;
     }
-    saveCartToLocalStorage(cartItems);
-    renderCart();
-    replaceAddButtonWithControls(productId); // Обновить кнопки
+
+    const cartKey = `cart_${username}`;
+    let cart = JSON.parse(localStorage.getItem(cartKey)) || {};
+
+    if (cart[productId]) {
+        cart[productId].quantity += 1;
+        localStorage.setItem(cartKey, JSON.stringify(cart));
+        updateCartItemControls(productId, productName);
+        renderCartDropdown();
+    }
 }
 
-function decrementItem(productId) {
-    let cartItems = loadCartFromLocalStorage();
-    const itemIndex = cartItems.findIndex(item => item.productId === productId);
-    if (itemIndex !== -1) {
-        cartItems[itemIndex].quantity -= 1;
-        if (cartItems[itemIndex].quantity === 0) {
-            cartItems.splice(itemIndex, 1);
-            revertControlsToAddButton(productId); // Если удалили — вернуть "Добавить"
-        }
+function decrementItem(productId, productName) {
+    const username = localStorage.getItem("username");
+    if (!username) {
+        alert("Пожалуйста, войдите в систему, чтобы управлять корзиной.");
+        return;
     }
-    saveCartToLocalStorage(cartItems);
-    renderCart();
+
+    const cartKey = `cart_${username}`;
+    let cart = JSON.parse(localStorage.getItem(cartKey)) || {};
+
+    if (cart[productId]) {
+        cart[productId].quantity -= 1;
+        if (cart[productId].quantity <= 0) {
+            delete cart[productId];
+            restoreAddButton(productName);
+        }
+        localStorage.setItem(cartKey, JSON.stringify(cart));
+        updateCartItemControls(productId, productName);
+        renderCartDropdown();
+    }
+}
+
+function getProductQuantity(productId) {
+    const username = localStorage.getItem("username");
+    if (!username) return 0;
+
+    const cartKey = `cart_${username}`;
+    const cart = JSON.parse(localStorage.getItem(cartKey)) || {};
+
+    return cart[productId] ? cart[productId].quantity : 0;
 }
 
 // Обновление отображения корзины и количества товара на карточке
@@ -422,6 +458,16 @@ function updateCartDisplay() {
     // Если корзина пуста, скрываем её
     if (Object.keys(cart).length === 0) {
         document.getElementById("cartDropdown").style.display = "none";
+    }
+}
+function updateCartDisplay(productId, productName) {
+    const quantityDisplay = document.getElementById(`quantity_${productName}`);
+    if (quantityDisplay) {
+        const quantity = getProductQuantity(productId);
+        quantityDisplay.textContent = quantity;
+        if (quantity <= 0) {
+            restoreAddButton(productName);
+        }
     }
 }
 
@@ -636,7 +682,19 @@ function editField(field) {
         .catch(error => console.log("Ошибка обновления профиля:", error));
     }
 }
+function setupAuthButtons() {
+    const token = localStorage.getItem("accessToken");
+    const authButton = document.getElementById("authButton");
+    const cabinetButton = document.getElementById("cabinetButton");
 
+    if (token) {
+        if (authButton) authButton.style.display = "none";
+        if (cabinetButton) cabinetButton.style.display = "inline-block";
+    } else {
+        if (authButton) authButton.style.display = "inline-block";
+        if (cabinetButton) cabinetButton.style.display = "none";
+    }
+}
 
 // Проверка состояния авторизации
 function checkAuthStatus() {
