@@ -142,6 +142,7 @@ app.get('/products/:id', async (req, res) => {
 });
 const Product = require('./models/Products'); // Путь к твоей модели продуктов (уточни путь!)
 
+
 app.get('/api/products', async (req, res) => {
     try {
         const products = await Product.find({}, '_id name price'); // Забираем id, name, price
@@ -152,6 +153,17 @@ app.get('/api/products', async (req, res) => {
     }
 });
 // Мидлвар для проверки токена
+const Order = require('./models/Order'); // Убедись, что путь правильный!
+
+app.get('/user-orders/:userId', authMiddleware, async (req, res) => {
+    try {
+        const orders = await Order.find({ userId: req.params.userId }).populate('items.productId');
+        res.json(orders);
+    } catch (error) {
+        console.error("Ошибка при получении заказов:", error);
+        res.status(500).json({ message: "Ошибка сервера" });
+    }
+});
 
 function generateTokens(user, site) {
     const issuedAt = Math.floor(Date.now() / 1000);
