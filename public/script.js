@@ -62,7 +62,7 @@ console.log("Токен перед запросом:", localStorage.getItem("acc
     } else {
         console.warn("❌ cartButton или cartDropdown не найдены!");
     }
-});
+
 
 
 function showCookieBanner() {
@@ -290,21 +290,6 @@ function decrementItem(productId) {
 }
 
 
-
-function decrementItem(productId) {
-    let cartData = localStorage.getItem('cartItems');
-    let cartItems = Array.isArray(JSON.parse(cartData)) ? JSON.parse(cartData) : [];
-    const itemIndex = cartItems.findIndex(item => item.productId === productId);
-
-    if (itemIndex > -1) {
-        cartItems[itemIndex].quantity -= 1;
-        if (cartItems[itemIndex].quantity === 0) {
-            cartItems.splice(itemIndex, 1);
-        }
-        localStorage.setItem('cartItems', JSON.stringify(cartItems));
-        renderCart();
-    }
-}
 
 function updateQuantityDisplay(productName) {
     const quantityElement = document.getElementById(`quantity_${productName}`);
