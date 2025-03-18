@@ -1,4 +1,19 @@
 let cart = {};
+let productMap = {};
+
+async function loadProductMap() {
+    try {
+        const response = await fetch('https://makadamia.onrender.com/api/products');
+        const products = await response.json();
+        productMap = products.reduce((map, product) => {
+            map[product._id] = { name: product.name, price: product.price };
+            return map;
+        }, {});
+        renderCheckoutCart();
+    } catch (error) {
+        console.error("Ошибка загрузки списка продуктов:", error);
+    }
+}
 
 // Загрузка корзины из localStorage
 document.addEventListener('DOMContentLoaded', function() {
@@ -59,20 +74,25 @@ function renderCheckoutCart() {
     cartItemsContainer.innerHTML = "";
     let totalAmount = 0;
 
-    for (const item in cart) {
-        const itemTotal = cart[item].price * cart[item].quantity;
+    const storedCart = JSON.parse(localStorage.getItem(`cart_${localStorage.getItem("username")}`)) || {};
+
+    for (const productId in storedCart) {
+        const product = productMap[productId];
+        if (!product) continue; // если нет такого продукта в базе, пропускаем
+
+        const itemTotal = product.price * storedCart[productId].quantity;
         totalAmount += itemTotal;
 
         const cartItem = document.createElement("div");
         cartItem.className = "cart-item";
         cartItem.innerHTML = `
             <div class="item-info">
-                ${item} - ${cart[item].quantity} шт. - ${itemTotal} ₽
+                ${product.name} - ${storedCart[productId].quantity} шт. - ${itemTotal} ₽
             </div>
             <div class="cart-buttons">
-                <button onclick="decrementItem('${item}')">-</button>
-                <span class="quantity">${cart[item].quantity}</span>
-                <button onclick="incrementItem('${item}', ${cart[item].price})">+</button>
+                <button onclick="decrementItem('${productId}')">-</button>
+                <span class="quantity">${storedCart[productId].quantity}</span>
+                <button onclick="incrementItem('${productId}', ${product.price})">+</button>
             </div>
         `;
         cartItemsContainer.appendChild(cartItem);
@@ -80,6 +100,7 @@ function renderCheckoutCart() {
 
     totalAmountElement.textContent = `Итого: ${totalAmount} ₽`;
 }
+
 
 // Уменьшение количества товара
 function decrementItem(itemName) {
@@ -134,6 +155,7 @@ async function loadUserData() {
 
 // Обработчик кнопки оформления заказа
 document.addEventListener("DOMContentLoaded", () => {
+    loadProductMap();
     loadCartFromLocalStorage();
     renderCheckoutCart();
     loadUserData();
