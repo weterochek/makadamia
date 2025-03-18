@@ -150,19 +150,56 @@ async function handleCheckoutFormSubmit(event) {
     }
 }
 
+const backToShoppingButton = document.getElementById("backToShopping");
+if (backToShoppingButton) {
+    backToShoppingButton.addEventListener("click", () => {
+        window.location.href = "index.html";
+    });
+}
 
-    const backToShoppingButton = document.getElementById("backToShopping");
-    if (backToShoppingButton) {
-        backToShoppingButton.addEventListener("click", () => {
-            window.location.href = "index.html";
+const checkoutForm = document.getElementById("checkoutForm");
+if (checkoutForm) {
+    checkoutForm.addEventListener("submit", handleCheckoutFormSubmit);
+}
+
+async function loadUserOrders() {
+    const userId = localStorage.getItem("userId");
+    if (!userId) return;
+
+    try {
+        const response = await fetch(`https://makadamia.onrender.com/user-orders/${userId}`);
+        const orders = await response.json();
+
+        const container = document.getElementById("ordersContainer");
+
+        if (orders.length === 0) {
+            container.innerHTML = "<p>У вас пока нет заказов.</p>";
+            return;
+        }
+
+        orders.forEach(order => {
+            const orderDiv = document.createElement("div");
+            orderDiv.classList.add("order");
+
+            orderDiv.innerHTML = `
+                <h3>Заказ №${order._id}</h3>
+                <p>Адрес: ${order.address}</p>
+                <p>Дата: ${new Date(order.createdAt).toLocaleDateString()}</p>
+                <ul>
+                    ${order.items.map(item => `
+                        <li>${item.productId.name} — ${item.quantity} шт. (${item.productId.price} ₽)</li>
+                    `).join("")}
+                </ul>
+                <hr>
+            `;
+            container.appendChild(orderDiv);
         });
-    }
 
-    const checkoutForm = document.getElementById("checkoutForm");
-    if (checkoutForm) {
-        checkoutForm.addEventListener("submit", handleCheckoutFormSubmit);
+    } catch (err) {
+        console.error("Ошибка загрузки заказов:", err);
     }
-});
+}
+
 function initializeAddToCartButtons() {
     const addToCartButtons = document.querySelectorAll(".add-to-cart-button");
     addToCartButtons.forEach(button => {
@@ -211,14 +248,17 @@ function addToCart(productId, productName, productPrice) {
     if (existingItem) {
         existingItem.quantity += 1;
     } else {
-        cartItems.push({ productId: productId, quantity: 1 });
+        cartItems.push({
+            productId: productId,
+            quantity: 1
+        });
     }
 
     saveCartToLocalStorage(cartItems);
     renderCart();
     updateAddToCartButton(productId);
+    replaceAddButtonWithControls(productId); // Появляются + и -
 }
-
 
 
 function renderCart() {
@@ -325,42 +365,7 @@ function revertControlsToAddButton(productId) {
     quantityDisplay.style.display = "none";  // Скрываем количество
 }
 
-//ощичение корзины
 
-
-
-
-    .then(res => res.json())
-    .then(orders => {
-        const container = document.getElementById("ordersContainer"); // Блок с таким id
-
-        if (orders.length === 0) {
-            container.innerHTML = "<p>У вас пока нет заказов.</p>";
-            return;
-        }
-
-        orders.forEach(order => {
-            const orderDiv = document.createElement("div");
-            orderDiv.classList.add("order");
-
-            orderDiv.innerHTML = `
-                <h3>Заказ №${order._id}</h3>
-                <p>Адрес: ${order.address}</p>
-                <p>Дата: ${new Date(order.createdAt).toLocaleDateString()}</p>
-                <ul>
-                    ${order.items.map(item => `
-                        <li>${item.productId.name} — ${item.quantity} шт. (${item.productId.price} ₽)</li>
-                    `).join("")}
-                </ul>
-                <hr>
-            `;
-            container.appendChild(orderDiv);
-        });
-    })
-    .catch(err => {
-        console.error("Ошибка загрузки заказов:", err);
-    });
-});
 function incrementItem(productId) {
     let cartItems = loadCartFromLocalStorage();
     const item = cartItems.find(item => item.productId === productId);
@@ -369,7 +374,9 @@ function incrementItem(productId) {
     }
     saveCartToLocalStorage(cartItems);
     renderCart();
+    replaceAddButtonWithControls(productId); // Обновить кнопки
 }
+
 function decrementItem(productId) {
     let cartItems = loadCartFromLocalStorage();
     const itemIndex = cartItems.findIndex(item => item.productId === productId);
@@ -377,11 +384,13 @@ function decrementItem(productId) {
         cartItems[itemIndex].quantity -= 1;
         if (cartItems[itemIndex].quantity === 0) {
             cartItems.splice(itemIndex, 1);
+            revertControlsToAddButton(productId); // Если удалили — вернуть "Добавить"
         }
     }
     saveCartToLocalStorage(cartItems);
     renderCart();
 }
+
 // Обновление отображения корзины и количества товара на карточке
 function updateCartDisplay() {
     const cartItems = document.getElementById("cartItems");
@@ -767,6 +776,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     initializeAddToCartButtons(); // Настраиваем кнопки "Добавить в корзину"
     setupAuthButtons(); // Настраиваем кнопки авторизации (если есть)
     loadOrders(); // Загружаем заказы для личного кабинета (если есть)
+    loadUserOrders();
 });
 
 
