@@ -818,11 +818,11 @@ async function logout() {
 
 
 function handleAuthClick() {
-    const token = localStorage.getItem('accessToken');
-    if (token) {
-        window.location.href = 'account.html';
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+        window.location.href = "login.html";
     } else {
-        window.location.href = 'login.html';
+        window.location.href = "account.html";
     }
 }
 
