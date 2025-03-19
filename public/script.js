@@ -42,7 +42,50 @@ async function fetchWithAuth(url, options = {}) {
     return response;
 }
 
+async function checkAndRefreshToken() {
+    let token = localStorage.getItem("accessToken");
+    if (!token) {
+        console.log("❌ Нет accessToken, пользователь не авторизован");
+        return false;
+    }
 
+    // Декодируем токен (можно через jwt-decode библиотеку или вручную)
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const now = Date.now() / 1000;
+
+    if (payload.exp < now) {
+        console.log("⏳ AccessToken истёк, пробуем обновить...");
+        const refreshResponse = await fetch('/refresh', { credentials: 'include' });
+        if (refreshResponse.ok) {
+            const refreshData = await refreshResponse.json();
+            localStorage.setItem("accessToken", refreshData.accessToken);
+            console.log("✅ AccessToken обновлён");
+            return true;
+        } else {
+            console.log("❌ Не удалось обновить токен");
+            return false;
+        }
+    } else {
+        console.log("✅ AccessToken валиден");
+        return true;
+    }
+}
+document.addEventListener("DOMContentLoaded", async () => {
+    const isAuth = await checkAndRefreshToken();
+
+    const loginButton = document.getElementById("loginButton");
+    const accountButton = document.getElementById("accountButton");
+
+    if (isAuth) {
+        // Показываем ЛК, скрываем Вход
+        if (loginButton) loginButton.style.display = "none";
+        if (accountButton) accountButton.style.display = "block";
+    } else {
+        // Показываем Вход
+        if (loginButton) loginButton.style.display = "block";
+        if (accountButton) accountButton.style.display = "none";
+    }
+});
 async function loadProductMap() {
     try {
         const response = await fetch('/api/products');
