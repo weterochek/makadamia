@@ -219,57 +219,5 @@ function loadCartFromLocalStorage() {
     }
 }
             // Загружаем корзину
-const storedCart = JSON.parse(localStorage.getItem('cartItems')) || [];
-const items = storedCart.map(item => ({
-    productId: item.productId,
-    quantity: item.quantity
-}));
 
-            const nameInput = document.getElementById('customerName');
-            const addressInput = document.getElementById('customerAddress');
-            const additionalInfoInput = document.getElementById('additionalInfo');
-            const userId = localStorage.getItem("userId");
-
-            const orderData = {
-                userId: userId,
-                name: nameInput.value,
-                address: addressInput.value,
-                additionalInfo: additionalInfoInput.value,
-                items: items
-            };
-
-            console.log("\ud83d\udce1 Отправка данных заказа:", orderData);
-
-            try {
-                const response = await fetch("https://makadamia.onrender.com/api/order", {
-                    method: "POST",
-                    headers: {
-                        "Authorization": `Bearer ${token}`,
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(orderData)
-                });
-
-                console.log("\ud83d\udce5 Ответ от сервера:", response);
-
-                if (!response.ok) {
-                    console.error(`\u274c Ошибка ${response.status}:`, response.statusText);
-                    alert("Ошибка при оформлении заказа.");
-                    return;
-                }
-
-                const responseData = await response.json();
-                console.log("\u2705 Заказ успешно оформлен:", responseData);
-
-                alert("\ud83c\udf89 Заказ успешно оформлен!");
-                cart = {}; // Очищаем корзину
-                localStorage.removeItem('cartItems');
-                window.location.href = "index.html";
-            } catch (error) {
-                console.error("\u274c Ошибка сети или сервера:", error);
-                alert("Ошибка при оформлении заказа. Проверьте соединение.");
-            }
-        });
-    }
-});
 
