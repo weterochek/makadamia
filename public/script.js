@@ -411,6 +411,10 @@ function incrementItem(productId) {
     }
     localStorage.setItem('cartItems', JSON.stringify(cart));
     renderCart();
+
+    // Обновляем + и - на карточке:
+    const productName = productMap[productId]?.name || "";
+    updateCartDisplay(productId, productName);
 }
 
 function decrementItem(productId) {
@@ -424,6 +428,9 @@ function decrementItem(productId) {
     }
     localStorage.setItem('cartItems', JSON.stringify(cart));
     renderCart();
+
+    const productName = productMap[productId]?.name || "";
+    updateCartDisplay(productId, productName);
 }
 
 async function loadAccountData() {
