@@ -60,9 +60,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Сохранение корзины в localStorage
 function saveCartToLocalStorage() {
-    const username = localStorage.getItem("username") || "guest";
-    localStorage.setItem(`cart_${username}`, JSON.stringify(cart));
+    const cart = JSON.parse(localStorage.getItem('cartItems')) || [];
+    localStorage.setItem('cartItems', JSON.stringify(cart));
 }
+
 
 // Отображение корзины
 async function renderCheckoutCart() {
