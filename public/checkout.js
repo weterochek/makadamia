@@ -101,6 +101,11 @@ async function loadUserData() {
             throw new Error("Ошибка при загрузке данных профиля");
         }
         const userData = await response.json();
+
+        // ✅ Сохраняем данные локально
+        localStorage.setItem("userData", JSON.stringify({ name: userData.name, address: userData.city }));
+
+        // ✅ Подставляем в поля checkout
         document.getElementById("customerName").value = userData.name || "";
         document.getElementById("customerAddress").value = userData.city || "";
     } catch (error) {
