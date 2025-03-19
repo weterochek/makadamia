@@ -189,12 +189,17 @@ if (checkoutForm) {
 }
 
 async function loadUserOrders() {
-    try {
-        const userId = localStorage.getItem("userId");
-        const response = await fetchWithAuth(`/user-orders/${userId}`);
-        const orders = await response.json();
+    const userId = localStorage.getItem("userId");
+    if (!userId) return;
 
+    try {
+        const response = await fetch(`/user-orders/${userId}`, {
+            headers: { "Authorization": `Bearer ${localStorage.getItem("accessToken")}` }
+        });
+
+        const orders = await response.json();
         const container = document.getElementById("ordersContainer");
+
         if (orders.length === 0) {
             container.innerHTML = "<p>У вас пока нет заказов.</p>";
             return;
@@ -202,19 +207,22 @@ async function loadUserOrders() {
 
         orders.forEach(order => {
             const orderDiv = document.createElement("div");
+            orderDiv.classList.add("order");
             orderDiv.innerHTML = `
                 <h3>Заказ №${order._id}</h3>
                 <p>Адрес: ${order.address}</p>
                 <p>Дата: ${new Date(order.createdAt).toLocaleDateString()}</p>
                 <ul>
-                    ${order.items.map(item => `<li>${item.productId.name} — ${item.quantity} шт. (${item.productId.price} ₽)</li>`).join("")}
+                    ${order.items.map(item => `
+                        <li>${item.productId.name} — ${item.quantity} шт. (${item.productId.price} ₽)</li>
+                    `).join("")}
                 </ul>
                 <hr>
             `;
             container.appendChild(orderDiv);
         });
-    } catch (error) {
-        console.error("Ошибка загрузки заказов:", error);
+    } catch (err) {
+        console.error("Ошибка загрузки заказов:", err);
     }
 }
 
@@ -419,15 +427,21 @@ function decrementItem(productId) {
     renderCart();
 }
 async function loadAccountData() {
+    const token = localStorage.getItem("accessToken");
+    if (!token) return;
+
     try {
-        const response = await fetchWithAuth("/account");
-        if (!response.ok) throw new Error("Ошибка при загрузке аккаунта");
-        const userData = await response.json();
+        const response = await fetch("/account", {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        });
 
-        document.getElementById("accountUsername").innerText = userData.username || "";
-        document.getElementById("accountName").innerText = userData.name || "";
-        document.getElementById("accountAddress").innerText = userData.city || "";
-
+        const data = await response.json();
+        document.getElementById("usernameDisplay").textContent = data.username;
+        document.getElementById("nameInput").value = data.name;
+        document.getElementById("cityInput").value = data.city;
     } catch (error) {
         console.error("Ошибка загрузки аккаунта:", error);
     }
