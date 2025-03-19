@@ -54,28 +54,28 @@ loginForm.addEventListener("submit", async (e) => {
     const password = document.getElementById("loginPassword").value;
 
     try {
-        const response = await fetch("https://makadamia.onrender.com/login", {
+        const response = await fetch("/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username, password }),
-            credentials: "include",
+            credentials: "include"
         });
 
         const data = await response.json();
         if (response.ok) {
-            localStorage.setItem("accessToken", data.accessToken); // единое имя ключа
-            localStorage.setItem("username", username);
+            localStorage.setItem("accessToken", data.accessToken);
             localStorage.setItem("userId", data.userId);
-
+            localStorage.setItem("username", username);
             window.location.href = "/index.html";
         } else {
             alert(data.message || "Ошибка входа.");
         }
     } catch (error) {
         console.error("Ошибка входа:", error);
-        alert("Произошла ошибка.");
+        alert("Произошла ошибка. Попробуйте снова.");
     }
 });
+
 
 // === Функция обновления accessToken ===
 async function refreshAccessToken() {
