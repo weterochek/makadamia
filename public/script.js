@@ -189,14 +189,12 @@ if (checkoutForm) {
 }
 
 async function loadUserOrders() {
-    const userId = localStorage.getItem("userId");
-    if (!userId) return;
-
     try {
-        const response = await fetch(`/user-orders/${userId}`);
+        const userId = localStorage.getItem("userId");
+        const response = await fetchWithAuth(`/user-orders/${userId}`);
         const orders = await response.json();
-        const container = document.getElementById("ordersContainer");
 
+        const container = document.getElementById("ordersContainer");
         if (orders.length === 0) {
             container.innerHTML = "<p>У вас пока нет заказов.</p>";
             return;
@@ -204,24 +202,22 @@ async function loadUserOrders() {
 
         orders.forEach(order => {
             const orderDiv = document.createElement("div");
-            orderDiv.classList.add("order");
             orderDiv.innerHTML = `
                 <h3>Заказ №${order._id}</h3>
                 <p>Адрес: ${order.address}</p>
                 <p>Дата: ${new Date(order.createdAt).toLocaleDateString()}</p>
                 <ul>
-                    ${order.items.map(item => `
-                        <li>${item.productId.name} — ${item.quantity} шт. (${item.productId.price} ₽)</li>
-                    `).join("")}
+                    ${order.items.map(item => `<li>${item.productId.name} — ${item.quantity} шт. (${item.productId.price} ₽)</li>`).join("")}
                 </ul>
                 <hr>
             `;
             container.appendChild(orderDiv);
         });
-    } catch (err) {
-        console.error("Ошибка загрузки заказов:", err);
+    } catch (error) {
+        console.error("Ошибка загрузки заказов:", error);
     }
 }
+
 
 function initializeAddToCartButtons() {
     const addToCartButtons = document.querySelectorAll(".add-to-cart-button");
@@ -423,23 +419,17 @@ function decrementItem(productId) {
     renderCart();
 }
 async function loadAccountData() {
-    const token = localStorage.getItem("accessToken");
-    if (!token) return;
-
     try {
-        const response = await fetch("/account", {
-            method: "GET",
-            headers: {
-                "Authorization": `Bearer ${token}`
-            }
-        });
+        const response = await fetchWithAuth("/account");
+        if (!response.ok) throw new Error("Ошибка при загрузке аккаунта");
+        const userData = await response.json();
 
-        const data = await response.json();
-        document.getElementById("username").innerText = data.username;
-        document.getElementById("name").value = data.name;
-        document.getElementById("city").value = data.city;
-    } catch (err) {
-        console.error("Ошибка загрузки аккаунта:", err);
+        document.getElementById("accountUsername").innerText = userData.username || "";
+        document.getElementById("accountName").innerText = userData.name || "";
+        document.getElementById("accountAddress").innerText = userData.city || "";
+
+    } catch (error) {
+        console.error("Ошибка загрузки аккаунта:", error);
     }
 }
 
@@ -893,33 +883,32 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
 async function loadOrders() {
-    const token = localStorage.getItem("accessToken");
-    if (!token) {
-        alert("Вы не авторизованы!");
-        return;
-    }
-
     try {
-        const response = await fetch("https://makadamia.onrender.com/orders", {
-            method: "GET",
-            headers: {
-                "Authorization": `Bearer ${token}`,
-                "Content-Type": "application/json"
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error("Ошибка при загрузке заказов");
-        }
-
+        const response = await fetchWithAuth("/orders");
         const orders = await response.json();
-        displayOrders(orders); // Вызываем функцию для отображения заказов
 
+        const container = document.getElementById("allOrdersContainer");
+        container.innerHTML = "";
+
+        orders.forEach(order => {
+            const orderDiv = document.createElement("div");
+            orderDiv.innerHTML = `
+                <h3>Заказ №${order._id}</h3>
+                <p>Пользователь: ${order.userId.username}</p>
+                <p>Адрес: ${order.address}</p>
+                <p>Дата: ${new Date(order.createdAt).toLocaleDateString()}</p>
+                <ul>
+                    ${order.items.map(item => `<li>${item.productId.name} — ${item.quantity} шт. (${item.productId.price} ₽)</li>`).join("")}
+                </ul>
+                <hr>
+            `;
+            container.appendChild(orderDiv);
+        });
     } catch (error) {
         console.error("Ошибка при загрузке заказов:", error);
-        alert("Ошибка при загрузке заказов");
     }
 }
+
 
 // Отображение заказов на странице
 function displayOrders(orders) {
