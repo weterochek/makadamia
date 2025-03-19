@@ -518,22 +518,30 @@ function renderCheckoutCart() {
     let totalPrice = 0;
 
     for (const productId in cart) {
-        const item = cart[productId];
-        const itemTotalPrice = item.price * item.quantity;
-        totalPrice += itemTotalPrice;
+        const product = productMap[productId];
 
-        const cartItemElement = document.createElement("div");
-        cartItemElement.className = "cart-item";
-        cartItemElement.innerHTML = `
-            <span class="item-name">${item.name}</span>
-            <span class="item-quantity">${item.quantity} шт.</span>
-            <span class="item-price">${itemTotalPrice.toFixed(2)} ₽</span>
+        if (!product) continue;
+
+        const itemTotal = product.price * cart[productId].quantity;
+        totalPrice += itemTotal;
+
+        const cartItem = document.createElement("div");
+        cartItem.className = "cart-item";
+        cartItem.setAttribute("data-id", productId);
+        cartItem.innerHTML = `
+            <div class="item-info">${product.name} - ${itemTotal} ₽</div>
+            <div class="cart-buttons">
+                <button onclick="decrementItem('${productId}')">-</button>
+                <span class="quantity">${cart[productId].quantity}</span>
+                <button onclick="incrementItem('${productId}', ${product.price})">+</button>
+            </div>
         `;
-        cartItemsContainer.appendChild(cartItemElement);
+        cartItemsContainer.appendChild(cartItem);
     }
 
-    cartTotalPrice.textContent = totalPrice.toFixed(2) + " ₽";
+    cartTotalPrice.textContent = `Итого: ${totalPrice} ₽`;
 }
+
 function updateTotal() {
     const cartItems = getCartItems();
     const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
