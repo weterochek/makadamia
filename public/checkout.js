@@ -222,9 +222,4 @@ const items = storedCart.map(item => ({
         });
     }
 });
-const backToShoppingButton = document.getElementById("backToShopping");
-if (backToShoppingButton) {
-    backToShoppingButton.addEventListener("click", () => {
-        window.location.href = "index.html";
-    });
-}
+
