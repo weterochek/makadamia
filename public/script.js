@@ -107,35 +107,32 @@ function showCookieBanner() {
 }
 
 function renderCart() {
-    const cart = loadCartFromLocalStorage();
     const cartItemsContainer = document.getElementById("cartItems");
     const totalAmountElement = document.getElementById("totalAmount");
-
-    if (!cartItemsContainer || !totalAmountElement) return;
-
     cartItemsContainer.innerHTML = "";
     let totalAmount = 0;
 
-    for (const productId in cart) {
-        const product = productMap[productId];
-        if (!product) continue;
+    const cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
 
-        const itemTotal = product.price * cart[productId].quantity;
+    cartItems.forEach(item => {
+        const product = productMap[item.productId];
+        if (!product) return;
+
+        const itemTotal = product.price * item.quantity;
         totalAmount += itemTotal;
 
-        const cartItem = document.createElement("div");
-        cartItem.className = "cart-item";
-        cartItem.setAttribute("data-id", productId);
+        const cartItem = document.createElement('div');
+        cartItem.className = 'cart-item';
         cartItem.innerHTML = `
-            <div class="item-info">${product.name} - ${itemTotal} ₽</div>
-            <div class="cart-buttons">
-                <button onclick="decrementItem('${productId}')">-</button>
-                <span class="quantity">${cart[productId].quantity}</span>
-                <button onclick="incrementItem('${productId}', ${product.price})">+</button>
+            <div>${product.name} - ${item.quantity} шт. - ${itemTotal} ₽</div>
+            <div>
+                <button onclick="decrementItem('${item.productId}')">-</button>
+                <span>${item.quantity}</span>
+                <button onclick="incrementItem('${item.productId}')">+</button>
             </div>
         `;
         cartItemsContainer.appendChild(cartItem);
-    }
+    });
 
     totalAmountElement.textContent = `Итого: ${totalAmount} ₽`;
 }
