@@ -128,7 +128,7 @@ const userSchema = new mongoose.Schema({
 const User = mongoose.model("User", userSchema);
 // Получение товара по ID
 // Маршрут для получения товара по ID
-app.get('/products/:id', async (req, res) => {
+app.get('s/:id', async (req, res) => {
   try {
     const product = await Products.findById(req.params.id); // Используется Products, так как это ваша модель
     if (!product) {
@@ -140,8 +140,6 @@ app.get('/products/:id', async (req, res) => {
     res.status(500).json({ message: 'Ошибка при получении товара' });
   }
 });
-const Product = require('./models/Products'); // Путь к твоей модели продуктов (уточни путь!)
-
 
 app.get('/api/products', async (req, res) => {
     try {
