@@ -983,12 +983,15 @@ document.addEventListener("DOMContentLoaded", () => {
         loadCartFromLocalStorage();  
         loadUserData(); 
         initializeAddToCartButtons(); 
-        setupAuthButtons(isAuth);
+
+        // Добавляем проверку токена!
+        const token = localStorage.getItem("accessToken");
+        const isAuth = token && !isTokenExpired(token);
+        setupAuthButtons(isAuth); // ✅ Теперь переменная есть!
+
         loadOrders();
     })();
 });
-
-
 
 
 async function loadOrders() {
