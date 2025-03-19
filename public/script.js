@@ -892,6 +892,8 @@ function loadUserData() {
 }
 document.addEventListener("DOMContentLoaded", async () => {
     await loadProductMap();  // Загружаем продукты
+    loadUserOrders();
+    loadAccountData();
     renderCart();  // Отображаем корзину
     checkAuthStatus(); // Проверяем авторизацию
     loadCartFromLocalStorage();  // Загружаем корзину из localStorage
@@ -899,8 +901,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     initializeAddToCartButtons(); // Настраиваем кнопки "Добавить в корзину"
     setupAuthButtons(); // Настраиваем кнопки авторизации (если есть)
     loadOrders(); // Загружаем заказы для личного кабинета (если есть)
-    loadUserOrders();
-    loadAccountData();
 });
 
 
