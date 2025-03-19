@@ -9,11 +9,12 @@ async function loadProductMap() {
             map[product._id] = { name: product.name, price: product.price };
             return map;
         }, {});
-        renderCheckoutCart();
+        console.log("✅ Продукты загружены");
     } catch (error) {
         console.error("Ошибка загрузки списка продуктов:", error);
     }
 }
+
 
 // Загрузка корзины из localStorage
 
@@ -116,10 +117,11 @@ async function loadUserData() {
 
 // Обработчик кнопки оформления заказа
 document.addEventListener("DOMContentLoaded", async () => {
-    await loadProductMap();
-    loadCartFromLocalStorage();
-    renderCheckoutCart();
+    await loadProductMap(); // productMap заполнили
+    renderCheckoutCart();   // рендерим корзину
+    loadCartFromLocalStorage(); // orderSummary заполняем
     loadUserData();
+});
 
     const backToShoppingButton = document.getElementById("backToShopping");
     if (backToShoppingButton) {
@@ -211,7 +213,7 @@ const items = storedCart.map(item => ({
 
                 alert("\ud83c\udf89 Заказ успешно оформлен!");
                 cart = {}; // Очищаем корзину
-                saveCartToLocalStorage();
+                localStorage.removeItem('cartItems');
                 window.location.href = "index.html";
             } catch (error) {
                 console.error("\u274c Ошибка сети или сервера:", error);
