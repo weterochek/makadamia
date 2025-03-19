@@ -453,6 +453,32 @@ function decrementItem(productId) {
     saveCartToLocalStorage(cartItems);
     renderCart();
 }
+document.addEventListener("DOMContentLoaded", () => {
+    const authButton = document.getElementById("authButton");
+    const cabinetButton = document.getElementById("cabinetButton");
+
+    const token = localStorage.getItem("accessToken");
+    if (token) {
+        // Если авторизован
+        if (authButton) authButton.style.display = 'none';
+        if (cabinetButton) {
+            cabinetButton.style.display = 'inline-block';
+            cabinetButton.addEventListener('click', () => {
+                window.location.href = '/account.html';
+            });
+        }
+    } else {
+        // Не авторизован
+        if (cabinetButton) cabinetButton.style.display = 'none';
+        if (authButton) {
+            authButton.style.display = 'inline-block';
+            authButton.addEventListener('click', () => {
+                window.location.href = '/login.html';
+            });
+        }
+    }
+});
+
 async function loadAccountData() {
     const token = localStorage.getItem('accessToken');
 
