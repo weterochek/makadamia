@@ -16,47 +16,6 @@ async function loadProductMap() {
 }
 
 // Загрузка корзины из localStorage
-document.addEventListener('DOMContentLoaded', function() {
-    const productListContainer = document.querySelector('.checkout__list');
-    const checkoutTotal = document.querySelector('.checkout__total-price span');
-
-    let totalPrice = 0;
-
-    const cartItems = localStorage.getItem('cartItems');
-    if (cartItems) {
-        try {
-            const items = JSON.parse(cartItems);
-
-            if (items.length === 0) {
-                productListContainer.innerHTML = '<p>Ваша корзина пуста</p>';
-            } else {
-                items.forEach(item => {
-                    const itemElement = document.createElement('div');
-                    itemElement.classList.add('checkout__item');
-
-                    itemElement.innerHTML = `
-                        <div class="checkout__item-info">
-                            <p>${item.productName}</p>
-                            <p>Количество: ${item.quantity}</p>
-                            <p>Цена: ${item.price} ₽</p>
-                        </div>
-                    `;
-                    productListContainer.appendChild(itemElement);
-
-                    totalPrice += item.price * item.quantity;
-                });
-
-                checkoutTotal.textContent = totalPrice + ' ₽';
-            }
-        } catch (e) {
-            console.error('Ошибка при разборе данных корзины:', e);
-            productListContainer.innerHTML = '<p>Ошибка загрузки корзины</p>';
-        }
-    } else {
-        productListContainer.innerHTML = '<p>Ваша корзина пуста</p>';
-    }
-});
-
 
 // Сохранение корзины в localStorage
 function saveCartToLocalStorage() {
