@@ -11,6 +11,7 @@ const app = express();
 const orderRoutes = require("./routes/orderRoutes");
 const authMiddleware = require('./middleware/authMiddleware');
 const Order = require('./models/Order');
+const User = require('./models/User');
 const Products = require("./models/Product");  // Подключаем модель "Products"
 
 
