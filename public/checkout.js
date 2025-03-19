@@ -65,25 +65,25 @@ function saveCartToLocalStorage() {
 }
 
 // Отображение корзины
-function renderCheckoutCart() {
-    const cart = loadCartFromLocalStorage();
+async function renderCheckoutCart() {
+    const cart = JSON.parse(localStorage.getItem('cartItems')) || [];
     const cartItemsContainer = document.getElementById("cartItems");
     const totalAmountElement = document.getElementById("totalAmount");
 
     cartItemsContainer.innerHTML = "";
     let totalAmount = 0;
 
-    for (const productId in cart) {
-        const product = productMap[productId];
+    for (const item of cart) {
+        const product = productMap[item.productId];
         if (!product) continue;
 
-        const itemTotal = product.price * cart[productId].quantity;
+        const itemTotal = product.price * item.quantity;
         totalAmount += itemTotal;
 
         const cartItem = document.createElement("div");
         cartItem.className = "cart-item";
         cartItem.innerHTML = `
-            <div>${product.name} - ${cart[productId].quantity} шт. - ${itemTotal} ₽</div>
+            <div>${product.name} - ${item.quantity} шт. - ${itemTotal} ₽</div>
         `;
         cartItemsContainer.appendChild(cartItem);
     }
@@ -92,27 +92,29 @@ function renderCheckoutCart() {
 }
 
 
+
 // Уменьшение количества товара
-function decrementItem(itemName) {
-    if (cart[itemName]) {
-        cart[itemName].quantity -= 1;
-        if (cart[itemName].quantity === 0) {
-            delete cart[itemName];
-        }
-        saveCartToLocalStorage();
-        renderCheckoutCart();
+function incrementItem(productId) {
+    let cart = JSON.parse(localStorage.getItem('cartItems')) || [];
+    const item = cart.find(item => item.productId === productId);
+    if (item) {
+        item.quantity += 1;
     }
+    localStorage.setItem('cartItems', JSON.stringify(cart));
+    renderCart();
 }
 
-// Увеличение количества товара
-function incrementItem(itemName, itemPrice) {
-    if (cart[itemName]) {
-        cart[itemName].quantity += 1;
-    } else {
-        cart[itemName] = { price: itemPrice, quantity: 1 };
+function decrementItem(productId) {
+    let cart = JSON.parse(localStorage.getItem('cartItems')) || [];
+    const index = cart.findIndex(item => item.productId === productId);
+    if (index !== -1) {
+        cart[index].quantity -= 1;
+        if (cart[index].quantity === 0) {
+            cart.splice(index, 1);
+        }
     }
-    saveCartToLocalStorage();
-    renderCheckoutCart();
+    localStorage.setItem('cartItems', JSON.stringify(cart));
+    renderCart();
 }
 
 // Загрузка данных пользователя
