@@ -430,23 +430,35 @@ function decrementItem(productId) {
 }
 async function loadAccountData() {
     const token = localStorage.getItem('accessToken');
-    if (!token) return;
+
+    if (!token) {
+        console.warn('❌ Нет accessToken для загрузки данных');
+        return;
+    }
 
     try {
-        const res = await fetch('/account', {
-            headers: { 'Authorization': `Bearer ${token}` }
+        const response = await fetch('https://makadamia.onrender.com/account', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
         });
-        if (!res.ok) throw new Error("Ошибка HTTP");
 
-        const data = await res.json();
-        document.getElementById('userName').textContent = data.name || '';
-        document.getElementById('customerName').value = data.name || '';
-        document.getElementById('customerAddress').value = data.city || '';
+        if (!response.ok) {
+            throw new Error('Ошибка HTTP: ' + response.status);
+        }
+
+        const data = await response.json();
+        console.log('✅ Данные пользователя:', data);
+
+        document.getElementById('usernameDisplay').textContent = data.username || '';
+        document.getElementById('nameInput').value = data.name || '';
+        document.getElementById('cityInput').value = data.city || '';
 
     } catch (err) {
-        console.error("Ошибка загрузки аккаунта:", err);
+        console.error('Ошибка загрузки аккаунта:', err);
     }
 }
+
 
 
 function getProductQuantity(productId) {
