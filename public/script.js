@@ -41,14 +41,6 @@ async function fetchWithAuth(url, options = {}) {
     }
     return response;
 }
-
-async function checkAndRefreshToken() {
-    let token = localStorage.getItem("accessToken");
-    if (!token) {
-        console.log("❌ Нет accessToken, пользователь не авторизован");
-        return false;
-    }
-
     // Декодируем токен (можно через jwt-decode библиотеку или вручную)
     const payload = JSON.parse(atob(token.split('.')[1]));
     const now = Date.now() / 1000;
@@ -830,12 +822,11 @@ function editField(field) {
         .catch(error => console.log("Ошибка обновления профиля:", error));
     }
 }
-function setupAuthButtons() {
-    const token = localStorage.getItem("accessToken");
+function setupAuthButtons(isAuth) {
     const authButton = document.getElementById("authButton");
     const cabinetButton = document.getElementById("cabinetButton");
 
-    if (token && !isTokenExpired(token)) {
+    if (isAuth) {
         if (authButton) authButton.style.display = "none";
         if (cabinetButton) {
             cabinetButton.style.display = "inline-block";
@@ -851,36 +842,6 @@ function setupAuthButtons() {
             });
         }
         if (cabinetButton) cabinetButton.style.display = "none";
-    }
-}
-// Проверка состояния авторизации
-function checkAuthStatus() {
-    const token = localStorage.getItem("accessToken");
-    const username = localStorage.getItem("username");
-    const authButton = document.getElementById("authButton");
-    const cabinetButton = document.getElementById("cabinetButton");
-
-    if (!authButton || !cabinetButton) {
-        console.warn("❌ Кнопки 'Вход' или 'Личный кабинет' не найдены");
-        return;
-    }
-
-    if (token && username && !isTokenExpired(token)) {
-        console.log("✅ Пользователь авторизован");
-        authButton.style.display = "none";
-        cabinetButton.style.display = "inline-block";
-
-        cabinetButton.onclick = () => {
-            window.location.href = "/account.html";
-        };
-    } else {
-        console.log("⚠️ Пользователь не авторизован");
-        authButton.style.display = "inline-block";
-        cabinetButton.style.display = "none";
-
-        authButton.onclick = () => {
-            window.location.href = "/login.html";
-        };
     }
 }
 
@@ -1022,7 +983,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     loadCartFromLocalStorage();  // Загружаем корзину из localStorage
     loadUserData(); // Загружаем данные пользователя, если есть
     initializeAddToCartButtons(); // Настраиваем кнопки "Добавить в корзину"
-    setupAuthButtons(); // Настраиваем кнопки авторизации (если есть)
+    setupAuthButtons(isAuth); // Настраиваем кнопки авторизации (если есть)
     loadOrders(); // Загружаем заказы для личного кабинета (если есть)
 });
 
