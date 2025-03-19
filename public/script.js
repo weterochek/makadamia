@@ -453,32 +453,6 @@ function decrementItem(productId) {
     saveCartToLocalStorage(cartItems);
     renderCart();
 }
-document.addEventListener("DOMContentLoaded", () => {
-    const authButton = document.getElementById("authButton");
-    const cabinetButton = document.getElementById("cabinetButton");
-
-    const token = localStorage.getItem("accessToken");
-    if (token) {
-        // Авторизован
-        if (authButton) authButton.style.display = 'none';
-        if (cabinetButton) {
-            cabinetButton.style.display = 'inline-block';
-            cabinetButton.addEventListener('click', () => {
-                window.location.href = '/account.html';
-            });
-        }
-    } else {
-        // Не авторизован
-        if (cabinetButton) cabinetButton.style.display = 'none';
-        if (authButton) {
-            authButton.style.display = 'inline-block';
-            authButton.addEventListener('click', () => {
-                window.location.href = '/login.html';
-            });
-        }
-    }
-});
-
 
 async function loadAccountData() {
     const token = localStorage.getItem('accessToken');
@@ -816,15 +790,24 @@ function setupAuthButtons() {
     const authButton = document.getElementById("authButton");
     const cabinetButton = document.getElementById("cabinetButton");
 
-    if (token) {
+    if (token && !isTokenExpired(token)) {
         if (authButton) authButton.style.display = "none";
-        if (cabinetButton) cabinetButton.style.display = "inline-block";
+        if (cabinetButton) {
+            cabinetButton.style.display = "inline-block";
+            cabinetButton.addEventListener("click", () => {
+                window.location.href = "/account.html";
+            });
+        }
     } else {
-        if (authButton) authButton.style.display = "inline-block";
+        if (authButton) {
+            authButton.style.display = "inline-block";
+            authButton.addEventListener("click", () => {
+                window.location.href = "/login.html";
+            });
+        }
         if (cabinetButton) cabinetButton.style.display = "none";
     }
 }
-
 // Проверка состояния авторизации
 function checkAuthStatus() {
     const token = localStorage.getItem("accessToken"); // Должно быть accessToken
