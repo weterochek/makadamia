@@ -311,7 +311,6 @@ function addToCart(productId, productName, productPrice) {
 
     let cart = JSON.parse(localStorage.getItem('cartItems')) || [];
 
-    // Проверяем, есть ли уже товар
     const existingItem = cart.find(item => item.productId === productId);
     if (existingItem) {
         existingItem.quantity += 1;
@@ -324,8 +323,10 @@ function addToCart(productId, productName, productPrice) {
 
     localStorage.setItem('cartItems', JSON.stringify(cart));
     renderCart();
-    updateAddToCartButton(productId); // Меняем кнопку
+    updateAddToCartButton(productId); // Меняем текст кнопки
+    replaceAddButtonWithControls(productId, productName); // 👈 Добавляем этот вызов для показа + -
 }
+
 
 function updateQuantityDisplay(productName) {
     const quantityElement = document.getElementById(`quantity_${productName}`);
