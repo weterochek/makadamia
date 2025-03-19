@@ -17,67 +17,30 @@ window.onload = function () {
 async function fetchWithAuth(url, options = {}) {
     let token = localStorage.getItem("accessToken");
     if (!options.headers) options.headers = {};
-    options.headers["Authorization"] = `Bearer ${token}`;
+    if (token) options.headers["Authorization"] = `Bearer ${token}`;
 
     let response = await fetch(url, options);
 
     if (response.status === 401) {
-        console.log("⏳ Токен истёк, пробую обновить...");
-
-        const refreshResponse = await fetch('/refresh', { credentials: 'include' });
+        console.log("Отправка запроса на /refresh");
+        const refreshResponse = await fetch("/refresh", { credentials: "include" });
         if (refreshResponse.ok) {
             const refreshData = await refreshResponse.json();
             localStorage.setItem("accessToken", refreshData.accessToken);
             token = refreshData.accessToken;
             options.headers["Authorization"] = `Bearer ${token}`;
-            console.log("✅ Access Token обновлён:", token);
-
-            // Повторно отправляем запрос с новым токеном
             response = await fetch(url, options);
         } else {
-            console.log("❌ Не удалось обновить токен");
-            window.location.href = '/login.html'; // отправить на логин
+            localStorage.removeItem("accessToken");
+            localStorage.removeItem("username");
+            localStorage.removeItem("userId");
+            alert("Сессия истекла. Пожалуйста, войдите снова.");
+            window.location.href = "/login.html";
         }
     }
     return response;
 }
-    // Декодируем токен (можно через jwt-decode библиотеку или вручную)
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    const now = Date.now() / 1000;
 
-    if (payload.exp < now) {
-        console.log("⏳ AccessToken истёк, пробуем обновить...");
-        const refreshResponse = await fetch('/refresh', { credentials: 'include' });
-        if (refreshResponse.ok) {
-            const refreshData = await refreshResponse.json();
-            localStorage.setItem("accessToken", refreshData.accessToken);
-            console.log("✅ AccessToken обновлён");
-            return true;
-        } else {
-            console.log("❌ Не удалось обновить токен");
-            return false;
-        }
-    } else {
-        console.log("✅ AccessToken валиден");
-        return true;
-    }
-}
-document.addEventListener("DOMContentLoaded", async () => {
-    const isAuth = await checkAndRefreshToken();
-
-    const loginButton = document.getElementById("loginButton");
-    const accountButton = document.getElementById("accountButton");
-
-    if (isAuth) {
-        // Показываем ЛК, скрываем Вход
-        if (loginButton) loginButton.style.display = "none";
-        if (accountButton) accountButton.style.display = "block";
-    } else {
-        // Показываем Вход
-        if (loginButton) loginButton.style.display = "block";
-        if (accountButton) accountButton.style.display = "none";
-    }
-});
 async function loadProductMap() {
     try {
         const response = await fetch('/api/products');
@@ -314,31 +277,6 @@ function initializeAddToCartButtons() {
         }
     });
 }
-// Аккаунт: редактировать имя
-document.getElementById('editName').addEventListener('click', () => {
-    document.getElementById('nameInput').disabled = false;
-    document.getElementById('saveName').style.display = 'inline-block';
-});
-
-document.getElementById('saveName').addEventListener('click', async () => {
-    const newName = document.getElementById('nameInput').value;
-    await updateAccountField({ name: newName });
-    document.getElementById('nameInput').disabled = true;
-    document.getElementById('saveName').style.display = 'none';
-});
-
-// Аккаунт: редактировать город
-document.getElementById('editCity').addEventListener('click', () => {
-    document.getElementById('cityInput').disabled = false;
-    document.getElementById('saveCity').style.display = 'inline-block';
-});
-
-document.getElementById('saveCity').addEventListener('click', async () => {
-    const newCity = document.getElementById('cityInput').value;
-    await updateAccountField({ city: newCity });
-    document.getElementById('cityInput').disabled = true;
-    document.getElementById('saveCity').style.display = 'none';
-});
 function getCartItems() {
     const stored = localStorage.getItem('cartItems');
     if (!stored) return [];
@@ -490,7 +428,6 @@ function decrementItem(productId) {
     saveCartToLocalStorage(cartItems);
     renderCart();
 }
-
 async function loadAccountData() {
     const token = localStorage.getItem('accessToken');
 
@@ -822,26 +759,41 @@ function editField(field) {
         .catch(error => console.log("Ошибка обновления профиля:", error));
     }
 }
-function setupAuthButtons(isAuth) {
+function setupAuthButtons() {
+    const token = localStorage.getItem("accessToken");
     const authButton = document.getElementById("authButton");
     const cabinetButton = document.getElementById("cabinetButton");
 
-    if (isAuth) {
+    if (token) {
         if (authButton) authButton.style.display = "none";
-        if (cabinetButton) {
-            cabinetButton.style.display = "inline-block";
-            cabinetButton.addEventListener("click", () => {
-                window.location.href = "/account.html";
-            });
-        }
+        if (cabinetButton) cabinetButton.style.display = "inline-block";
     } else {
-        if (authButton) {
-            authButton.style.display = "inline-block";
-            authButton.addEventListener("click", () => {
-                window.location.href = "/login.html";
-            });
-        }
+        if (authButton) authButton.style.display = "inline-block";
         if (cabinetButton) cabinetButton.style.display = "none";
+    }
+}
+
+// Проверка состояния авторизации
+function checkAuthStatus() {
+    const token = localStorage.getItem("accessToken"); // Должно быть accessToken
+    const username = localStorage.getItem("username");
+    const authButton = document.getElementById("authButton");
+    const cabinetButton = document.getElementById("cabinetButton");
+
+    if (!authButton || !cabinetButton) {
+        console.warn("❌ Не найдены кнопки 'Вход' или 'Личный кабинет'!");
+        return;
+    }
+
+    if (token && username && !isTokenExpired(token)) { 
+        console.log("✅ Пользователь авторизован");
+        authButton.style.display = "none";
+        cabinetButton.style.display = "inline-block";
+    } else {
+        console.log("⚠️ Пользователь не авторизован");
+        authButton.style.display = "inline-block";
+        cabinetButton.style.display = "none";
+        sessionStorage.removeItem("authChecked");
     }
 }
 
@@ -921,30 +873,7 @@ function goToCheckoutPage() {
     window.location.href = "checkout.html";
 }
 
-async function updateAccountField(data) {
-    const token = localStorage.getItem("accessToken");
-    try {
-        const response = await fetch("/account", {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
-            },
-            body: JSON.stringify(data)
-        });
 
-        if (!response.ok) {
-            throw new Error("Ошибка обновления данных");
-        }
-
-        const result = await response.json();
-        console.log("✅ Данные обновлены:", result);
-        alert("Данные успешно обновлены");
-    } catch (err) {
-        console.error("❌ Ошибка:", err);
-        alert("Ошибка при обновлении");
-    }
-}
 
 async function updateAccount(newUsername, newPassword) {
   const token = localStorage.getItem("accessToken");
@@ -973,25 +902,19 @@ function loadUserData() {
     if (customerAddressInput) customerAddressInput.value = userData.address || "";
     if (additionalInfoInput) additionalInfoInput.value = userData.additionalInfo || "";
 }
-document.addEventListener("DOMContentLoaded", () => {
-    (async () => {
-        await loadProductMap();
-        loadUserOrders();
-        loadAccountData();
-        renderCart();  
-        checkAuthStatus();
-        loadCartFromLocalStorage();  
-        loadUserData(); 
-        initializeAddToCartButtons(); 
-
-        // Добавляем проверку токена!
-        const token = localStorage.getItem("accessToken");
-        const isAuth = token && !isTokenExpired(token);
-        setupAuthButtons(isAuth); // ✅ Теперь переменная есть!
-
-        loadOrders();
-    })();
+document.addEventListener("DOMContentLoaded", async () => {
+    await loadProductMap();  // Загружаем продукты
+    loadUserOrders();
+    loadAccountData();
+    renderCart();  // Отображаем корзину
+    checkAuthStatus(); // Проверяем авторизацию
+    loadCartFromLocalStorage();  // Загружаем корзину из localStorage
+    loadUserData(); // Загружаем данные пользователя, если есть
+    initializeAddToCartButtons(); // Настраиваем кнопки "Добавить в корзину"
+    setupAuthButtons(); // Настраиваем кнопки авторизации (если есть)
+    loadOrders(); // Загружаем заказы для личного кабинета (если есть)
 });
+
 
 
 async function loadOrders() {
