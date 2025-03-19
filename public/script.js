@@ -43,12 +43,12 @@ async function fetchWithAuth(url, options = {}) {
 
 async function loadProductMap() {
     try {
-        const response = await fetch('/api/products');
+        const response = await fetch("/api/products");
         const products = await response.json();
-        productMap = products.reduce((map, product) => {
-            map[product._id] = { name: product.name, price: product.price };
-            return map;
-        }, {});
+        productMap = {};
+        products.forEach(product => {
+            productMap[product._id] = { name: product.name, price: product.price };
+        });
         console.log("✅ Product Map загружен:", productMap);
     } catch (error) {
         console.error("Ошибка загрузки продуктов:", error);
@@ -107,6 +107,39 @@ function showCookieBanner() {
     });
 }
 
+function renderCart() {
+    const cartItemsContainer = document.getElementById("cartItems");
+    const totalAmountElement = document.getElementById("totalAmount");
+
+    if (!cartItemsContainer || !totalAmountElement) return;
+
+    cartItemsContainer.innerHTML = "";
+    let totalAmount = 0;
+
+    for (const productId in cart) {
+        const product = productMap[productId];
+
+        if (!product) continue;
+
+        const itemTotal = product.price * cart[productId].quantity;
+        totalAmount += itemTotal;
+
+        const cartItem = document.createElement("div");
+        cartItem.className = "cart-item";
+        cartItem.setAttribute("data-id", productId);
+        cartItem.innerHTML = `
+            <div class="item-info">${product.name} - ${itemTotal} ₽</div>
+            <div class="cart-buttons">
+                <button onclick="decrementItem('${productId}')">-</button>
+                <span class="quantity">${cart[productId].quantity}</span>
+                <button onclick="incrementItem('${productId}', ${product.price})">+</button>
+            </div>
+        `;
+        cartItemsContainer.appendChild(cartItem);
+    }
+
+    totalAmountElement.textContent = `Итого: ${totalAmount} ₽`;
+}
 
 
 function updateAddToCartButton(productId) {
@@ -294,38 +327,8 @@ function addToCart(productId, productName, productPrice) {
 }
 
 
-function renderCart() {
-    const cartItemsContainer = document.getElementById('cartItems');
-    const totalAmountElement = document.getElementById('totalAmount');
 
-    if (!cartItemsContainer || !totalAmountElement) return;
 
-    cartItemsContainer.innerHTML = "";
-    let totalAmount = 0;
-    const cartItems = loadCartFromLocalStorage();
-
-    cartItems.forEach(item => {
-        const product = productMap[item.productId];
-        if (!product) return;
-
-        const itemTotal = product.price * item.quantity;
-        totalAmount += itemTotal;
-
-        const cartItem = document.createElement('div');
-        cartItem.className = 'cart-item';
-        cartItem.innerHTML = `
-            <div>${product.name} - ${item.quantity} шт. - ${itemTotal} ₽</div>
-            <div>
-                <button onclick="decrementItem('${item.productId}')">-</button>
-                <span>${item.quantity}</span>
-                <button onclick="incrementItem('${item.productId}')">+</button>
-            </div>
-        `;
-        cartItemsContainer.appendChild(cartItem);
-    });
-
-    totalAmountElement.textContent = `Итого: ${totalAmount} ₽`;
-}
 
 
 
