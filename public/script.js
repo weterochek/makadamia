@@ -973,19 +973,21 @@ function loadUserData() {
     if (customerAddressInput) customerAddressInput.value = userData.address || "";
     if (additionalInfoInput) additionalInfoInput.value = userData.additionalInfo || "";
 }
-document.addEventListener("DOMContentLoaded", async () => {
-    console.log("accessToken:", localStorage.getItem("accessToken"));
-    await loadProductMap();  // Загружаем продукты
-    loadUserOrders();
-    loadAccountData();
-    renderCart();  // Отображаем корзину
-    checkAuthStatus(); // Проверяем авторизацию
-    loadCartFromLocalStorage();  // Загружаем корзину из localStorage
-    loadUserData(); // Загружаем данные пользователя, если есть
-    initializeAddToCartButtons(); // Настраиваем кнопки "Добавить в корзину"
-    setupAuthButtons(isAuth); // Настраиваем кнопки авторизации (если есть)
-    loadOrders(); // Загружаем заказы для личного кабинета (если есть)
+document.addEventListener("DOMContentLoaded", () => {
+    (async () => {
+        await loadProductMap();
+        loadUserOrders();
+        loadAccountData();
+        renderCart();  
+        checkAuthStatus();
+        loadCartFromLocalStorage();  
+        loadUserData(); 
+        initializeAddToCartButtons(); 
+        setupAuthButtons(isAuth);
+        loadOrders();
+    })();
 });
+
 
 
 
