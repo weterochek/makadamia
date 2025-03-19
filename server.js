@@ -145,21 +145,20 @@ const Product = require('./models/Products'); // Путь к твоей моде
 
 app.get('/api/products', async (req, res) => {
     try {
-        const products = await Product.find({}, '_id name price'); // Забираем id, name, price
+        const products = await Product.find();
         res.json(products);
-    } catch (error) {
-        console.error("Ошибка при получении продуктов:", error);
-        res.status(500).json({ message: "Ошибка сервера" });
+    } catch (err) {
+        res.status(500).json({ message: "Ошибка получения списка продуктов" });
     }
 });
 // Получение всех заказов
 app.get('/orders', async (req, res) => {
     try {
-        const orders = await Order.find().populate("items.productId", "name price");
+        const orders = await Order.find().populate('items.productId');
         res.json(orders);
-    } catch (error) {
-        console.error("Ошибка при получении всех заказов:", error);
-        res.status(500).json({ message: "Ошибка при получении всех заказов" });
+    } catch (err) {
+        console.error("❌ Ошибка получения заказов:", err);
+        res.status(500).json({ message: "Ошибка получения заказов" });
     }
 });
 
