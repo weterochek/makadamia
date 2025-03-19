@@ -66,34 +66,24 @@ function saveCartToLocalStorage() {
 
 // Отображение корзины
 function renderCheckoutCart() {
+    const cart = loadCartFromLocalStorage();
     const cartItemsContainer = document.getElementById("cartItems");
     const totalAmountElement = document.getElementById("totalAmount");
-
-    if (!cartItemsContainer || !totalAmountElement) return;
 
     cartItemsContainer.innerHTML = "";
     let totalAmount = 0;
 
-    const storedCart = JSON.parse(localStorage.getItem(`cart_${localStorage.getItem("username")}`)) || {};
-
-    for (const productId in storedCart) {
+    for (const productId in cart) {
         const product = productMap[productId];
-        if (!product) continue; // если нет такого продукта в базе, пропускаем
+        if (!product) continue;
 
-        const itemTotal = product.price * storedCart[productId].quantity;
+        const itemTotal = product.price * cart[productId].quantity;
         totalAmount += itemTotal;
 
         const cartItem = document.createElement("div");
         cartItem.className = "cart-item";
         cartItem.innerHTML = `
-            <div class="item-info">
-                ${product.name} - ${storedCart[productId].quantity} шт. - ${itemTotal} ₽
-            </div>
-            <div class="cart-buttons">
-                <button onclick="decrementItem('${productId}')">-</button>
-                <span class="quantity">${storedCart[productId].quantity}</span>
-                <button onclick="incrementItem('${productId}', ${product.price})">+</button>
-            </div>
+            <div>${product.name} - ${cart[productId].quantity} шт. - ${itemTotal} ₽</div>
         `;
         cartItemsContainer.appendChild(cartItem);
     }
@@ -154,8 +144,8 @@ async function loadUserData() {
 }
 
 // Обработчик кнопки оформления заказа
-document.addEventListener("DOMContentLoaded", () => {
-    loadProductMap();
+document.addEventListener("DOMContentLoaded", async () => {
+    await loadProductMap();
     loadCartFromLocalStorage();
     renderCheckoutCart();
     loadUserData();
