@@ -459,7 +459,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const token = localStorage.getItem("accessToken");
     if (token) {
-        // Если авторизован
+        // Авторизован
         if (authButton) authButton.style.display = 'none';
         if (cabinetButton) {
             cabinetButton.style.display = 'inline-block';
@@ -478,6 +478,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 });
+
 
 async function loadAccountData() {
     const token = localStorage.getItem('accessToken');
