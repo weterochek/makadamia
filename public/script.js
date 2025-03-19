@@ -460,14 +460,11 @@ async function loadAccountData() {
 
 
 function getProductQuantity(productId) {
-    const username = localStorage.getItem("username");
-    if (!username) return 0;
-
-    const cartKey = `cart_${username}`;
-    const cart = JSON.parse(localStorage.getItem(cartKey)) || {};
-
-    return cart[productId] ? cart[productId].quantity : 0;
+    const cart = JSON.parse(localStorage.getItem('cartItems')) || [];
+    const item = cart.find(item => item.productId === productId);
+    return item ? item.quantity : 0;
 }
+
 
 // Обновление отображения корзины и количества товара на карточке
 function updateCartDisplay() {
