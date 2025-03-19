@@ -979,3 +979,51 @@ function displayOrders(orders) {
         ordersContainer.appendChild(orderElement);
     });
 }
+document.getElementById('editName').addEventListener('click', () => {
+    document.getElementById('nameInput').disabled = false;
+    document.getElementById('saveName').style.display = 'inline-block';
+});
+
+document.getElementById('saveName').addEventListener('click', async () => {
+    const newName = document.getElementById('nameInput').value;
+    await updateAccountField({ name: newName });
+    document.getElementById('nameInput').disabled = true;
+    document.getElementById('saveName').style.display = 'none';
+});
+
+// Аккаунт: редактировать город
+document.getElementById('editCity').addEventListener('click', () => {
+    document.getElementById('cityInput').disabled = false;
+    document.getElementById('saveCity').style.display = 'inline-block';
+});
+
+document.getElementById('saveCity').addEventListener('click', async () => {
+    const newCity = document.getElementById('cityInput').value;
+    await updateAccountField({ city: newCity });
+    document.getElementById('cityInput').disabled = true;
+    document.getElementById('saveCity').style.display = 'none';
+});
+async function updateAccountField(data) {
+    const token = localStorage.getItem("accessToken");
+    try {
+        const response = await fetch("/account", {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (!response.ok) {
+            throw new Error("Ошибка обновления данных");
+        }
+
+        const result = await response.json();
+        console.log("✅ Данные обновлены:", result);
+        alert("Данные успешно обновлены");
+    } catch (err) {
+        console.error("❌ Ошибка:", err);
+        alert("Ошибка при обновлении");
+    }
+}
