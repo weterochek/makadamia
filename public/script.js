@@ -14,6 +14,33 @@ window.onload = function () {
         window.location.href = "https://makadamia.onrender.com";
     }
 };
+async function fetchWithAuth(url, options = {}) {
+    let token = localStorage.getItem("accessToken");
+    if (!options.headers) options.headers = {};
+    if (token) options.headers["Authorization"] = `Bearer ${token}`;
+
+    let response = await fetch(url, options);
+
+    if (response.status === 401) {
+        console.log("Отправка запроса на /refresh");
+        const refreshResponse = await fetch("/refresh", { credentials: "include" });
+        if (refreshResponse.ok) {
+            const refreshData = await refreshResponse.json();
+            localStorage.setItem("accessToken", refreshData.accessToken);
+            token = refreshData.accessToken;
+            options.headers["Authorization"] = `Bearer ${token}`;
+            response = await fetch(url, options);
+        } else {
+            localStorage.removeItem("accessToken");
+            localStorage.removeItem("username");
+            localStorage.removeItem("userId");
+            alert("Сессия истекла. Пожалуйста, войдите снова.");
+            window.location.href = "/login.html";
+        }
+    }
+    return response;
+}
+
 async function loadProductMap() {
     try {
         const response = await fetch('/api/products');
