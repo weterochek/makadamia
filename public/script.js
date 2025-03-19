@@ -43,9 +43,8 @@ async function fetchWithAuth(url, options = {}) {
 
 async function loadProductMap() {
     try {
-        const response = await fetch("/api/products");
+        const response = await fetch('/api/products');
         const products = await response.json();
-        productMap = {};
         products.forEach(product => {
             productMap[product._id] = { name: product.name, price: product.price };
         });
@@ -108,6 +107,7 @@ function showCookieBanner() {
 }
 
 function renderCart() {
+    const cart = loadCartFromLocalStorage();
     const cartItemsContainer = document.getElementById("cartItems");
     const totalAmountElement = document.getElementById("totalAmount");
 
@@ -118,7 +118,6 @@ function renderCart() {
 
     for (const productId in cart) {
         const product = productMap[productId];
-
         if (!product) continue;
 
         const itemTotal = product.price * cart[productId].quantity;
@@ -430,23 +429,22 @@ function decrementItem(productId) {
     renderCart();
 }
 async function loadAccountData() {
-    const token = localStorage.getItem("accessToken");
+    const token = localStorage.getItem('accessToken');
     if (!token) return;
 
     try {
-        const response = await fetch("/account", {
-            method: "GET",
-            headers: {
-                "Authorization": `Bearer ${token}`
-            }
+        const res = await fetch('/account', {
+            headers: { 'Authorization': `Bearer ${token}` }
         });
+        if (!res.ok) throw new Error("Ошибка HTTP");
 
-        const data = await response.json();
-        document.getElementById("usernameDisplay").textContent = data.username;
-        document.getElementById("nameInput").value = data.name;
-        document.getElementById("cityInput").value = data.city;
-    } catch (error) {
-        console.error("Ошибка загрузки аккаунта:", error);
+        const data = await res.json();
+        document.getElementById('userName').textContent = data.name || '';
+        document.getElementById('customerName').value = data.name || '';
+        document.getElementById('customerAddress').value = data.city || '';
+
+    } catch (err) {
+        console.error("Ошибка загрузки аккаунта:", err);
     }
 }
 
@@ -894,9 +892,9 @@ function loadUserData() {
 }
 document.addEventListener("DOMContentLoaded", async () => {
     await loadProductMap();  // Загружаем продукты
-    loadCartFromLocalStorage();  // Загружаем корзину из localStorage
     renderCart();  // Отображаем корзину
     checkAuthStatus(); // Проверяем авторизацию
+    loadCartFromLocalStorage();  // Загружаем корзину из localStorage
     loadUserData(); // Загружаем данные пользователя, если есть
     initializeAddToCartButtons(); // Настраиваем кнопки "Добавить в корзину"
     setupAuthButtons(); // Настраиваем кнопки авторизации (если есть)
