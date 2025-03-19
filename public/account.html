@@ -43,8 +43,13 @@
 <div class="account-container">
     <h2>Личный кабинет</h2>
     <p>Пользователь: <span id="usernameDisplay">Загрузка...</span></p>
-    <p><label>Имя: <input id="nameInput" type="text" disabled> <button id="editName">Редактировать</button></label></p>
-    <p><label>Город: <input id="cityInput" type="text" disabled> <button id="editCity">Редактировать</button></label></p>
+<p><label>Имя: <input id="nameInput" type="text" disabled> 
+  <button id="editName">Редактировать</button> 
+  <button id="saveName" style="display:none;">Сохранить</button></label></p>
+
+<p><label>Город: <input id="cityInput" type="text" disabled> 
+  <button id="editCity">Редактировать</button> 
+  <button id="saveCity" style="display:none;">Сохранить</button></label></p>
     <p><button onclick="logout()">Выйти</button></p>
   </div>
 </div>
