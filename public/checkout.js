@@ -117,19 +117,82 @@ async function loadUserData() {
 
 // Обработчик кнопки оформления заказа
 document.addEventListener("DOMContentLoaded", async () => {
-    await loadProductMap(); // productMap заполнили
-    renderCheckoutCart();   // рендерим корзину
-    loadCartFromLocalStorage(); // orderSummary заполняем
-    loadUserData();
-});
+    await loadProductMap(); // Загружаем продукты
+    renderCheckoutCart();   // Рендерим корзину
+    loadCartFromLocalStorage(); // Заполняем orderSummary
+    loadUserData(); // Загружаем данные пользователя
 
     const backToShoppingButton = document.getElementById("backToShopping");
     if (backToShoppingButton) {
-        backToShoppingButton.addEventListener("click", function () {
+        backToShoppingButton.addEventListener("click", () => {
             saveCartToLocalStorage();
             window.location.href = "index.html";
         });
     }
+
+    const checkoutForm = document.getElementById("checkoutForm");
+    if (checkoutForm) {
+        checkoutForm.addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const token = localStorage.getItem("accessToken");
+
+            if (!token) {
+                alert("Вы не авторизованы!");
+                return;
+            }
+
+            const storedCart = JSON.parse(localStorage.getItem('cartItems')) || [];
+            const items = storedCart.map(item => ({
+                productId: item.productId,
+                quantity: item.quantity
+            }));
+
+            const nameInput = document.getElementById('customerName');
+            const addressInput = document.getElementById('customerAddress');
+            const additionalInfoInput = document.getElementById('additionalInfo');
+            const userId = localStorage.getItem("userId");
+
+            const orderData = {
+                userId: userId,
+                name: nameInput.value,
+                address: addressInput.value,
+                additionalInfo: additionalInfoInput.value,
+                items: items
+            };
+
+            console.log("📡 Отправка данных заказа:", orderData);
+
+            try {
+                const response = await fetch("https://makadamia.onrender.com/api/order", {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(orderData)
+                });
+
+                console.log("📥 Ответ от сервера:", response);
+
+                if (!response.ok) {
+                    console.error(`❌ Ошибка ${response.status}:`, response.statusText);
+                    alert("Ошибка при оформлении заказа.");
+                    return;
+                }
+
+                const responseData = await response.json();
+                console.log("✅ Заказ успешно оформлен:", responseData);
+
+                alert("🎉 Заказ успешно оформлен!");
+                localStorage.removeItem('cartItems');
+                window.location.href = "index.html";
+            } catch (error) {
+                console.error("❌ Ошибка сети или сервера:", error);
+                alert("Ошибка при оформлении заказа. Проверьте соединение.");
+            }
+        });
+    }
+}); //
 function loadCartFromLocalStorage() {
     const cart = JSON.parse(localStorage.getItem('cartItems')) || [];
     const orderSummary = document.getElementById('orderSummary');
@@ -155,19 +218,6 @@ function loadCartFromLocalStorage() {
         totalOrderAmount.textContent = totalAmount + ' ₽';
     }
 }
-
-
-    const checkoutForm = document.getElementById("checkoutForm");
-    if (checkoutForm) {
-        checkoutForm.addEventListener("submit", async function (e) {
-            e.preventDefault();
-            const token = localStorage.getItem("accessToken");
-
-            if (!token) {
-                alert("Вы не авторизованы!");
-                return;
-            }
-
             // Загружаем корзину
 const storedCart = JSON.parse(localStorage.getItem('cartItems')) || [];
 const items = storedCart.map(item => ({
