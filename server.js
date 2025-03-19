@@ -152,16 +152,29 @@ app.get('/api/products', async (req, res) => {
         res.status(500).json({ message: "Ошибка сервера" });
     }
 });
-app.get('/orders', authMiddleware, async (req, res) => {
-    const orders = await Order.find().populate('items.productId');
-    res.json(orders);
+// Получение всех заказов
+app.get('/orders', async (req, res) => {
+    try {
+        const orders = await Order.find().populate("items.productId", "name price");
+        res.json(orders);
+    } catch (error) {
+        console.error("Ошибка при получении всех заказов:", error);
+        res.status(500).json({ message: "Ошибка при получении всех заказов" });
+    }
 });
-// Мидлвар для проверки токена
 
+
+// Получение заказов пользователя
 app.get('/user-orders/:userId', authMiddleware, async (req, res) => {
-    const orders = await Order.find({ userId: req.params.userId }).populate('items.productId');
-    res.json(orders);
+    try {
+        const orders = await Order.find({ userId: req.params.userId }).populate("items.productId", "name price");
+        res.json(orders);
+    } catch (error) {
+        console.error("Ошибка при получении заказов:", error);
+        res.status(500).json({ message: "Ошибка при получении заказов" });
+    }
 });
+
 
 function generateTokens(user, site) {
     const issuedAt = Math.floor(Date.now() / 1000);
