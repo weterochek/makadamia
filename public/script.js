@@ -810,25 +810,32 @@ function setupAuthButtons() {
 }
 // Проверка состояния авторизации
 function checkAuthStatus() {
-    const token = localStorage.getItem("accessToken"); // Должно быть accessToken
+    const token = localStorage.getItem("accessToken");
     const username = localStorage.getItem("username");
     const authButton = document.getElementById("authButton");
     const cabinetButton = document.getElementById("cabinetButton");
 
     if (!authButton || !cabinetButton) {
-        console.warn("❌ Не найдены кнопки 'Вход' или 'Личный кабинет'!");
+        console.warn("❌ Кнопки 'Вход' или 'Личный кабинет' не найдены");
         return;
     }
 
-    if (token && username && !isTokenExpired(token)) { 
+    if (token && username && !isTokenExpired(token)) {
         console.log("✅ Пользователь авторизован");
         authButton.style.display = "none";
         cabinetButton.style.display = "inline-block";
+
+        cabinetButton.onclick = () => {
+            window.location.href = "/account.html";
+        };
     } else {
         console.log("⚠️ Пользователь не авторизован");
         authButton.style.display = "inline-block";
         cabinetButton.style.display = "none";
-        sessionStorage.removeItem("authChecked");
+
+        authButton.onclick = () => {
+            window.location.href = "/login.html";
+        };
     }
 }
 
