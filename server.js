@@ -11,7 +11,7 @@ const app = express();
 const orderRoutes = require("./routes/orderRoutes");
 const authMiddleware = require('./middleware/authMiddleware');
 const Order = require('./models/Order');
-const Products = require("./models/Products");  // Подключаем модель "Products"
+const Product = require("./models/Products");  // Подключаем модель "Products"
 
 
 // Настройка CORS
