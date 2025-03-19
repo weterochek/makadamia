@@ -27,7 +27,8 @@ function saveCartToLocalStorage() {
 
 // Отображение корзины
 async function renderCheckoutCart() {
-    const cart = JSON.parse(localStorage.getItem('cartItems')) || [];
+    const cartRaw = localStorage.getItem('cartItems');
+    const cart = cartRaw ? JSON.parse(cartRaw) : [];
     const productListContainer = document.querySelector('.checkout__list');
     const checkoutTotal = document.querySelector('.checkout__total-price span');
 
