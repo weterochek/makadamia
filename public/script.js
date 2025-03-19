@@ -968,6 +968,7 @@ function loadUserData() {
     if (additionalInfoInput) additionalInfoInput.value = userData.additionalInfo || "";
 }
 document.addEventListener("DOMContentLoaded", async () => {
+    console.log("accessToken:", localStorage.getItem("accessToken"));
     await loadProductMap();  // Загружаем продукты
     loadUserOrders();
     loadAccountData();
