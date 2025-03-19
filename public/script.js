@@ -458,11 +458,16 @@ async function loadAccountData() {
         document.getElementById('usernameDisplay').textContent = data.username || '';
         document.getElementById('nameInput').value = data.name || '';
         document.getElementById('cityInput').value = data.city || '';
+        localStorage.setItem("userData", JSON.stringify({
+    name: data.name || "",
+    address: data.city || ""
+}));
 
     } catch (err) {
         console.error('Ошибка загрузки аккаунта:', err);
     }
 }
+
 
 
 
