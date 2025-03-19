@@ -194,7 +194,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 }); //
 function loadCartFromLocalStorage() {
-    const cart = JSON.parse(localStorage.getItem('cartItems')) || [];
+    const cartRaw = localStorage.getItem('cartItems');
+    const cart = cartRaw ? JSON.parse(cartRaw) : [];
     const orderSummary = document.getElementById('orderSummary');
     if (!orderSummary) return;
     orderSummary.innerHTML = '';
