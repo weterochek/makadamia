@@ -70,12 +70,12 @@ function incrementItem(itemName, itemPrice) {
     renderCheckoutCart();
 }
 
-// Загрузка данных пользователя
+// Функция загрузки данных пользователя
 async function loadUserData() {
     const token = localStorage.getItem("accessToken");
     if (!token) {
         alert("Вы не авторизованы! Пожалуйста, войдите в аккаунт.");
-        window.location.href = "login.html";
+        window.location.href = "login.html"; // Перенаправление на страницу входа
         return;
     }
     try {
