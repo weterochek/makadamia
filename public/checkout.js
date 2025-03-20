@@ -21,9 +21,19 @@ async function loadProductMap() {
 
 // Сохранение корзины в localStorage
 function saveCartToLocalStorage() {
-    const cart = JSON.parse(localStorage.getItem('cartItems')) || [];
-    localStorage.setItem('cartItems', JSON.stringify(cart));
+    const cartRaw = localStorage.getItem('cartItems');
+    let cart = [];  // Массив по умолчанию
+    if (cartRaw && cartRaw !== 'undefined') {
+        try {
+            cart = JSON.parse(cartRaw);  // Пробуем распарсить
+        } catch (e) {
+            console.error("❌ Ошибка при парсинге cartItems:", e);  // Логируем ошибку
+            cart = [];  // Если ошибка — корзина остаётся пустой
+        }
+    }
+    localStorage.setItem('cartItems', JSON.stringify(cart));  // Сохраняем обратно в localStorage
 }
+
 
 
 // Отображение корзины
@@ -110,9 +120,10 @@ async function loadUserData() {
 
 // Обработчик кнопки оформления заказа
 document.addEventListener("DOMContentLoaded", async () => {
-    await loadProductMap(); // Загружаем продукты
-    renderCheckoutCart();   // Рендерим корзину
-    loadUserData(); // Загружаем данные пользователя
+    await loadProductMap();  // Сначала грузим все продукты
+    renderCheckoutCart();    // Потом рендерим корзину
+    loadUserData();          // Загружаем данные пользователя
+});
 
     const backToShoppingButton = document.getElementById("backToShopping");
     if (backToShoppingButton) {
