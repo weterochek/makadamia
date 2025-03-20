@@ -26,18 +26,18 @@
               </div>
               <div class="navbar-right">
                 <li><a href="#contacts" class="nav-item">Контакты</a></li>
-<li class="cart-container">
-    <a href="#1" class="nav-item" id="cartButton">Корзина</a>
-    <div id="cartDropdown" class="cart-dropdown">
-        <h3>Ваша Корзина</h3>
-        <div id="cartItems"></div>  <!-- Это контейнер для корзины -->
-        <p id="totalAmount"></p>
-        <button onclick="goToCheckoutPage()">К Оформлению заказа</button>
-        <button id="clear-cart" class="clear-cart">Очистить корзину</button>
-    </div>
-</li>
+                <li class="cart-container">
+                    <a href="#1" class="nav-item" id="cartButton">Корзина</a>
+                    <div id="cartDropdown" class="cart-dropdown">
+                        <h3>Ваша Корзина</h3>
+                        <div id="cartItems"></div>
+                        <p id="totalAmount"></p>
+                        <button onclick="goToCheckoutPage()">К Оформлению заказа</button>
+			    <button id="clear-cart" class="clear-cart">Очистить корзину</button>
+                    </div>
+                </li>
             	<li>
-		        <a href="#" class="nav-item" id="authButton">Вход</a>
+		        <a href="#" class="nav-item" id="authButton" onclick="handleAuthClick()">Вход</a>
 		        <a href="#" id="cabinetButton" class="nav-item" onclick="openCabinet()" style="display: none;">Личный кабинет</a>
 		        </li>
             </div>
@@ -59,23 +59,23 @@
         <section class="popular-dishes">
             <div class="grid-dishes">
                 <div class="card-dish">
-    <div class="image-container">  
-        <div class="menu-item">
-            <img src="images/Russia/борщ.webp" alt="борщ">
-            <p><b>Борщ </b><span class="small-text">(350гр)</span></p>
-            <p><span class="textcolor">Классический густой овощной суп, главный ингредиент которого – свекла</span></p>
-            <div class="price-container">
+                    <div class="image-container">  
+                            <div class="menu-item">
+                <img src="images/Russia/борщ.webp" alt="борщ">
+                <p><b>Борщ </b><span class="small-text">(350гр)</span></p>
+                <p><span class="textcolor">Классический густой овощной суп, главный ингредиент которого – свекла</span></p>
+                                <div class="price-container" >
                 <p><b>380 ₽</b></p>
                 <div id="controls_Борщ">
-                    <button class="add-button-size" id="addButton_Борщ" onclick="addToCart('67d65e52d2a191f58d6e8486', 'Борщ', 380)">Добавить</button>
-                    <button class="quantity-control quantity-button-size" id="removeBtn_Борщ" onclick="decrementItem('Борщ')" style="display: none;">-</button>
-                    <span class="quantity-display" id="quantity_Борщ" style="display: none;">1</span>
-                    <button class="quantity-control quantity-button-size" id="addBtn_Борщ_inc" onclick="incrementItem('Борщ', 380)" style="display: none;">+</button>
+                    <button class="add-button-size" id="addButton_Борщ" onclick="addToCart('Борщ', 380)">Добавить</button>
+            <button class="quantity-control quantity-button-size" id="removeBtn_Борщ" onclick="decrementItem('Борщ')" style="display: none;">-</button>
+            <span class="quantity-display" id="quantity_Борщ" style="display: none;">1</span>
+            <button class="quantity-control quantity-size-button" id="addBtn_Борщ" onclick="incrementItem('Борщ', 380)" style="display: none;">+</button>
                 </div>
-            </div>
-        </div>
-    </div>
-</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
              
             
             
