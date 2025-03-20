@@ -9,9 +9,9 @@ const cookieParser = require("cookie-parser");
 const Joi = require("joi");
 const app = express();
 const orderRoutes = require("./routes/orderRoutes");
-const Products = require("./models/Products");  // Подключаем модель "Products"
 const authMiddleware = require('./middleware/authMiddleware');
 const Order = require('./models/Order');
+const Product = require("./models/Products");  // Подключаем модель "Products"
 
 
 // Настройка CORS
@@ -128,7 +128,7 @@ const userSchema = new mongoose.Schema({
 const User = mongoose.model("User", userSchema);
 // Получение товара по ID
 // Маршрут для получения товара по ID
-app.get('/products/:id', async (req, res) => {
+app.get('s/:id', async (req, res) => {
   try {
     const product = await Products.findById(req.params.id); // Используется Products, так как это ваша модель
     if (!product) {
@@ -140,18 +140,38 @@ app.get('/products/:id', async (req, res) => {
     res.status(500).json({ message: 'Ошибка при получении товара' });
   }
 });
-const Product = require('./models/Products'); // Путь к твоей модели продуктов (уточни путь!)
 
 app.get('/api/products', async (req, res) => {
     try {
-        const products = await Product.find({}, '_id name price'); // Забираем id, name, price
+        const products = await Product.find();
         res.json(products);
-    } catch (error) {
-        console.error("Ошибка при получении продуктов:", error);
-        res.status(500).json({ message: "Ошибка сервера" });
+    } catch (err) {
+        res.status(500).json({ message: "Ошибка получения списка продуктов" });
     }
 });
-// Мидлвар для проверки токена
+// Получение всех заказов
+app.get('/orders', async (req, res) => {
+    try {
+        const orders = await Order.find().populate('items.productId');
+        res.json(orders);
+    } catch (err) {
+        console.error("❌ Ошибка получения заказов:", err);
+        res.status(500).json({ message: "Ошибка получения заказов" });
+    }
+});
+
+
+// Получение заказов пользователя
+app.get('/user-orders/:userId', authMiddleware, async (req, res) => {
+    try {
+        const orders = await Order.find({ userId: req.params.userId }).populate("items.productId", "name price");
+        res.json(orders);
+    } catch (error) {
+        console.error("Ошибка при получении заказов:", error);
+        res.status(500).json({ message: "Ошибка при получении заказов" });
+    }
+});
+
 
 function generateTokens(user, site) {
     const issuedAt = Math.floor(Date.now() / 1000);
