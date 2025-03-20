@@ -220,6 +220,7 @@ function initializeAddToCartButtons() {
         }
     });
 }
+
 function getCartItems() {
     const username = localStorage.getItem("username") || "guest";
     const storedCart = localStorage.getItem(`cart_${username}`);
@@ -227,7 +228,7 @@ function getCartItems() {
 }
 function saveCartItems(cartItems) {
     const username = localStorage.getItem("username") || "guest";
-    localStorage.setItem(`cart_${username}`, JSON.stringify(cartItems)); // Сохраняем корзину для конкретного пользователя
+    localStorage.setItem(`cart_${username}`, JSON.stringify(cartItems));  // Сохраняем корзину для конкретного пользователя
 }
 function updateProductControls(productId) {
     const addButton = document.getElementById(`addButton_${productId}`);
@@ -235,12 +236,19 @@ function updateProductControls(productId) {
     const quantityDisplay = document.getElementById(`quantity_${productId}`);
     const addButtonControl = document.getElementById(`addBtn_${productId}_inc`);
 
-    if (addButton) addButton.style.display = "none";
-    if (removeButton) removeButton.style.display = "inline-block";
-    if (quantityDisplay) quantityDisplay.style.display = "inline-block";
-    if (addButtonControl) addButtonControl.style.display = "inline-block";
-}
+    if (!addButton || !removeButton || !addButtonControl || !quantityDisplay) return;
 
+    const cartItems = getCartItems();
+    const item = cartItems.find(item => item.productId === productId);
+
+    if (item) {
+        addButton.style.display = "none";
+        removeButton.style.display = "inline-block";
+        quantityDisplay.style.display = "inline-block";
+        addButtonControl.style.display = "inline-block";
+        quantityDisplay.textContent = item.quantity;
+    }
+}
 
 // Обработчик добавления товара в корзину
 function addToCart(productId, productName, price) {
@@ -451,35 +459,28 @@ function revertControlsToAddButton(productId) {
 }
 
 //ощичение корзины
-document.addEventListener('DOMContentLoaded', () => {
-    const clearCartButton = document.getElementById('clear-cart');
-    const cartTotal = document.getElementById('totalAmount');
+document.getElementById('clear-cart').addEventListener('click', () => {
+    const username = localStorage.getItem("username") || "guest";
+    localStorage.removeItem(`cart_${username}`);  // Удаляем корзину из localStorage
+    renderCart();  // Перерисовываем корзину
+    document.getElementById('totalAmount').textContent = 'Итого: 0 ₽';
 
-    if (clearCartButton) {
-        clearCartButton.addEventListener('click', () => {
-            const username = localStorage.getItem("username") || "guest";
-            localStorage.removeItem(`cart_${username}`);
-            renderCart(); // Обновляем корзину
-            cartTotal.textContent = 'Итого: 0 ₽';
+    // Сброс кнопок
+    const productCards = document.querySelectorAll(".card-dish");
+    productCards.forEach(card => {
+        const addButton = card.querySelector(".add-button-size");
+        const removeButton = card.querySelector(".quantity-control");
+        const addButtonControl = card.querySelector(".quantity-size-button");
+        const quantityDisplay = card.querySelector(".quantity-display");
 
-            // Сброс кнопок
-            const productCards = document.querySelectorAll(".card-dish");
-            productCards.forEach(card => {
-                const addButton = card.querySelector(".add-button-size");
-                const removeButton = card.querySelector(".quantity-control");
-                const addButtonControl = card.querySelector(".quantity-size-button");
-                const quantityDisplay = card.querySelector(".quantity-display");
-
-                if (addButton) addButton.style.display = "inline-block";
-                if (removeButton) removeButton.style.display = "none";
-                if (addButtonControl) addButtonControl.style.display = "none";
-                if (quantityDisplay) {
-                    quantityDisplay.textContent = "";
-                    quantityDisplay.style.display = "none";
-                }
-            });
-        });
-    }
+        if (addButton) addButton.style.display = "inline-block";
+        if (removeButton) removeButton.style.display = "none";
+        if (addButtonControl) addButtonControl.style.display = "none";
+        if (quantityDisplay) {
+            quantityDisplay.textContent = "";
+            quantityDisplay.style.display = "none";
+        }
+    });
 });
 
 document.addEventListener("DOMContentLoaded", () => {
