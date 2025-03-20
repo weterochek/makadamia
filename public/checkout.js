@@ -126,7 +126,6 @@ async function loadUserData() {
 document.addEventListener("DOMContentLoaded", async () => {
     await loadProductMap(); // Загружаем продукты
     renderCheckoutCart();   // Рендерим корзину
-    loadCartFromLocalStorage(); // Заполняем orderSummary
     loadUserData(); // Загружаем данные пользователя
 
     const backToShoppingButton = document.getElementById("backToShopping");
