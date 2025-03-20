@@ -1,5 +1,5 @@
 let cart = {};
-let productMap = {}; // Будет заполнен динамически
+
 window.onload = function () {
     const userAgent = navigator.userAgent.toLowerCase();
     const currentURL = window.location.href;
@@ -14,19 +14,6 @@ window.onload = function () {
         window.location.href = "https://makadamia.onrender.com";
     }
 };
-async function loadProductMap() {
-    try {
-        const response = await fetch('https://makadamia.onrender.com/api/products');
-        const products = await response.json();
-        products.forEach(product => {
-            productMap[product._id] = { name: product.name, price: product.price };
-        });
-        console.log("✅ Product Map загружен:", productMap);
-    } catch (error) {
-        console.error("Ошибка загрузки productMap:", error);
-    }
-}
-
 
 console.log("Отправка запроса на /refresh");
 console.log("Токен перед запросом:", localStorage.getItem("accessToken"));
@@ -119,191 +106,36 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log("⚠️ Пользователь не принял cookies. Запрос не отправлен.");
     }
 });
-function updateAddToCartButton(productId) {
-    const addToCartButton = document.querySelector(`.add-to-cart-button[data-id="${productId}"]`);
-    if (addToCartButton) {
-        addToCartButton.textContent = "В корзине";
-        addToCartButton.disabled = true;
-    }
-}
-async function handleCheckoutFormSubmit(event) {
-    event.preventDefault();
-    const token = localStorage.getItem("accessToken");
 
-    if (!token) {
-        alert("Вы не авторизованы!");
+async function addToCart(productId, price) {
+    const response = await fetch(`/products/${encodeURIComponent(productId)}`);  // Передаем ID для получения товара
+
+    if (!response.ok) {
+        console.error('Ошибка при получении товара');
         return;
     }
 
-    const cart = loadCartFromLocalStorage();
-    const items = Object.keys(cart).map(productId => ({
-        productId: productId,
-        quantity: cart[productId].quantity
-    }));
+    const product = await response.json();  // Получаем товар по ID
 
-    const nameInput = document.getElementById('customerName');
-    const addressInput = document.getElementById('customerAddress');
-    const additionalInfoInput = document.getElementById('additionalInfo');
-    const userId = localStorage.getItem("userId");
+    // Теперь у вас есть данные о товаре, включая productName
+    const productName = product.name; 
 
-    const orderData = {
-        userId: userId,
-        name: nameInput.value,
-        address: addressInput.value,
-        additionalInfo: additionalInfoInput.value,
-        items: items
-    };
-
-    console.log("📡 Отправка данных заказа:", orderData);
-
-    try {
-        const response = await fetch("https://makadamia.onrender.com/api/order", {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${token}`,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(orderData)
-        });
-
-        console.log("📥 Ответ от сервера:", response);
-
-        if (!response.ok) {
-            console.error(`❌ Ошибка ${response.status}:`, response.statusText);
-            alert("Ошибка при оформлении заказа.");
-            return;
-        }
-
-        const responseData = await response.json();
-        console.log("✅ Заказ успешно оформлен:", responseData);
-
-        alert("🎉 Заказ успешно оформлен!");
-        saveCartToLocalStorage({});
-        window.location.href = "index.html";
-    } catch (error) {
-        console.error("❌ Ошибка сети или сервера:", error);
-        alert("Ошибка при оформлении заказа. Проверьте соединение.");
-    }
-}
-document.addEventListener("DOMContentLoaded", () => {
-    renderCheckoutCart();
-    loadUserData();
-    initializeAddToCartButtons();
-
-    const backToShoppingButton = document.getElementById("backToShopping");
-    if (backToShoppingButton) {
-        backToShoppingButton.addEventListener("click", () => {
-            window.location.href = "index.html";
-        });
-    }
-
-    const checkoutForm = document.getElementById("checkoutForm");
-    if (checkoutForm) {
-        checkoutForm.addEventListener("submit", handleCheckoutFormSubmit);
-    }
-});
-function initializeAddToCartButtons() {
-    const addToCartButtons = document.querySelectorAll(".add-to-cart-button");
-    addToCartButtons.forEach(button => {
-        const productId = button.getAttribute("data-id");
-        const productName = button.getAttribute("data-name");
-        const productPrice = parseFloat(button.getAttribute("data-price"));
-
-        button.addEventListener("click", () => {
-            addToCart(productId, productName, productPrice);
-        });
-
-        // Проверяем, есть ли товар в корзине, чтобы обновить состояние кнопки
-        const cart = loadCartFromLocalStorage();
-        if (cart[productId]) {
-            updateAddToCartButton(productId);
-        }
-    });
-}
-
-function getCartItems() {
-    const username = localStorage.getItem("username") || "guest";
-    const storedCart = localStorage.getItem(`cart_${username}`);
-    return storedCart ? JSON.parse(storedCart) : [];
-}
-function saveCartItems(cartItems) {
-    const username = localStorage.getItem("username") || "guest";
-    localStorage.setItem(`cart_${username}`, JSON.stringify(cartItems));  // Сохраняем корзину для конкретного пользователя
-}
-function updateProductControls(productId) {
-    const addButton = document.getElementById(`addButton_${productId}`);
-    const removeButton = document.getElementById(`removeBtn_${productId}`);
-    const quantityDisplay = document.getElementById(`quantity_${productId}`);
-    const addButtonControl = document.getElementById(`addBtn_${productId}_inc`);
-
-    if (!addButton || !removeButton || !addButtonControl || !quantityDisplay) return;
-
-    const cartItems = getCartItems();
-    const item = cartItems.find(item => item.productId === productId);
-
-    if (item) {
-        addButton.style.display = "none";
-        removeButton.style.display = "inline-block";
-        quantityDisplay.style.display = "inline-block";
-        addButtonControl.style.display = "inline-block";
-        quantityDisplay.textContent = item.quantity;
-    }
-}
-
-// Обработчик добавления товара в корзину
-function addToCart(productId, productName, price) {
-    let cartItems = getCartItems();
-    const existingItem = cartItems.find(item => item.productId === productId);
-
-    if (existingItem) {
-        existingItem.quantity += 1;
+    // Добавляем товар в корзину
+    if (cart[productName]) {
+        cart[productName].quantity += 1;  // Если товар уже есть, увеличиваем количество
     } else {
-        cartItems.push({
-            productId,
-            productName,
-            price,
-            quantity: 1
-        });
+        cart[productName] = { 
+            name: product.name, 
+            price: product.price, 
+            quantity: 1 
+        };  // Если товара нет, добавляем его
     }
 
-    saveCartItems(cartItems);
-    replaceAddButtonWithControls(productId); // Меняем кнопки
-    renderCart();
+    // Сохраняем корзину в localStorage
+    saveCartToLocalStorage();
+    updateCartDisplay();
+    replaceAddButtonWithControls(productName);  // Обновляем кнопку на карточке товара
 }
-
-
-
-function renderCart() {
-    const cartContainer = document.getElementById('cart-items');
-    const totalAmount = document.getElementById('totalAmount');
-
-    if (!cartContainer) return;
-
-    cartContainer.innerHTML = '';  // Очищаем корзину
-
-    const cartItems = getCartItems();  // Получаем товары корзины
-    if (cartItems.length === 0) {
-        cartContainer.innerHTML = '<p>Корзина пуста</p>';
-        totalAmount.textContent = 'Итого: 0 ₽';
-        return;
-    }
-
-    let total = 0;
-    cartItems.forEach(item => {
-        total += item.price * item.quantity;
-        const itemElement = document.createElement('div');
-        itemElement.innerHTML = `
-            ${item.productName} - ${item.quantity} шт. - ${item.price * item.quantity} ₽
-            <button class="quantity-control" onclick="decrementItem('${item.productId}')">-</button>
-            <span>${item.quantity}</span>
-            <button class="quantity-control" onclick="incrementItem('${item.productId}', ${item.price})">+</button>
-        `;
-        cartContainer.appendChild(itemElement);  // Добавляем товар в корзину
-    });
-
-    totalAmount.textContent = `Итого: ${total} ₽`;
-}
-
 
 
 
@@ -357,51 +189,19 @@ function decrementItem(productName) {
         replaceAddButtonWithControls(productName);  // исправлено
     }
 }
-// Уменьшение количества товара
-function decrementItem(productId) {
-    let cartItems = getCartItems();
-    const item = cartItems.find(item => item.productId === productId);
-
-    if (item) {
-        item.quantity -= 1;
-
-        if (item.quantity <= 0) {
-            cartItems = cartItems.filter(i => i.productId !== productId);  // Удаляем товар из корзины
-        }
-
-        localStorage.setItem('cartItems', JSON.stringify(cartItems));  // Обновляем корзину
-        renderCart();  // Обновляем корзину на странице
-        replaceAddButtonWithControls(productId);  // Возвращаем кнопку "Добавить"
-    }
-}
-
 // Увеличение количества товара
-function incrementItem(productId, price) {
-    let cartItems = getCartItems();
-    const item = cartItems.find(item => item.productId === productId);
-    if (item) {
-        item.quantity += 1;
-        saveCartItems(cartItems);
-        renderCart();
-        replaceAddButtonWithControls(productId);
+function incrementItem(productName, price) {
+    if (cart[productName]) {
+        cart[productName].quantity += 1;
+    } else {
+        cart[productName] = { name: productName, price: price, quantity: 1 };
     }
+
+    saveCartToLocalStorage();
+    updateCartDisplay();
+    updateQuantityDisplay(productName);
+    checkForEmptyCart(productName);  // Проверка, если товар в корзине не равен 0
 }
-
-function decrementItem(productId) {
-    let cartItems = getCartItems();
-    const item = cartItems.find(item => item.productId === productId);
-    if (item) {
-        item.quantity -= 1;
-        if (item.quantity <= 0) {
-            cartItems = cartItems.filter(i => i.productId !== productId);
-        }
-        saveCartItems(cartItems);
-        renderCart();
-        replaceAddButtonWithControls(productId);
-    }
-}
-
-
 function updateQuantityDisplay(productName) {
     const quantityElement = document.getElementById(`quantity_${productName}`);
     if (quantityElement) {
@@ -416,20 +216,15 @@ function getCookie(name) {
 function replaceAddButtonWithControls(productId) {
     const addButton = document.getElementById(`addButton_${productId}`);
     const removeButton = document.getElementById(`removeBtn_${productId}`);
-    const addButtonControl = document.getElementById(`addBtn_${productId}_inc`);
+    const addButtonControl = document.getElementById(`addBtn_${productId}`);
     const quantityDisplay = document.getElementById(`quantity_${productId}`);
 
-    if (!addButton || !removeButton || !addButtonControl || !quantityDisplay) return;
-
-    const cartItems = getCartItems();
-    const item = cartItems.find(item => item.productId === productId);
-
-    if (item) {
+    if (cart[productId] && cart[productId].quantity > 0) {
         addButton.style.display = "none";
         removeButton.style.display = "inline-block";
         addButtonControl.style.display = "inline-block";
         quantityDisplay.style.display = "inline-block";
-        quantityDisplay.textContent = item.quantity;
+        quantityDisplay.textContent = cart[productId].quantity;
     } else {
         addButton.style.display = "inline-block";
         removeButton.style.display = "none";
@@ -437,8 +232,6 @@ function replaceAddButtonWithControls(productId) {
         quantityDisplay.style.display = "none";
     }
 }
-
-
 
 function revertControlsToAddButton(productId) {
     const addButton = document.getElementById(`addButton_${productId}`);
@@ -459,46 +252,53 @@ function revertControlsToAddButton(productId) {
 }
 
 //ощичение корзины
-document.getElementById('clear-cart').addEventListener('click', () => {
-    const username = localStorage.getItem("username") || "guest";
-    localStorage.removeItem(`cart_${username}`);  // Удаляем корзину из localStorage
-    renderCart();  // Перерисовываем корзину
-    document.getElementById('totalAmount').textContent = 'Итого: 0 ₽';
+document.addEventListener('DOMContentLoaded', () => {
+    const clearCartButton = document.getElementById('clear-cart');
+    const cartTotal = document.getElementById('totalAmount');
 
-    // Сброс кнопок
-    const productCards = document.querySelectorAll(".card-dish");
-    productCards.forEach(card => {
-        const addButton = card.querySelector(".add-button-size");
-        const removeButton = card.querySelector(".quantity-control");
-        const addButtonControl = card.querySelector(".quantity-size-button");
-        const quantityDisplay = card.querySelector(".quantity-display");
+    if (clearCartButton) {
+        clearCartButton.addEventListener('click', () => {
+            cart = {};  // Очистка корзины
+            localStorage.removeItem(`cart_${localStorage.getItem('username')}`);  // Удаление корзины из localStorage
+            updateCartDisplay();  // Обновление отображения корзины
+            cartTotal.textContent = 'Итого: 0 ₽';
 
-        if (addButton) addButton.style.display = "inline-block";
-        if (removeButton) removeButton.style.display = "none";
-        if (addButtonControl) addButtonControl.style.display = "none";
-        if (quantityDisplay) {
-            quantityDisplay.textContent = "";
-            quantityDisplay.style.display = "none";
-        }
-    });
+            // ОБНОВЛЕНИЕ карточек товаров
+            const productCards = document.querySelectorAll(".card-dish");
+            productCards.forEach(card => {
+                const addButton = card.querySelector(".add-button-size");
+                const removeButton = card.querySelector(".quantity-control");
+                const addButtonControl = card.querySelector(".quantity-size-button");
+                const quantityDisplay = card.querySelector(".quantity-display"); // Элемент с количеством
+
+                // Скрытие всех кнопок и количества
+                if (addButton) addButton.style.display = "inline-block";
+                if (removeButton) removeButton.style.display = "none";
+                if (addButtonControl) addButtonControl.style.display = "none";
+
+                // Скрытие и очищение количества
+                if (quantityDisplay) {
+                    quantityDisplay.textContent = "";  // Очищаем количество
+                    quantityDisplay.style.display = "none";  // Скрываем элемент
+                }
+            });
+        });
+    }
 });
-
 document.addEventListener("DOMContentLoaded", () => {
     const token = localStorage.getItem("accessToken");
-    const userId = localStorage.getItem("userId"); // Получаем userId
 
-    if (!token || !userId) {
+    if (!token) {
         console.log("Пользователь не авторизован");
         return;
     }
 
-    fetch(`https://makadamia.onrender.com/user-orders/${userId}`, { 
+    fetch("https://makadamia.onrender.com/user-orders", {
         method: "GET",
         headers: {
             "Authorization": `Bearer ${token}`
         }
     })
-
     .then(res => res.json())
     .then(orders => {
         const container = document.getElementById("ordersContainer"); // Блок с таким id
@@ -538,25 +338,23 @@ function updateCartDisplay() {
     cartItems.innerHTML = ""; // Очищаем список товаров
     let totalAmount = 0;
 
-    for (const productId in cart) {
-    const item = cart[productId]; // item = { name, price, quantity }
-    const itemTotal = item.price * item.quantity;
-    totalAmount += itemTotal;
+    for (const productName in cart) {
+        const itemTotal = cart[productName].price * cart[productName].quantity;
+        totalAmount += itemTotal;
 
-    const cartItem = document.createElement("div");
-    cartItem.className = "cart-item";
-    cartItem.setAttribute("data-id", productId); // Назовём честно productId, а не name
-    cartItem.innerHTML = `
-        <div class="item-info">${item.name} - ${itemTotal} ₽</div>
-        <div class="cart-buttons">
-            <button onclick="decrementItem('${productId}')">-</button>
-            <span class="quantity">${item.quantity}</span>
-            <button onclick="incrementItem('${productId}', ${item.price})">+</button>
-        </div>
-    `;
-    cartItems.appendChild(cartItem);
-}
-
+        const cartItem = document.createElement("div");
+        cartItem.className = "cart-item";
+        cartItem.setAttribute("data-name", productName); // Используем productName
+        cartItem.innerHTML = `
+            <div class="item-info">${productName} - ${itemTotal} ₽</div>
+            <div class="cart-buttons">
+                <button onclick="decrementItem('${productName}')">-</button>
+                <span class="quantity">${cart[productName].quantity}</span>
+                <button onclick="incrementItem('${productName}', ${cart[productName].price})">+</button>
+            </div>
+        `;
+        cartItems.appendChild(cartItem);
+    }
 
     document.getElementById("totalAmount").textContent = `Итого: ${totalAmount} ₽`;
 
@@ -599,57 +397,12 @@ function updateCartDisplay() {
         document.getElementById("cartDropdown").style.display = "none";
     }
 }
-document.addEventListener("DOMContentLoaded", () => {
-    const addToCartButtons = document.querySelectorAll(".add-button-size");
-    addToCartButtons.forEach(button => {
-        const productId = button.getAttribute("id").split("_")[1];
-        const productName = button.closest(".menu-item").querySelector("b").textContent;
-        const price = parseFloat(button.closest(".menu-item").querySelector(".price-container b").textContent.replace("₽", "").trim());
-
-        button.addEventListener("click", () => {
-            addToCart(productId, productName, price);  // Добавление товара в корзину
-        });
-    });
-
-    renderCart(); // Загружаем корзину при старте
-});
-
 
 // Сохранение корзины в localStorage
-function saveCartToLocalStorage(cart) {
-    localStorage.setItem(`cart_${localStorage.getItem("username")}`, JSON.stringify(cart));
-}
-function renderCheckoutCart() {
-    const cart = loadCartFromLocalStorage();
-    const cartItemsContainer = document.getElementById("cartItems");
-    const cartTotalPrice = document.getElementById("cartTotalPrice");
-
-    cartItemsContainer.innerHTML = "";
-    let totalPrice = 0;
-
-    for (const productId in cart) {
-        const item = cart[productId];
-        const itemTotalPrice = item.price * item.quantity;
-        totalPrice += itemTotalPrice;
-
-        const cartItemElement = document.createElement("div");
-        cartItemElement.className = "cart-item";
-        cartItemElement.innerHTML = `
-            <span class="item-name">${item.name}</span>
-            <span class="item-quantity">${item.quantity} шт.</span>
-            <span class="item-price">${itemTotalPrice.toFixed(2)} ₽</span>
-        `;
-        cartItemsContainer.appendChild(cartItemElement);
-    }
-
-    cartTotalPrice.textContent = totalPrice.toFixed(2) + " ₽";
-}
-function updateTotal() {
-    const cartItems = getCartItems();
-    const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const totalAmount = document.getElementById('totalAmount');
-    if (totalAmount) {
-        totalAmount.textContent = `Итого: ${total} ₽`;
+function saveCartToLocalStorage() {
+    const username = localStorage.getItem("username");
+    if (username) {
+        localStorage.setItem(`cart_${username}`, JSON.stringify(cart)); // Сохраняем с уникальным ключом
     }
 }
 
@@ -670,8 +423,14 @@ function resetAddToCartButtons() {
     }
 }
 function loadCartFromLocalStorage() {
-    const storedCart = JSON.parse(localStorage.getItem(`cart_${localStorage.getItem("username")}`)) || {};
-    return storedCart;
+    const username = localStorage.getItem("username");
+    if (username) {
+        const storedCart = JSON.parse(localStorage.getItem(`cart_${username}`)); // Загружаем корзину с уникальным ключом
+        if (storedCart) {
+            cart = storedCart;
+        }
+        updateCartDisplay(); // Обновляем отображение корзины
+    }
 }
 // Загрузка корзины из localStorage при загрузке страницы
 document.addEventListener("DOMContentLoaded", () => {
@@ -760,13 +519,30 @@ async function refreshAccessToken() {
 
         const data = await response.json();
         console.log("✅ Новый токен получен:", data.accessToken);
-        localStorage.setItem("accessToken", data.accessToken);  // Сохраняем новый токен
+        localStorage.setItem("token", data.accessToken);  // Сохраняем новый токен
         return data.accessToken;
     } catch (error) {
         console.error("❌ Ошибка при обновлении токена:", error);
         return null;
     }
 }
+
+
+async function loadUserData(token) {
+    const response = await fetch("/account", {
+        headers: {
+            "Authorization": `Bearer ${token}`  // Передаем токен в заголовке
+        }
+    });
+
+    if (response.ok) {
+        const data = await response.json();
+        document.getElementById("username").textContent = data.username;  // Отображаем данные пользователя
+    } else {
+        localStorage.removeItem('accessToken');  // Если токен недействителен, удаляем его
+    }
+}
+
 
 
 function generateTokens(user, site) {
@@ -888,7 +664,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 // Проверка состояния авторизации
 function checkAuthStatus() {
-    const token = localStorage.getItem("accessToken"); // Должно быть accessToken
+    const token = localStorage.getItem("accessToken");
     const username = localStorage.getItem("username");
     const authButton = document.getElementById("authButton");
     const cabinetButton = document.getElementById("cabinetButton");
@@ -906,9 +682,10 @@ function checkAuthStatus() {
         console.log("⚠️ Пользователь не авторизован");
         authButton.style.display = "inline-block";
         cabinetButton.style.display = "none";
-        sessionStorage.removeItem("authChecked");
+        sessionStorage.removeItem("authChecked"); // Убедитесь, что снова проверите авторизацию
     }
 }
+
 
 async function logout() {
     const token = localStorage.getItem("accessToken"); // Получаем токен
@@ -924,9 +701,8 @@ async function logout() {
 
         if (response.ok) {
             // Очистка токенов и cookies
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('userId');
-            localStorage.removeItem('username');
+            localStorage.removeItem('token');
+            sessionStorage.removeItem('token');
             document.cookie = "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
             document.cookie = "refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
             
@@ -940,18 +716,11 @@ async function logout() {
 }
 
 
-function handleAuthClick() {
-    const token = localStorage.getItem('accessToken');
-    if (token) {
-        window.location.href = 'account.html';
-    } else {
-        window.location.href = 'login.html';
-    }
-}
+
 
 // Переход на страницу личного кабинета
 function openCabinet() {
-    const token = localStorage.getItem('accessToken');
+    const token = localStorage.getItem('token');
     const username = localStorage.getItem('username');
 
    if (!token && !sessionStorage.getItem("authFailed")) {
@@ -990,7 +759,7 @@ function goToCheckoutPage() {
 
 
 document.addEventListener("DOMContentLoaded", () => {
-    const token = localStorage.getItem('accessToken'); // Получаем токен из localStorage
+    const token = localStorage.getItem('token'); // Получаем токен из localStorage
     if (!token) {
         document.getElementById('usernameDisplay').innerText = "Гость";
         return;
@@ -1038,19 +807,39 @@ async function updateAccount(newUsername, newPassword) {
   const data = await response.json();
   console.log("Ответ от сервера:", data);
 }
+document.addEventListener('DOMContentLoaded', async () => {
+    const accessToken = localStorage.getItem('accessToken');
+    const authButton = document.getElementById('authButton');  // Кнопка Вход/Личный кабинет
 
-function loadUserData() {
-    const customerNameInput = document.getElementById("customerName");
-    const customerAddressInput = document.getElementById("customerAddress");
-    const additionalInfoInput = document.getElementById("additionalInfo");
+    if (accessToken) {
+        authButton.textContent = 'Личный кабинет';
+        await loadUserData(accessToken);  // Загрузить данные аккаунта
+    } else {
+        authButton.textContent = 'Вход';
+    }
+});
 
-    const userData = JSON.parse(localStorage.getItem("userData")) || {};
+async function loadUserData(token) {
+    const response = await fetch('/account', {
+        headers: { 'Authorization': `Bearer ${token}` },
+    });
 
-    if (customerNameInput) customerNameInput.value = userData.name || "";
-    if (customerAddressInput) customerAddressInput.value = userData.address || "";
-    if (additionalInfoInput) additionalInfoInput.value = userData.additionalInfo || "";
+    if (response.ok) {
+        const userData = await response.json();
+        document.getElementById('username').textContent = userData.username;
+    } else {
+        localStorage.removeItem('accessToken');
+    }
 }
 
+function handleAuthClick() {
+    const token = localStorage.getItem('token');
+    if (token) {
+        window.location.href = 'account.html'; // Если пользователь авторизован, переходим в личный кабинет
+    } else {
+        window.location.href = 'login.html'; // Если нет, перенаправляем на страницу входа
+    }
+}
 
 // Убедитесь, что этот код в `script.js` загружен перед его вызовом в HTML
 document.addEventListener("DOMContentLoaded", function () {
