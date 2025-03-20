@@ -770,23 +770,38 @@ async function updateAccount(newUsername, newPassword) {
   console.log("Ответ от сервера:", data);
 }
 
-function loadUserData() {
-    const customerNameInput = document.getElementById("customerName");
-    const customerAddressInput = document.getElementById("customerAddress");
-    const additionalInfoInput = document.getElementById("additionalInfo");
+async function loadUserData() {
+    const userId = localStorage.getItem("userId");  // Получаем userId из localStorage
+    if (!userId) {
+        alert("Вы не авторизованы! Пожалуйста, войдите в аккаунт.");
+        window.location.href = "login.html";  // Перенаправление на страницу входа, если userId не найден
+        return;
+    }
 
-    const userData = JSON.parse(localStorage.getItem("userData")) || {};
-
-    if (customerNameInput) customerNameInput.value = userData.name || "";
-    if (customerAddressInput) customerAddressInput.value = userData.address || "";
-    if (additionalInfoInput) additionalInfoInput.value = userData.additionalInfo || "";
+    try {
+        const response = await fetch(`https://makadamia.onrender.com/account`, {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${localStorage.getItem("accessToken")}`,
+                "Content-Type": "application/json"
+            }
+        });
+        const data = await response.json();
+        document.getElementById("customerName").value = data.name || "";
+        document.getElementById("customerAddress").value = data.city || "";
+    } catch (error) {
+        console.error("Ошибка загрузки данных профиля:", error);
+        alert("Не удалось загрузить данные профиля.");
+    }
 }
+
 document.addEventListener("DOMContentLoaded", async () => {
-    await loadProductMap();  // Загружаем продукты
+    await loadProductMap(); 
+    loadUserData();
     loadCartFromLocalStorage();  // Загружаем корзину из localStorage
     renderCart();  // Отображаем корзину
     checkAuthStatus(); // Проверяем авторизацию
-    loadUserData(); // Загружаем данные пользователя, если есть
+     // Загружаем данные пользователя, если есть
     initializeAddToCartButtons(); // Настраиваем кнопки "Добавить в корзину"
     setupAuthButtons(); // Настраиваем кнопки авторизации (если есть)
     loadOrders(); // Загружаем заказы для личного кабинета (если есть)
