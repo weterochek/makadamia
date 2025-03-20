@@ -17,30 +17,75 @@ window.onload = function () {
 async function fetchWithAuth(url, options = {}) {
     let token = localStorage.getItem("accessToken");
     if (!options.headers) options.headers = {};
-    if (token) options.headers["Authorization"] = `Bearer ${token}`;
+    options.headers["Authorization"] = `Bearer ${token}`;
 
     let response = await fetch(url, options);
 
     if (response.status === 401) {
-        console.log("Отправка запроса на /refresh");
-        const refreshResponse = await fetch("/refresh", { credentials: "include" });
+        console.log("⏳ Токен истёк, пробую обновить...");
+
+        const refreshResponse = await fetch('/refresh', { credentials: 'include' });
         if (refreshResponse.ok) {
             const refreshData = await refreshResponse.json();
             localStorage.setItem("accessToken", refreshData.accessToken);
             token = refreshData.accessToken;
             options.headers["Authorization"] = `Bearer ${token}`;
+            console.log("✅ Access Token обновлён:", token);
+
+            // Повторно отправляем запрос с новым токеном
             response = await fetch(url, options);
         } else {
-            localStorage.removeItem("accessToken");
-            localStorage.removeItem("username");
-            localStorage.removeItem("userId");
-            alert("Сессия истекла. Пожалуйста, войдите снова.");
-            window.location.href = "/login.html";
+            console.log("❌ Не удалось обновить токен");
+            window.location.href = '/login.html'; // отправить на логин
         }
     }
     return response;
 }
 
+async function checkAndRefreshToken() {
+    let token = localStorage.getItem("accessToken");
+    if (!token) {
+        console.log("❌ Нет accessToken, пользователь не авторизован");
+        return false;
+    }
+
+    // Декодируем токен (можно через jwt-decode библиотеку или вручную)
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const now = Date.now() / 1000;
+
+    if (payload.exp < now) {
+        console.log("⏳ AccessToken истёк, пробуем обновить...");
+        const refreshResponse = await fetch('/refresh', { credentials: 'include' });
+        if (refreshResponse.ok) {
+            const refreshData = await refreshResponse.json();
+            localStorage.setItem("accessToken", refreshData.accessToken);
+            console.log("✅ AccessToken обновлён");
+            return true;
+        } else {
+            console.log("❌ Не удалось обновить токен");
+            return false;
+        }
+    } else {
+        console.log("✅ AccessToken валиден");
+        return true;
+    }
+}
+document.addEventListener("DOMContentLoaded", async () => {
+    const isAuth = await checkAndRefreshToken();
+
+    const loginButton = document.getElementById("loginButton");
+    const accountButton = document.getElementById("accountButton");
+
+    if (isAuth) {
+        // Показываем ЛК, скрываем Вход
+        if (loginButton) loginButton.style.display = "none";
+        if (accountButton) accountButton.style.display = "block";
+    } else {
+        // Показываем Вход
+        if (loginButton) loginButton.style.display = "block";
+        if (accountButton) accountButton.style.display = "none";
+    }
+});
 async function loadProductMap() {
     try {
         const response = await fetch('/api/products');
@@ -453,32 +498,6 @@ function decrementItem(productId) {
     saveCartToLocalStorage(cartItems);
     renderCart();
 }
-document.addEventListener("DOMContentLoaded", () => {
-    const authButton = document.getElementById("authButton");
-    const cabinetButton = document.getElementById("cabinetButton");
-
-    const token = localStorage.getItem("accessToken");
-    if (token) {
-        // Авторизован
-        if (authButton) authButton.style.display = 'none';
-        if (cabinetButton) {
-            cabinetButton.style.display = 'inline-block';
-            cabinetButton.addEventListener('click', () => {
-                window.location.href = '/account.html';
-            });
-        }
-    } else {
-        // Не авторизован
-        if (cabinetButton) cabinetButton.style.display = 'none';
-        if (authButton) {
-            authButton.style.display = 'inline-block';
-            authButton.addEventListener('click', () => {
-                window.location.href = '/login.html';
-            });
-        }
-    }
-});
-
 
 async function loadAccountData() {
     const token = localStorage.getItem('accessToken');
@@ -816,36 +835,52 @@ function setupAuthButtons() {
     const authButton = document.getElementById("authButton");
     const cabinetButton = document.getElementById("cabinetButton");
 
-    if (token) {
+    if (token && !isTokenExpired(token)) {
         if (authButton) authButton.style.display = "none";
-        if (cabinetButton) cabinetButton.style.display = "inline-block";
+        if (cabinetButton) {
+            cabinetButton.style.display = "inline-block";
+            cabinetButton.addEventListener("click", () => {
+                window.location.href = "/account.html";
+            });
+        }
     } else {
-        if (authButton) authButton.style.display = "inline-block";
+        if (authButton) {
+            authButton.style.display = "inline-block";
+            authButton.addEventListener("click", () => {
+                window.location.href = "/login.html";
+            });
+        }
         if (cabinetButton) cabinetButton.style.display = "none";
     }
 }
-
 // Проверка состояния авторизации
 function checkAuthStatus() {
-    const token = localStorage.getItem("accessToken"); // Должно быть accessToken
+    const token = localStorage.getItem("accessToken");
     const username = localStorage.getItem("username");
     const authButton = document.getElementById("authButton");
     const cabinetButton = document.getElementById("cabinetButton");
 
     if (!authButton || !cabinetButton) {
-        console.warn("❌ Не найдены кнопки 'Вход' или 'Личный кабинет'!");
+        console.warn("❌ Кнопки 'Вход' или 'Личный кабинет' не найдены");
         return;
     }
 
-    if (token && username && !isTokenExpired(token)) { 
+    if (token && username && !isTokenExpired(token)) {
         console.log("✅ Пользователь авторизован");
         authButton.style.display = "none";
         cabinetButton.style.display = "inline-block";
+
+        cabinetButton.onclick = () => {
+            window.location.href = "/account.html";
+        };
     } else {
         console.log("⚠️ Пользователь не авторизован");
         authButton.style.display = "inline-block";
         cabinetButton.style.display = "none";
-        sessionStorage.removeItem("authChecked");
+
+        authButton.onclick = () => {
+            window.location.href = "/login.html";
+        };
     }
 }
 
@@ -978,6 +1013,7 @@ function loadUserData() {
     if (additionalInfoInput) additionalInfoInput.value = userData.additionalInfo || "";
 }
 document.addEventListener("DOMContentLoaded", async () => {
+    console.log("accessToken:", localStorage.getItem("accessToken"));
     await loadProductMap();  // Загружаем продукты
     loadUserOrders();
     loadAccountData();
