@@ -468,6 +468,13 @@ async function loadAccountData() {
     }
 }
 
+function loadAccountData() {
+    const username = localStorage.getItem('username');
+    const address = localStorage.getItem('address'); // Адрес — должен быть сохранен в LocalStorage
+
+    document.getElementById('userName').textContent = username || 'Не указано';
+    document.getElementById('userAddress').textContent = address || 'Не указано';
+}
 
 
 
