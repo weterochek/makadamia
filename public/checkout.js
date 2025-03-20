@@ -90,11 +90,12 @@ function decrementItem(productId) {
 // Загрузка данных пользователя
 async function loadUserData() {
     try {
-        const response = await fetch('/api/account', {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-            }
-        });
+        const response = await fetch('/account', {  // Заменить /api/account на /account
+    method: 'GET',
+    headers: {
+        "Authorization": `Bearer ${token}`
+        }
+    });
         if (response.ok) {
             const userData = await response.json();
             document.getElementById('name').value = userData.username || '';
