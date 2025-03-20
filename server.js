@@ -143,13 +143,13 @@ app.get('s/:id', async (req, res) => {
 
 app.get('/api/products', async (req, res) => {
     try {
-        const products = await Product.find({});  // Здесь используем Mongoose для поиска всех продуктов
+        const products = await Product.find({});  // Замените на свой запрос, если есть фильтры
         res.json(products);  // Отправляем список продуктов в формате JSON
     } catch (error) {
-        console.error('Ошибка загрузки продуктов:', error);
         res.status(500).json({ message: 'Ошибка сервера' });
     }
 });
+
 
 // Получение всех заказов
 app.get('/orders', async (req, res) => {
