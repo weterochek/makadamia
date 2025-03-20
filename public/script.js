@@ -170,33 +170,16 @@ async function loadUserOrders() {
         const response = await fetch(`https://makadamia.onrender.com/user-orders/${userId}`);
         const orders = await response.json();
 
-        const container = document.getElementById("ordersContainer");
-
-        if (orders.length === 0) {
-            container.innerHTML = "<p>У вас пока нет заказов.</p>";
-            return;
+        // Проверка, что orders - это массив
+        if (Array.isArray(orders)) {
+            orders.forEach(order => {
+                // Обработка заказов
+            });
+        } else {
+            console.error("Данные о заказах не в правильном формате");
         }
-
-        orders.forEach(order => {
-            const orderDiv = document.createElement("div");
-            orderDiv.classList.add("order");
-
-            orderDiv.innerHTML = `
-                <h3>Заказ №${order._id}</h3>
-                <p>Адрес: ${order.address}</p>
-                <p>Дата: ${new Date(order.createdAt).toLocaleDateString()}</p>
-                <ul>
-                    ${order.items.map(item => `
-                        <li>${item.productId.name} — ${item.quantity} шт. (${item.productId.price} ₽)</li>
-                    `).join("")}
-                </ul>
-                <hr>
-            `;
-            container.appendChild(orderDiv);
-        });
-
-    } catch (err) {
-        console.error("Ошибка загрузки заказов:", err);
+    } catch (error) {
+        console.error("Ошибка при загрузке заказов:", error);
     }
 }
 
