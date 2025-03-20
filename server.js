@@ -351,6 +351,25 @@ app.post('/-token', (req, res) => {
 app.get('/private-route', authMiddleware, (req, res) => {
   res.json({ message: `Добро пожаловать, пользователь ${req.user.id}` });
 });
+app.get('/api/account', authenticateToken, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);  // Здесь должны быть данные пользователя
+        res.json(user);  // Отправляем данные пользователя
+    } catch (error) {
+        console.error('Ошибка загрузки данных пользователя:', error);
+        res.status(500).json({ message: 'Ошибка загрузки данных пользователя' });
+    }
+});
+function authenticateToken(req, res, next) {
+    const token = req.header('Authorization')?.replace('Bearer ', '');
+    if (!token) return res.sendStatus(401); // Отказано в доступе, если нет токена
+
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+        if (err) return res.sendStatus(403); // Недействительный токен
+        req.user = user;
+        next();  // Даем доступ к следующему обработчику маршрута
+    });
+}
 app.get('/account', authMiddleware, async (req, res) => {
     try {
         if (!req.user || !req.user.id) {
