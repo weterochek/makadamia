@@ -277,6 +277,31 @@ function initializeAddToCartButtons() {
         }
     });
 }
+// Аккаунт: редактировать имя
+document.getElementById('editName').addEventListener('click', () => {
+    document.getElementById('nameInput').disabled = false;
+    document.getElementById('saveName').style.display = 'inline-block';
+});
+
+document.getElementById('saveName').addEventListener('click', async () => {
+    const newName = document.getElementById('nameInput').value;
+    await updateAccountField({ name: newName });
+    document.getElementById('nameInput').disabled = true;
+    document.getElementById('saveName').style.display = 'none';
+});
+
+// Аккаунт: редактировать город
+document.getElementById('editCity').addEventListener('click', () => {
+    document.getElementById('cityInput').disabled = false;
+    document.getElementById('saveCity').style.display = 'inline-block';
+});
+
+document.getElementById('saveCity').addEventListener('click', async () => {
+    const newCity = document.getElementById('cityInput').value;
+    await updateAccountField({ city: newCity });
+    document.getElementById('cityInput').disabled = true;
+    document.getElementById('saveCity').style.display = 'none';
+});
 function getCartItems() {
     const stored = localStorage.getItem('cartItems');
     if (!stored) return [];
@@ -428,25 +453,64 @@ function decrementItem(productId) {
     saveCartToLocalStorage(cartItems);
     renderCart();
 }
+document.addEventListener("DOMContentLoaded", () => {
+    const authButton = document.getElementById("authButton");
+    const cabinetButton = document.getElementById("cabinetButton");
+
+    const token = localStorage.getItem("accessToken");
+    if (token) {
+        // Авторизован
+        if (authButton) authButton.style.display = 'none';
+        if (cabinetButton) {
+            cabinetButton.style.display = 'inline-block';
+            cabinetButton.addEventListener('click', () => {
+                window.location.href = '/account.html';
+            });
+        }
+    } else {
+        // Не авторизован
+        if (cabinetButton) cabinetButton.style.display = 'none';
+        if (authButton) {
+            authButton.style.display = 'inline-block';
+            authButton.addEventListener('click', () => {
+                window.location.href = '/login.html';
+            });
+        }
+    }
+});
+
+
 async function loadAccountData() {
     const token = localStorage.getItem('accessToken');
-    if (!token) return;
+
+    if (!token) {
+        console.warn('❌ Нет accessToken для загрузки данных');
+        return;
+    }
 
     try {
-        const res = await fetch('/account', {
-            headers: { 'Authorization': `Bearer ${token}` }
+        const response = await fetch('https://makadamia.onrender.com/account', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
         });
-        if (!res.ok) throw new Error("Ошибка HTTP");
 
-        const data = await res.json();
-        document.getElementById('userName').textContent = data.name || '';
-        document.getElementById('customerName').value = data.name || '';
-        document.getElementById('customerAddress').value = data.city || '';
+        if (!response.ok) {
+            throw new Error('Ошибка HTTP: ' + response.status);
+        }
+
+        const data = await response.json();
+        console.log('✅ Данные пользователя:', data);
+
+        document.getElementById('usernameDisplay').textContent = data.username || '';
+        document.getElementById('nameInput').value = data.name || '';
+        document.getElementById('cityInput').value = data.city || '';
 
     } catch (err) {
-        console.error("Ошибка загрузки аккаунта:", err);
+        console.error('Ошибка загрузки аккаунта:', err);
     }
 }
+
 
 
 function getProductQuantity(productId) {
@@ -861,7 +925,30 @@ function goToCheckoutPage() {
     window.location.href = "checkout.html";
 }
 
+async function updateAccountField(data) {
+    const token = localStorage.getItem("accessToken");
+    try {
+        const response = await fetch("/account", {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify(data)
+        });
 
+        if (!response.ok) {
+            throw new Error("Ошибка обновления данных");
+        }
+
+        const result = await response.json();
+        console.log("✅ Данные обновлены:", result);
+        alert("Данные успешно обновлены");
+    } catch (err) {
+        console.error("❌ Ошибка:", err);
+        alert("Ошибка при обновлении");
+    }
+}
 
 async function updateAccount(newUsername, newPassword) {
   const token = localStorage.getItem("accessToken");
@@ -892,6 +979,8 @@ function loadUserData() {
 }
 document.addEventListener("DOMContentLoaded", async () => {
     await loadProductMap();  // Загружаем продукты
+    loadUserOrders();
+    loadAccountData();
     renderCart();  // Отображаем корзину
     checkAuthStatus(); // Проверяем авторизацию
     loadCartFromLocalStorage();  // Загружаем корзину из localStorage
@@ -899,8 +988,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     initializeAddToCartButtons(); // Настраиваем кнопки "Добавить в корзину"
     setupAuthButtons(); // Настраиваем кнопки авторизации (если есть)
     loadOrders(); // Загружаем заказы для личного кабинета (если есть)
-    loadUserOrders();
-    loadAccountData();
 });
 
 
