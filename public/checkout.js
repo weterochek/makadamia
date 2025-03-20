@@ -3,20 +3,18 @@ let productMap = {};
 
 async function loadProductMap() {
     try {
-        const response = await fetch('/products'); // Эндпоинт должен отдавать все продукты
+        const response = await fetch('https://makadamia.onrender.com/api/products'); // Здесь корректный эндпоинт
         const products = await response.json();
-        window.productMap = {}; // Глобально
+        window.productMap = {};  // Сохраняем в глобальную переменную
         products.forEach(product => {
-            window.productMap[product._id] = {
-                name: product.name,
-                price: product.price
-            };
+            window.productMap[product._id] = { name: product.name, price: product.price };
         });
-        console.log('✅ Продукты загружены');
+        console.log("✅ Продукты загружены");
     } catch (error) {
-        console.error('Ошибка загрузки продуктов:', error);
+        console.error("Ошибка загрузки списка продуктов:", error);
     }
 }
+
 
 
 // Загрузка корзины из localStorage
@@ -30,30 +28,38 @@ function saveCartToLocalStorage() {
 
 // Отображение корзины
 function renderCheckoutCart() {
-    const cartItems = JSON.parse(localStorage.getItem('cart')) || [];
     const cartItemsContainer = document.getElementById('cartItems');
     const totalAmountElement = document.getElementById('totalAmount');
     cartItemsContainer.innerHTML = '';
+    let totalAmount = 0;
 
-    let total = 0;
-
-    cartItems.forEach(item => {
-        const product = window.productMap[item.productId];
-        if (product) {
-            const itemTotal = product.price * item.quantity;
-            total += itemTotal;
-
-            const itemElement = document.createElement('div');
-            itemElement.innerHTML = `
-                <p>${product.name} x ${item.quantity} — ${itemTotal} ₽</p>
-            `;
-            cartItemsContainer.appendChild(itemElement);
+    // Загрузка корзины из localStorage
+    let cart = [];
+    const cartRaw = localStorage.getItem('cartItems');
+    try {
+        if (cartRaw && cartRaw !== 'undefined') {
+            cart = JSON.parse(cartRaw);
         }
+    } catch (e) {
+        console.error("❌ Ошибка парсинга cartItems:", e);
+        cart = [];
+    }
+
+    // Отображение товаров из корзины
+    cart.forEach(item => {
+        const product = window.productMap[item.productId];  // Получаем продукт по ID
+        if (!product) return;
+        const itemTotal = product.price * item.quantity;
+        totalAmount += itemTotal;
+
+        const cartItem = document.createElement('div');
+        cartItem.className = 'cart-item';
+        cartItem.innerHTML = `${product.name} x ${item.quantity} — ${itemTotal} ₽`;
+        cartItemsContainer.appendChild(cartItem);
     });
 
-    totalAmountElement.textContent = `Итого: ${total} ₽`;
+    totalAmountElement.textContent = `Итого: ${totalAmount} ₽`;
 }
-
 
 
 
