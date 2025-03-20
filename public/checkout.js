@@ -3,15 +3,18 @@ let productMap = {};
 
 async function loadProductMap() {
     try {
-        const response = await fetch('https://makadamia.onrender.com/api/products');
+        const response = await fetch('/products'); // Эндпоинт должен отдавать все продукты
         const products = await response.json();
-        productMap = products.reduce((map, product) => {
-            map[product._id] = { name: product.name, price: product.price };
-            return map;
-        }, {});
-        console.log("✅ Продукты загружены");
+        window.productMap = {}; // Глобально
+        products.forEach(product => {
+            window.productMap[product._id] = {
+                name: product.name,
+                price: product.price
+            };
+        });
+        console.log('✅ Продукты загружены');
     } catch (error) {
-        console.error("Ошибка загрузки списка продуктов:", error);
+        console.error('Ошибка загрузки продуктов:', error);
     }
 }
 
@@ -27,39 +30,28 @@ function saveCartToLocalStorage() {
 
 // Отображение корзины
 function renderCheckoutCart() {
-    const cartItemsContainer = document.getElementById("cartItems");
-    const totalAmountElement = document.getElementById("totalAmount");
-    cartItemsContainer.innerHTML = "";
-    let totalAmount = 0;
+    const cartItems = JSON.parse(localStorage.getItem('cart')) || [];
+    const cartItemsContainer = document.getElementById('cartItems');
+    const totalAmountElement = document.getElementById('totalAmount');
+    cartItemsContainer.innerHTML = '';
 
-    // ✅ Безопасно парсим корзину:
-    let cart = [];
-    const cartRaw = localStorage.getItem('cartItems');
-    try {
-        if (cartRaw && cartRaw !== 'undefined') {
-            cart = JSON.parse(cartRaw);
+    let total = 0;
+
+    cartItems.forEach(item => {
+        const product = window.productMap[item.productId];
+        if (product) {
+            const itemTotal = product.price * item.quantity;
+            total += itemTotal;
+
+            const itemElement = document.createElement('div');
+            itemElement.innerHTML = `
+                <p>${product.name} x ${item.quantity} — ${itemTotal} ₽</p>
+            `;
+            cartItemsContainer.appendChild(itemElement);
         }
-    } catch (e) {
-        console.error("❌ Ошибка парсинга cartItems в renderCheckoutCart:", e);
-        cart = [];
-    }
-
-    cart.forEach(item => {
-        const product = productMap[item.productId];
-        if (!product) return;
-
-        const itemTotal = product.price * item.quantity;
-        totalAmount += itemTotal;
-
-        const cartItem = document.createElement('div');
-        cartItem.className = 'cart-item';
-        cartItem.innerHTML = `
-            <div>${product.name} - ${item.quantity} шт. - ${itemTotal} ₽</div>
-        `;
-        cartItemsContainer.appendChild(cartItem);
     });
 
-    totalAmountElement.textContent = `Итого: ${totalAmount} ₽`;
+    totalAmountElement.textContent = `Итого: ${total} ₽`;
 }
 
 
@@ -91,34 +83,21 @@ function decrementItem(productId) {
 
 // Загрузка данных пользователя
 async function loadUserData() {
-    const token = localStorage.getItem("accessToken");
-    if (!token) {
-        alert("Вы не авторизованы! Пожалуйста, войдите в аккаунт.");
-        window.location.href = "login.html";
-        return;
-    }
     try {
-        const response = await fetch("https://makadamia.onrender.com/account", {
-            method: "GET",
+        const response = await fetch('/api/account', {
             headers: {
-                "Authorization": `Bearer ${token}`,
-                "Content-Type": "application/json"
+                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
             }
         });
-        if (!response.ok) {
-            throw new Error("Ошибка при загрузке данных профиля");
+        if (response.ok) {
+            const userData = await response.json();
+            document.getElementById('name').value = userData.username || '';
+            document.getElementById('address').value = userData.address || '';
+        } else {
+            console.error('Ошибка загрузки данных пользователя');
         }
-        const userData = await response.json();
-
-        // ✅ Сохраняем данные локально
-        localStorage.setItem("userData", JSON.stringify({ name: userData.name, address: userData.city }));
-
-        // ✅ Подставляем в поля checkout
-        document.getElementById("customerName").value = userData.name || "";
-        document.getElementById("customerAddress").value = userData.city || "";
     } catch (error) {
-        console.error("Ошибка загрузки данных профиля:", error);
-        alert("Не удалось загрузить данные профиля.");
+        console.error('Ошибка при получении данных пользователя:', error);
     }
 }
 
