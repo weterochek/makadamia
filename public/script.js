@@ -289,19 +289,28 @@ function addToCart(productId, productName, price) {
 
 function renderCart() {
     const cartContainer = document.getElementById('cart-container');  // Контейнер для отображения корзины
+    if (!cartContainer) {
+        console.error('Контейнер для корзины не найден');
+        return;  // Прерываем выполнение, если контейнер не найден
+    }
+
     cartContainer.innerHTML = '';  // Очищаем корзину перед рендером
 
     const cartItems = getCartItems();  // Получаем все товары из корзины
-    cartItems.forEach(item => {
-        const itemElement = document.createElement('div');
-        itemElement.innerHTML = `
-            ${item.productName} - ${item.quantity} x ${item.price} ₽
-            <button onclick="decreaseQuantity('${item.productId}')">-</button>
-            <span id="quantity-${item.productId}">${item.quantity}</span>
-            <button onclick="increaseQuantity('${item.productId}', ${item.price})">+</button>
-        `;
-        cartContainer.appendChild(itemElement);  // Добавляем товар в контейнер корзины
-    });
+    if (cartItems.length === 0) {
+        cartContainer.innerHTML = '<p>Корзина пуста</p>';
+    } else {
+        cartItems.forEach(item => {
+            const itemElement = document.createElement('div');
+            itemElement.innerHTML = `
+                ${item.productName} - ${item.quantity} x ${item.price} ₽
+                <button onclick="decreaseQuantity('${item.productId}')">-</button>
+                <span id="quantity-${item.productId}">${item.quantity}</span>
+                <button onclick="increaseQuantity('${item.productId}', ${item.price})">+</button>
+            `;
+            cartContainer.appendChild(itemElement);  // Добавляем товар в контейнер корзины
+        });
+    }
 
     updateTotal();  // Обновляем общую сумму корзины
 }
