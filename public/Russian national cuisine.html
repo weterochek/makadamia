@@ -26,16 +26,16 @@
               </div>
               <div class="navbar-right">
                 <li><a href="#contacts" class="nav-item">Контакты</a></li>
-                <li class="cart-container">
-                    <a href="#1" class="nav-item" id="cartButton">Корзина</a>
-                    <div id="cartDropdown" class="cart-dropdown">
-                        <h3>Ваша Корзина</h3>
-                        <div id="cartItems"></div>
-                        <p id="totalAmount"></p>
-                        <button onclick="goToCheckoutPage()">К Оформлению заказа</button>
-			    <button id="clear-cart" class="clear-cart">Очистить корзину</button>
-                    </div>
-                </li>
+<li class="cart-container">
+    <a href="#1" class="nav-item" id="cartButton">Корзина</a>
+    <div id="cartDropdown" class="cart-dropdown">
+        <h3>Ваша Корзина</h3>
+        <div id="cartItems"></div>  <!-- Это контейнер для корзины -->
+        <p id="totalAmount"></p>
+        <button onclick="goToCheckoutPage()">К Оформлению заказа</button>
+        <button id="clear-cart" class="clear-cart">Очистить корзину</button>
+    </div>
+</li>
             	<li>
 		        <a href="#" class="nav-item" id="authButton">Вход</a>
 		        <a href="#" id="cabinetButton" class="nav-item" onclick="openCabinet()" style="display: none;">Личный кабинет</a>
