@@ -1,5 +1,5 @@
 let cart = {};
-
+let productMap = {}; // Будет заполнен динамически
 window.onload = function () {
     const userAgent = navigator.userAgent.toLowerCase();
     const currentURL = window.location.href;
@@ -14,17 +14,51 @@ window.onload = function () {
         window.location.href = "https://makadamia.onrender.com";
     }
 };
+async function fetchWithAuth(url, options = {}) {
+    let token = localStorage.getItem("accessToken");
+    if (!options.headers) options.headers = {};
+    if (token) options.headers["Authorization"] = `Bearer ${token}`;
+
+    let response = await fetch(url, options);
+
+    if (response.status === 401) {
+        console.log("Отправка запроса на /refresh");
+        const refreshResponse = await fetch("/refresh", { credentials: "include" });
+        if (refreshResponse.ok) {
+            const refreshData = await refreshResponse.json();
+            localStorage.setItem("accessToken", refreshData.accessToken);
+            token = refreshData.accessToken;
+            options.headers["Authorization"] = `Bearer ${token}`;
+            response = await fetch(url, options);
+        } else {
+            localStorage.removeItem("accessToken");
+            localStorage.removeItem("username");
+            localStorage.removeItem("userId");
+            alert("Сессия истекла. Пожалуйста, войдите снова.");
+            window.location.href = "/login.html";
+        }
+    }
+    return response;
+}
+
+async function loadProductMap() {
+    try {
+        const response = await fetch('/api/products');
+        const products = await response.json();
+        products.forEach(product => {
+            productMap[product._id] = { name: product.name, price: product.price };
+        });
+        console.log("✅ Product Map загружен:", productMap);
+    } catch (error) {
+        console.error("Ошибка загрузки продуктов:", error);
+    }
+}
+
 
 console.log("Отправка запроса на /refresh");
-console.log("Токен перед запросом:", localStorage.getItem("token"));
+console.log("Токен перед запросом:", localStorage.getItem("accessToken"));
 
-document.addEventListener("DOMContentLoaded", async function () {
-    const token = localStorage.getItem("token");
 
-    if (!token && !sessionStorage.getItem("authChecked")) {
-    sessionStorage.setItem("authChecked", "true");
-    await refreshAccessToken();
-}
 
     const cartButton = document.getElementById("cartButton");
     const cartDropdown = document.getElementById("cartDropdown");
@@ -53,13 +87,8 @@ document.addEventListener("DOMContentLoaded", async function () {
     } else {
         console.warn("❌ cartButton или cartDropdown не найдены!");
     }
-});
 
-document.addEventListener("DOMContentLoaded", function () {
-    if (!localStorage.getItem("cookiesAccepted")) {
-        showCookieBanner();
-    }
-});
+
 
 function showCookieBanner() {
     const banner = document.createElement("div");
@@ -77,65 +106,228 @@ function showCookieBanner() {
     });
 }
 
+function renderCart() {
+    const cart = loadCartFromLocalStorage();
+    const cartItemsContainer = document.getElementById("cartItems");
+    const totalAmountElement = document.getElementById("totalAmount");
 
-document.addEventListener("DOMContentLoaded", function () {
-    if (localStorage.getItem("cookiesAccepted") === "true") {
-        const token = localStorage.getItem("token"); // Получаем токен
+    if (!cartItemsContainer || !totalAmountElement) return;
 
-        if (!token) {
-            console.warn("❌ Нет токена, не запрашиваем /account");
-            return;
-        }
+    cartItemsContainer.innerHTML = "";
+    let totalAmount = 0;
 
-        fetch("https://makadamia.onrender.com/account", {
-            method: "GET", // ✅ Добавляем явное указание метода
-            credentials: "include", // ✅ Передаем cookies
-            headers: {
-                "Authorization": `Bearer ${token}` // ✅ Передаем токен
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`Ошибка HTTP: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => console.log("✅ Данные аккаунта:", data))
-        .catch(error => console.error("❌ Ошибка загрузки аккаунта:", error));
-    } else {
-        console.log("⚠️ Пользователь не принял cookies. Запрос не отправлен.");
+    for (const productId in cart) {
+        const product = productMap[productId];
+        if (!product) continue;
+
+        const itemTotal = product.price * cart[productId].quantity;
+        totalAmount += itemTotal;
+
+        const cartItem = document.createElement("div");
+        cartItem.className = "cart-item";
+        cartItem.setAttribute("data-id", productId);
+        cartItem.innerHTML = `
+            <div class="item-info">${product.name} - ${itemTotal} ₽</div>
+            <div class="cart-buttons">
+                <button onclick="decrementItem('${productId}')">-</button>
+                <span class="quantity">${cart[productId].quantity}</span>
+                <button onclick="incrementItem('${productId}', ${product.price})">+</button>
+            </div>
+        `;
+        cartItemsContainer.appendChild(cartItem);
     }
-});
 
-async function addToCart(productId, price) {
-    const response = await fetch(`/products/${encodeURIComponent(productId)}`);  // Передаем ID для получения товара
+    totalAmountElement.textContent = `Итого: ${totalAmount} ₽`;
+}
 
-    if (!response.ok) {
-        console.error('Ошибка при получении товара');
+
+function updateAddToCartButton(productId) {
+    const addToCartButton = document.querySelector(`.add-to-cart-button[data-id="${productId}"]`);
+    if (addToCartButton) {
+        addToCartButton.textContent = "В корзине";
+        addToCartButton.disabled = true;
+    }
+}
+async function handleCheckoutFormSubmit(event) {
+    event.preventDefault();
+    const token = localStorage.getItem("accessToken");
+
+    if (!token) {
+        alert("Вы не авторизованы!");
         return;
     }
 
-    const product = await response.json();  // Получаем товар по ID
+    const cart = loadCartFromLocalStorage();
+    const items = Object.keys(cart).map(productId => ({
+        productId: productId,
+        quantity: cart[productId].quantity
+    }));
 
-    // Теперь у вас есть данные о товаре, включая productName
-    const productName = product.name; 
+    const nameInput = document.getElementById('customerName');
+    const addressInput = document.getElementById('customerAddress');
+    const additionalInfoInput = document.getElementById('additionalInfo');
+    const userId = localStorage.getItem("userId");
 
-    // Добавляем товар в корзину
-    if (cart[productName]) {
-        cart[productName].quantity += 1;  // Если товар уже есть, увеличиваем количество
-    } else {
-        cart[productName] = { 
-            name: product.name, 
-            price: product.price, 
-            quantity: 1 
-        };  // Если товара нет, добавляем его
+    const orderData = {
+        userId: userId,
+        name: nameInput.value,
+        address: addressInput.value,
+        additionalInfo: additionalInfoInput.value,
+        items: items
+    };
+
+    console.log("📡 Отправка данных заказа:", orderData);
+
+    try {
+        const response = await fetch("https://makadamia.onrender.com/api/order", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(orderData)
+        });
+
+        console.log("📥 Ответ от сервера:", response);
+
+        if (!response.ok) {
+            console.error(`❌ Ошибка ${response.status}:`, response.statusText);
+            alert("Ошибка при оформлении заказа.");
+            return;
+        }
+
+        const responseData = await response.json();
+        console.log("✅ Заказ успешно оформлен:", responseData);
+
+        alert("🎉 Заказ успешно оформлен!");
+        saveCartToLocalStorage({});
+        window.location.href = "index.html";
+    } catch (error) {
+        console.error("❌ Ошибка сети или сервера:", error);
+        alert("Ошибка при оформлении заказа. Проверьте соединение.");
+    }
+}
+
+const backToShoppingButton = document.getElementById("backToShopping");
+if (backToShoppingButton) {
+    backToShoppingButton.addEventListener("click", () => {
+        window.location.href = "index.html";
+    });
+}
+
+const checkoutForm = document.getElementById("checkoutForm");
+if (checkoutForm) {
+    checkoutForm.addEventListener("submit", handleCheckoutFormSubmit);
+}
+
+async function loadUserOrders() {
+    const userId = localStorage.getItem("userId");
+    if (!userId) return;
+
+    try {
+        const response = await fetch(`/user-orders/${userId}`, {
+            headers: { "Authorization": `Bearer ${localStorage.getItem("accessToken")}` }
+        });
+
+        const orders = await response.json();
+        const container = document.getElementById("ordersContainer");
+
+        if (orders.length === 0) {
+            container.innerHTML = "<p>У вас пока нет заказов.</p>";
+            return;
+        }
+
+        orders.forEach(order => {
+            const orderDiv = document.createElement("div");
+            orderDiv.classList.add("order");
+            orderDiv.innerHTML = `
+                <h3>Заказ №${order._id}</h3>
+                <p>Адрес: ${order.address}</p>
+                <p>Дата: ${new Date(order.createdAt).toLocaleDateString()}</p>
+                <ul>
+                    ${order.items.map(item => `
+                        <li>${item.productId.name} — ${item.quantity} шт. (${item.productId.price} ₽)</li>
+                    `).join("")}
+                </ul>
+                <hr>
+            `;
+            container.appendChild(orderDiv);
+        });
+    } catch (err) {
+        console.error("Ошибка загрузки заказов:", err);
+    }
+}
+
+
+function initializeAddToCartButtons() {
+    const addToCartButtons = document.querySelectorAll(".add-to-cart-button");
+    addToCartButtons.forEach(button => {
+        const productId = button.getAttribute("data-id");
+        const productName = button.getAttribute("data-name");
+        const productPrice = parseFloat(button.getAttribute("data-price"));
+
+        button.addEventListener("click", () => {
+            addToCart(productId, productName, productPrice);
+        });
+
+        // Проверяем, есть ли товар в корзине, чтобы обновить состояние кнопки
+        const cart = loadCartFromLocalStorage();
+        if (cart[productId]) {
+            updateAddToCartButton(productId);
+        }
+    });
+}
+function getCartItems() {
+    const stored = localStorage.getItem('cartItems');
+    if (!stored) return [];
+    try {
+        const parsed = JSON.parse(stored);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (err) {
+        return [];
+    }
+}
+
+function updateProductControls(productName, price) {
+    document.getElementById(`addButton_${productName}`).style.display = 'none';
+    document.getElementById(`removeBtn_${productName}`).style.display = 'inline-block';
+    document.getElementById(`quantity_${productName}`).style.display = 'inline-block';
+    document.getElementById(`addBtn_${productName}_inc`).style.display = 'inline-block';
+
+    const item = cartItems.find(item => item.productName === productName);
+    if (item) {
+        document.getElementById(`quantity_${productName}`).innerText = item.quantity;
+    }
+}
+
+function addToCart(productId, productName, productPrice) {
+    const username = localStorage.getItem("username");
+    if (!username) {
+        alert("Пожалуйста, войдите в систему, чтобы добавить товары в корзину.");
+        return;
     }
 
-    // Сохраняем корзину в localStorage
-    saveCartToLocalStorage();
-    updateCartDisplay();
-    replaceAddButtonWithControls(productName);  // Обновляем кнопку на карточке товара
+    const cartKey = `cart_${username}`;
+    let cart = JSON.parse(localStorage.getItem(cartKey)) || {};
+
+    if (cart[productId]) {
+        cart[productId].quantity += 1;
+    } else {
+        cart[productId] = {
+            name: productName,
+            price: productPrice,
+            quantity: 1
+        };
+    }
+
+    localStorage.setItem(cartKey, JSON.stringify(cart));
+    renderCart();
+    replaceAddButtonWithControls(productId, productName);
 }
+
+
+
+
 
 
 
@@ -157,51 +349,6 @@ function checkForEmptyCart(productName) {
     }
 }
 
-// Уменьшение количества товара
-function decrementItem(productName) {
-    if (cart[productName]) {
-        cart[productName].quantity -= 1;
-
-        const quantityDisplay = document.getElementById(`quantity_${productName}`);
-        const addButton = document.getElementById(`addButton_${productName}`);
-        const removeButton = document.getElementById(`removeBtn_${productName}`);
-        const addButtonControl = document.getElementById(`addBtn_${productName}`);
-
-        if (cart[productName].quantity === 0) {
-            // Удаляем товар из корзины
-            delete cart[productName];
-
-            // Показываем кнопку "Добавить", скрываем контролы и количество
-            addButton.style.display = "inline-block";
-            removeButton.style.display = "none";
-            addButtonControl.style.display = "none";
-            quantityDisplay.style.display = "none";
-        } else {
-            // Обновляем количество товара на карточке
-            if (quantityDisplay) {
-                quantityDisplay.textContent = cart[productName].quantity;
-                quantityDisplay.style.display = "inline-block";
-            }
-        }
-
-        saveCartToLocalStorage();
-        updateCartDisplay();
-        replaceAddButtonWithControls(productName);  // исправлено
-    }
-}
-// Увеличение количества товара
-function incrementItem(productName, price) {
-    if (cart[productName]) {
-        cart[productName].quantity += 1;
-    } else {
-        cart[productName] = { name: productName, price: price, quantity: 1 };
-    }
-
-    saveCartToLocalStorage();
-    updateCartDisplay();
-    updateQuantityDisplay(productName);
-    checkForEmptyCart(productName);  // Проверка, если товар в корзине не равен 0
-}
 function updateQuantityDisplay(productName) {
     const quantityElement = document.getElementById(`quantity_${productName}`);
     if (quantityElement) {
@@ -213,33 +360,41 @@ function getCookie(name) {
     return match ? match[2] : null;
 }
 // Преобразование кнопки "Добавить" в контролы "+", "-", и количество
-function replaceAddButtonWithControls(productName) {
+function replaceAddButtonWithControls(productId, productName) {
     const addButton = document.getElementById(`addButton_${productName}`);
-    const removeButton = document.getElementById(`removeBtn_${productName}`);
-    const addButtonControl = document.getElementById(`addBtn_${productName}`);
+    const removeBtn = document.getElementById(`removeBtn_${productName}`);
     const quantityDisplay = document.getElementById(`quantity_${productName}`);
+    const addBtn = document.getElementById(`addBtn_${productName}`);
 
-    if (cart[productName] && cart[productName].quantity > 0) {
-        addButton.style.display = "none";
-        removeButton.style.display = "inline-block";
-        addButtonControl.style.display = "inline-block";
+    if (addButton) addButton.style.display = "none";
+    if (removeBtn) removeBtn.style.display = "inline-block";
+    if (quantityDisplay) {
         quantityDisplay.style.display = "inline-block";
-        quantityDisplay.textContent = cart[productName].quantity;
-    } else {
-        addButton.style.display = "inline-block";
-        removeButton.style.display = "none";
-        addButtonControl.style.display = "none";
-        quantityDisplay.style.display = "none";
+        quantityDisplay.textContent = getProductQuantity(productId);
     }
+    if (addBtn) addBtn.style.display = "inline-block";
 }
-function revertControlsToAddButton(productName) {
+function restoreAddButton(productName) {
     const addButton = document.getElementById(`addButton_${productName}`);
-    const removeButton = document.getElementById(`removeBtn_${productName}`);
-    const addButtonControl = document.getElementById(`addBtn_${productName}`);
+    const removeBtn = document.getElementById(`removeBtn_${productName}`);
     const quantityDisplay = document.getElementById(`quantity_${productName}`);
+    const addBtn = document.getElementById(`addBtn_${productName}`);
+
+    if (addButton) addButton.style.display = "inline-block";
+    if (removeBtn) removeBtn.style.display = "none";
+    if (quantityDisplay) quantityDisplay.style.display = "none";
+    if (addBtn) addBtn.style.display = "none";
+}
+
+
+function revertControlsToAddButton(productId) {
+    const addButton = document.getElementById(`addButton_${productId}`);
+    const removeButton = document.getElementById(`removeBtn_${productId}`);
+    const addButtonControl = document.getElementById(`addBtn_${productId}`);
+    const quantityDisplay = document.getElementById(`quantity_${productId}`);
 
     if (!addButton || !removeButton || !addButtonControl || !quantityDisplay) {
-        console.warn(`❌ Ошибка: Не найдены элементы для товара ${productName}`);
+        console.warn(`❌ Ошибка: Не найдены элементы для товара ${productId}`);
         return;
     }
 
@@ -249,73 +404,59 @@ function revertControlsToAddButton(productName) {
     addButtonControl.style.display = "none";  // Скрываем кнопку "+"
     quantityDisplay.style.display = "none";  // Скрываем количество
 }
-//ощичение корзины
-document.addEventListener('DOMContentLoaded', () => {
-    const clearCartButton = document.getElementById('clear-cart');
-    const cartTotal = document.getElementById('totalAmount');
 
-    if (clearCartButton) {
-        clearCartButton.addEventListener('click', () => {
-            cart = {};  // Очистка корзины
-            localStorage.removeItem(`cart_${localStorage.getItem('username')}`);  // Удаление корзины из localStorage
-            updateCartDisplay();  // Обновление отображения корзины
-            cartTotal.textContent = 'Итого: 0 ₽';
 
-            // ОБНОВЛЕНИЕ карточек товаров
-            const productCards = document.querySelectorAll(".card-dish");
-            productCards.forEach(card => {
-                const addButton = card.querySelector(".add-button-size");
-                const removeButton = card.querySelector(".quantity-control");
-                const addButtonControl = card.querySelector(".quantity-size-button");
-                const quantityDisplay = card.querySelector(".quantity-display"); // Элемент с количеством
+function incrementItem(productId) {
+    let cartItems = loadCartFromLocalStorage();
+    const item = cartItems.find(item => item.productId === productId);
+    if (item) {
+        item.quantity += 1;
+    }
+    saveCartToLocalStorage(cartItems);
+    renderCart();
+}
 
-                // Скрытие всех кнопок и количества
-                if (addButton) addButton.style.display = "inline-block";
-                if (removeButton) removeButton.style.display = "none";
-                if (addButtonControl) addButtonControl.style.display = "none";
+function decrementItem(productId) {
+    let cartItems = loadCartFromLocalStorage();
+    const itemIndex = cartItems.findIndex(item => item.productId === productId);
+    if (itemIndex !== -1) {
+        cartItems[itemIndex].quantity -= 1;
+        if (cartItems[itemIndex].quantity === 0) {
+            cartItems.splice(itemIndex, 1);
+        }
+    }
+    saveCartToLocalStorage(cartItems);
+    renderCart();
+}
+async function loadAccountData() {
+    const token = localStorage.getItem('accessToken');
+    if (!token) return;
 
-                // Скрытие и очищение количества
-                if (quantityDisplay) {
-                    quantityDisplay.textContent = "";  // Очищаем количество
-                    quantityDisplay.style.display = "none";  // Скрываем элемент
-                }
-            });
+    try {
+        const res = await fetch('/account', {
+            headers: { 'Authorization': `Bearer ${token}` }
         });
+        if (!res.ok) throw new Error("Ошибка HTTP");
+
+        const data = await res.json();
+        document.getElementById('userName').textContent = data.name || '';
+        document.getElementById('customerName').value = data.name || '';
+        document.getElementById('customerAddress').value = data.city || '';
+
+    } catch (err) {
+        console.error("Ошибка загрузки аккаунта:", err);
     }
-});
+}
 
-// Обновление отображения корзины после очистки
-function updateCartDisplay() {
-    const cartItems = document.getElementById("cartItems");
-    if (!cartItems) return;
 
-    cartItems.innerHTML = ""; // Очищаем список товаров
-    let totalAmount = 0;
+function getProductQuantity(productId) {
+    const username = localStorage.getItem("username");
+    if (!username) return 0;
 
-    for (const productName in cart) {
-        const itemTotal = cart[productName].price * cart[productName].quantity;
-        totalAmount += itemTotal;
+    const cartKey = `cart_${username}`;
+    const cart = JSON.parse(localStorage.getItem(cartKey)) || {};
 
-        const cartItem = document.createElement("div");
-        cartItem.className = "cart-item";
-        cartItem.setAttribute("data-name", productName); // Используем productName
-        cartItem.innerHTML = `
-            <div class="item-info">${productName} - ${itemTotal} ₽</div>
-            <div class="cart-buttons">
-                <button onclick="decrementItem('${productName}')">-</button>
-                <span class="quantity">${cart[productName].quantity}</span>
-                <button onclick="incrementItem('${productName}', ${cart[productName].price})">+</button>
-            </div>
-        `;
-        cartItems.appendChild(cartItem);
-    }
-
-    document.getElementById("totalAmount").textContent = `Итого: ${totalAmount} ₽`;
-
-    // Если корзина пуста, скрываем её
-    if (Object.keys(cart).length === 0) {
-        document.getElementById("cartDropdown").style.display = "none";
-    }
+    return cart[productId] ? cart[productId].quantity : 0;
 }
 
 // Обновление отображения корзины и количества товара на карточке
@@ -351,12 +492,60 @@ function updateCartDisplay() {
         document.getElementById("cartDropdown").style.display = "none";
     }
 }
+function updateCartDisplay(productId, productName) {
+    const quantityDisplay = document.getElementById(`quantity_${productName}`);
+    if (quantityDisplay) {
+        const quantity = getProductQuantity(productId);
+        quantityDisplay.textContent = quantity;
+        if (quantity <= 0) {
+            restoreAddButton(productName);
+        }
+    }
+}
 
 // Сохранение корзины в localStorage
-function saveCartToLocalStorage() {
-    const username = localStorage.getItem("username");
-    if (username) {
-        localStorage.setItem(`cart_${username}`, JSON.stringify(cart)); // Сохраняем с уникальным ключом
+function saveCartToLocalStorage(cartItems) {
+    localStorage.setItem('cartItems', JSON.stringify(cartItems));
+}
+function renderCheckoutCart() {
+    const cart = loadCartFromLocalStorage();
+    const cartItemsContainer = document.getElementById("cartItems");
+    const cartTotalPrice = document.getElementById("cartTotalPrice");
+
+    cartItemsContainer.innerHTML = "";
+    let totalPrice = 0;
+
+    for (const productId in cart) {
+        const product = productMap[productId];
+
+        if (!product) continue;
+
+        const itemTotal = product.price * cart[productId].quantity;
+        totalPrice += itemTotal;
+
+        const cartItem = document.createElement("div");
+        cartItem.className = "cart-item";
+        cartItem.setAttribute("data-id", productId);
+        cartItem.innerHTML = `
+            <div class="item-info">${product.name} - ${itemTotal} ₽</div>
+            <div class="cart-buttons">
+                <button onclick="decrementItem('${productId}')">-</button>
+                <span class="quantity">${cart[productId].quantity}</span>
+                <button onclick="incrementItem('${productId}', ${product.price})">+</button>
+            </div>
+        `;
+        cartItemsContainer.appendChild(cartItem);
+    }
+
+    cartTotalPrice.textContent = `Итого: ${totalPrice} ₽`;
+}
+
+function updateTotal() {
+    const cartItems = getCartItems();
+    const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const totalAmount = document.getElementById('totalAmount');
+    if (totalAmount) {
+        totalAmount.textContent = `Итого: ${total} ₽`;
     }
 }
 
@@ -377,21 +566,45 @@ function resetAddToCartButtons() {
     }
 }
 function loadCartFromLocalStorage() {
-    const username = localStorage.getItem("username");
-    if (username) {
-        const storedCart = JSON.parse(localStorage.getItem(`cart_${username}`)); // Загружаем корзину с уникальным ключом
-        if (storedCart) {
-            cart = storedCart;
-        }
-        updateCartDisplay(); // Обновляем отображение корзины
+    const stored = localStorage.getItem('cartItems');
+    if (!stored) return [];
+    try {
+        const parsed = JSON.parse(stored);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (err) {
+        return [];
     }
 }
-// Загрузка корзины из localStorage при загрузке страницы
-document.addEventListener("DOMContentLoaded", () => {
-    loadCartFromLocalStorage();
-    const cartModal = document.getElementById("cartModal");
-    if (cartModal) cartModal.style.display = "none";
-});
+async function loadAllOrders() {
+    const token = localStorage.getItem("accessToken");
+
+    try {
+        const response = await fetch("/orders", {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const orders = await response.json();
+
+        const container = document.getElementById("allOrdersContainer");
+
+        orders.forEach(order => {
+            const orderDiv = document.createElement("div");
+            orderDiv.innerHTML = `
+                <h3>Заказ №${order._id}</h3>
+                <p>Адрес: ${order.address}</p>
+                <p>Дата: ${new Date(order.createdAt).toLocaleDateString()}</p>
+                <ul>
+                    ${order.items.map(item => `
+                        <li>${item.productId.name} — ${item.quantity} шт. (${item.productId.price} ₽)</li>
+                    `).join("")}
+                </ul>
+                <hr>
+            `;
+            container.appendChild(orderDiv);
+        });
+    } catch (err) {
+        console.error("Ошибка загрузки всех заказов:", err);
+    }
+}
 
 // Функция загрузки корзины
 function getCookie(name) {
@@ -429,16 +642,6 @@ async function fetchWithAuth(url, options = {}) {
 
     return res;
 }
-document.addEventListener('DOMContentLoaded', async () => {
-    const accessToken = localStorage.getItem('accessToken');  // Получаем токен из localStorage
-
-    if (accessToken) {
-        document.getElementById('authButton').textContent = 'Личный кабинет';  // Изменяем кнопку
-        await loadUserData(accessToken);  // Загружаем данные пользователя
-    } else {
-        document.getElementById('authButton').textContent = 'Вход';  // Если токен отсутствует, отображаем "Вход"
-    }
-});
 
 
 function getTokenExp(token) {
@@ -454,7 +657,7 @@ function getTokenExp(token) {
 async function refreshAccessToken() {
     console.log("🔄 Запрос на обновление токена...");
 
-    const token = localStorage.getItem("token"); // Проверка наличия токена
+    const token = localStorage.getItem("accessToken"); // Проверка наличия токена
     if (!token) {
         console.warn("❌ Нет токена, пропускаем обновление");
         return null; // Если токена нет, не отправляем запрос на обновление
@@ -473,30 +676,13 @@ async function refreshAccessToken() {
 
         const data = await response.json();
         console.log("✅ Новый токен получен:", data.accessToken);
-        localStorage.setItem("token", data.accessToken);  // Сохраняем новый токен
+        localStorage.setItem("accessToken", data.accessToken);  // Сохраняем новый токен
         return data.accessToken;
     } catch (error) {
         console.error("❌ Ошибка при обновлении токена:", error);
         return null;
     }
 }
-
-
-async function loadUserData(token) {
-    const response = await fetch("/account", {
-        headers: {
-            "Authorization": `Bearer ${token}`  // Передаем токен в заголовке
-        }
-    });
-
-    if (response.ok) {
-        const data = await response.json();
-        document.getElementById("username").textContent = data.username;  // Отображаем данные пользователя
-    } else {
-        localStorage.removeItem('accessToken');  // Если токен недействителен, удаляем его
-    }
-}
-
 
 
 function generateTokens(user, site) {
@@ -519,29 +705,23 @@ function generateTokens(user, site) {
 
 
 function isTokenExpired(token) {
-    if (!token) return true; // Если токена нет, он считается истекшим
-
+    if (!token) return true;
     try {
-        const base64 = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"); // Исправляем base64
-        const payload = JSON.parse(atob(base64)); // Декодируем payload
-        return (Date.now() / 1000) >= payload.exp; // Проверяем срок действия
+        const base64 = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+        const payload = JSON.parse(atob(base64));
+        return (Date.now() / 1000) >= payload.exp;
     } catch (e) {
-        console.error("❌ Ошибка декодирования токена:", e);
         return true;
     }
 }
 
-
-// Запускаем проверку токена раз в минуту
 setInterval(() => {
-    if (isTokenExpired()) {
-      console.log("⏳ Проверяем обновление токена...");
-        console.log("🔄 Токен истёк, обновляем...");
-        refreshAccessToken().then(newToken => {
-            console.log("✅ Новый токен после автообновления:", newToken);
-        }).catch(err => console.error("❌ Ошибка обновления:", err));
+    const token = localStorage.getItem("accessToken");
+    if (isTokenExpired(token)) {
+        refreshAccessToken();
     }
-}, 60000); // 1 раз в минуту
+}, 60000);
+
 
 function editField(field) {
     const input = document.getElementById(field + "Input");
@@ -555,7 +735,7 @@ function editField(field) {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${localStorage.getItem("token")}`
+                Authorization: `Bearer ${localStorage.getItem("accessToken")}`
             },
             body: JSON.stringify({ [field]: input.value }) // Отправляем данные на сервер
         })
@@ -567,58 +747,23 @@ function editField(field) {
         .catch(error => console.log("Ошибка обновления профиля:", error));
     }
 }
+function setupAuthButtons() {
+    const token = localStorage.getItem("accessToken");
+    const authButton = document.getElementById("authButton");
+    const cabinetButton = document.getElementById("cabinetButton");
 
-document.addEventListener("DOMContentLoaded", () => {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-        console.warn("❌ Нет токена, не запрашиваем /account");
-        return;
-    }
-
-    fetch("https://makadamia.onrender.com/account", {
-        method: "GET", // ✅ Добавляем явное указание метода
-        headers: { 
-            "Authorization": `Bearer ${token}` // ✅ Передаем токен
-        }
-    })
-    .then(res => {
-        if (!res.ok) {
-            throw new Error(`Ошибка HTTP: ${res.status}`);
-        }
-        return res.json();
-    })
-    .then(data => {
-        const nameInput = document.getElementById("nameInput");
-        const cityInput = document.getElementById("cityInput");
-
-        if (nameInput) nameInput.value = data.name || "";
-        if (cityInput) cityInput.value = data.city || "";
-    })
-    .catch(error => console.error("❌ Ошибка загрузки профиля:", error));
-});
-
-document.addEventListener("DOMContentLoaded", () => {
-    console.log("Страница загружена");
-
-    const editNameBtn = document.getElementById("editName");
-    const editCityBtn = document.getElementById("editCity");
-
-    if (editNameBtn) {
-        editNameBtn.addEventListener("click", () => editField("name"));
+    if (token) {
+        if (authButton) authButton.style.display = "none";
+        if (cabinetButton) cabinetButton.style.display = "inline-block";
     } else {
-        console.warn("Кнопка editName не найдена!");
+        if (authButton) authButton.style.display = "inline-block";
+        if (cabinetButton) cabinetButton.style.display = "none";
     }
+}
 
-    if (editCityBtn) {
-        editCityBtn.addEventListener("click", () => editField("city"));
-    } else {
-        console.warn("Кнопка editCity не найдена!");
-    }
-});
 // Проверка состояния авторизации
 function checkAuthStatus() {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("accessToken"); // Должно быть accessToken
     const username = localStorage.getItem("username");
     const authButton = document.getElementById("authButton");
     const cabinetButton = document.getElementById("cabinetButton");
@@ -636,13 +781,12 @@ function checkAuthStatus() {
         console.log("⚠️ Пользователь не авторизован");
         authButton.style.display = "inline-block";
         cabinetButton.style.display = "none";
-        sessionStorage.removeItem("authChecked"); // Убедитесь, что снова проверите авторизацию
+        sessionStorage.removeItem("authChecked");
     }
 }
 
-
 async function logout() {
-    const token = localStorage.getItem("token"); // Получаем токен
+    const token = localStorage.getItem("accessToken"); // Получаем токен
 
     try {
         const response = await fetch("https://makadamia.onrender.com/logout", {
@@ -655,8 +799,9 @@ async function logout() {
 
         if (response.ok) {
             // Очистка токенов и cookies
-            localStorage.removeItem('token');
-            sessionStorage.removeItem('token');
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('userId');
+            localStorage.removeItem('username');
             document.cookie = "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
             document.cookie = "refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
             
@@ -670,11 +815,18 @@ async function logout() {
 }
 
 
-
+function handleAuthClick() {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+        window.location.href = "login.html";
+    } else {
+        window.location.href = "account.html";
+    }
+}
 
 // Переход на страницу личного кабинета
 function openCabinet() {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('accessToken');
     const username = localStorage.getItem('username');
 
    if (!token && !sessionStorage.getItem("authFailed")) {
@@ -686,16 +838,14 @@ function openCabinet() {
     }
 }
 
-// Инициализация авторизации и кнопок при загрузке страницы
-document.addEventListener("DOMContentLoaded", function () {
-    checkAuthStatus();
+
 
     // Убеждаемся, что кнопка "Выход" отображается только в личном кабинете
     const logoutButton = document.getElementById('logoutButton');
     if (logoutButton && window.location.pathname !== '/account.html') {
         logoutButton.style.display = 'none';
     }
-});
+
 
 // Расчет баланса на основе корзины
 function calculateBalance() {
@@ -712,40 +862,7 @@ function goToCheckoutPage() {
 }
 
 
-document.addEventListener("DOMContentLoaded", () => {
-    const token = localStorage.getItem('token'); // Получаем токен из localStorage
-    if (!token) {
-        document.getElementById('usernameDisplay').innerText = "Гость";
-        return;
-    }
 
-    fetch("https://makadamia.onrender.com/account", {
-        method: "GET",
-        credentials: "include", // ✅ Добавляем передачу cookies
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
-    })
-    .then(res => {
-        if (!res.ok) {
-            throw new Error(`Ошибка HTTP: ${res.status}`);
-        }
-        return res.json();
-    })
-    .then(data => {
-        if (data.username) {
-            document.getElementById('usernameDisplay').innerText = data.username;
-            document.getElementById('authButton').style.display = 'none'; // Скрываем "Вход"
-            document.getElementById('cabinetButton').style.display = 'inline-block'; // Показываем "Личный кабинет"
-        } else {
-            document.getElementById('usernameDisplay').innerText = "Ошибка загрузки";
-        }
-    })
-    .catch(error => {
-        console.error("Ошибка загрузки аккаунта:", error);
-        document.getElementById('usernameDisplay').innerText = "Ошибка загрузки";
-    });
-});
 async function updateAccount(newUsername, newPassword) {
   const token = localStorage.getItem("accessToken");
 
@@ -761,75 +878,60 @@ async function updateAccount(newUsername, newPassword) {
   const data = await response.json();
   console.log("Ответ от сервера:", data);
 }
-document.addEventListener('DOMContentLoaded', async () => {
-    const accessToken = localStorage.getItem('accessToken');
-    const authButton = document.getElementById('authButton');  // Кнопка Вход/Личный кабинет
 
-    if (accessToken) {
-        authButton.textContent = 'Личный кабинет';
-        await loadUserData(accessToken);  // Загрузить данные аккаунта
-    } else {
-        authButton.textContent = 'Вход';
-    }
+function loadUserData() {
+    const customerNameInput = document.getElementById("customerName");
+    const customerAddressInput = document.getElementById("customerAddress");
+    const additionalInfoInput = document.getElementById("additionalInfo");
+
+    const userData = JSON.parse(localStorage.getItem("userData")) || {};
+
+    if (customerNameInput) customerNameInput.value = userData.name || "";
+    if (customerAddressInput) customerAddressInput.value = userData.address || "";
+    if (additionalInfoInput) additionalInfoInput.value = userData.additionalInfo || "";
+}
+document.addEventListener("DOMContentLoaded", async () => {
+    await loadProductMap();  // Загружаем продукты
+    renderCart();  // Отображаем корзину
+    checkAuthStatus(); // Проверяем авторизацию
+    loadCartFromLocalStorage();  // Загружаем корзину из localStorage
+    loadUserData(); // Загружаем данные пользователя, если есть
+    initializeAddToCartButtons(); // Настраиваем кнопки "Добавить в корзину"
+    setupAuthButtons(); // Настраиваем кнопки авторизации (если есть)
+    loadOrders(); // Загружаем заказы для личного кабинета (если есть)
+    loadUserOrders();
+    loadAccountData();
 });
 
-async function loadUserData(token) {
-    const response = await fetch('/account', {
-        headers: { 'Authorization': `Bearer ${token}` },
-    });
 
-    if (response.ok) {
-        const userData = await response.json();
-        document.getElementById('username').textContent = userData.username;
-    } else {
-        localStorage.removeItem('accessToken');
-    }
-}
 
-function handleAuthClick() {
-    const token = localStorage.getItem('token');
-    if (token) {
-        window.location.href = 'account.html'; // Если пользователь авторизован, переходим в личный кабинет
-    } else {
-        window.location.href = 'login.html'; // Если нет, перенаправляем на страницу входа
-    }
-}
-
-// Убедитесь, что этот код в `script.js` загружен перед его вызовом в HTML
-document.addEventListener("DOMContentLoaded", function () {
-    const authButton = document.getElementById("authButton");
-    if (authButton) {
-        authButton.onclick = handleAuthClick;
-    }
-});
 async function loadOrders() {
-    const token = localStorage.getItem("token");
-    if (!token) {
-        alert("Вы не авторизованы!");
-        return;
-    }
-
     try {
-        const response = await fetch("https://makadamia.onrender.com/orders", {
-            method: "GET",
-            headers: {
-                "Authorization": `Bearer ${token}`,
-                "Content-Type": "application/json"
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error("Ошибка при загрузке заказов");
-        }
-
+        const response = await fetchWithAuth("/orders");
         const orders = await response.json();
-        displayOrders(orders); // Вызываем функцию для отображения заказов
 
+        const container = document.getElementById("allOrdersContainer");
+        container.innerHTML = "";
+
+        orders.forEach(order => {
+            const orderDiv = document.createElement("div");
+            orderDiv.innerHTML = `
+                <h3>Заказ №${order._id}</h3>
+                <p>Пользователь: ${order.userId.username}</p>
+                <p>Адрес: ${order.address}</p>
+                <p>Дата: ${new Date(order.createdAt).toLocaleDateString()}</p>
+                <ul>
+                    ${order.items.map(item => `<li>${item.productId.name} — ${item.quantity} шт. (${item.productId.price} ₽)</li>`).join("")}
+                </ul>
+                <hr>
+            `;
+            container.appendChild(orderDiv);
+        });
     } catch (error) {
         console.error("Ошибка при загрузке заказов:", error);
-        alert("Ошибка при загрузке заказов");
     }
 }
+
 
 // Отображение заказов на странице
 function displayOrders(orders) {
