@@ -766,41 +766,18 @@ function editField(field) {
         .catch(error => console.log("Ошибка обновления профиля:", error));
     }
 }
-function setupAuthButtons() {
-    const token = localStorage.getItem("accessToken");
-    const authButton = document.getElementById("authButton");
-    const cabinetButton = document.getElementById("cabinetButton");
-
-    if (token) {
-        if (authButton) authButton.style.display = "none";
-        if (cabinetButton) cabinetButton.style.display = "inline-block";
-    } else {
-        if (authButton) authButton.style.display = "inline-block";
-        if (cabinetButton) cabinetButton.style.display = "none";
-    }
-}
 
 // Проверка состояния авторизации
 function checkAuthStatus() {
-    const token = localStorage.getItem("accessToken"); // Должно быть accessToken
+    const token = localStorage.getItem("accessToken");
     const username = localStorage.getItem("username");
-    const authButton = document.getElementById("authButton");
-    const cabinetButton = document.getElementById("cabinetButton");
-
-    if (!authButton || !cabinetButton) {
-        console.warn("❌ Не найдены кнопки 'Вход' или 'Личный кабинет'!");
-        return;
-    }
-
-    if (token && username && !isTokenExpired(token)) { 
-        console.log("✅ Пользователь авторизован");
-        authButton.style.display = "none";
-        cabinetButton.style.display = "inline-block";
+    
+    if (token && !isTokenExpired(token)) {
+        // Пользователь авторизован
+        console.log('✅ Пользователь авторизован');
     } else {
-        console.log("⚠️ Пользователь не авторизован");
-        authButton.style.display = "inline-block";
-        cabinetButton.style.display = "none";
-        sessionStorage.removeItem("authChecked");
+        // Пользователь не авторизован
+        console.log('⚠️ Пользователь не авторизован');
     }
 }
 
@@ -857,6 +834,29 @@ function openCabinet() {
     }
 }
 
+function setupAuthButtons() {
+    const token = localStorage.getItem("accessToken");
+    const authButton = document.getElementById("authButton");
+    const cabinetButton = document.getElementById("cabinetButton");
+
+    if (token && !isTokenExpired(token)) {
+        if (authButton) authButton.style.display = "none";
+        if (cabinetButton) {
+            cabinetButton.style.display = "inline-block";
+            cabinetButton.addEventListener("click", () => {
+                window.location.href = "/account.html";
+            });
+        }
+    } else {
+        if (authButton) {
+            authButton.style.display = "inline-block";
+            authButton.addEventListener("click", () => {
+                window.location.href = "/login.html";
+            });
+        }
+        if (cabinetButton) cabinetButton.style.display = "none";
+    }
+}
 
 
     // Убеждаемся, что кнопка "Выход" отображается только в личном кабинете
@@ -911,15 +911,15 @@ function loadUserData() {
 }
 document.addEventListener("DOMContentLoaded", async () => {
     await loadProductMap();  // Загружаем продукты
+    checkAuthStatus(); // Проверка авторизации — до остальных действий!
+    setupAuthButtons(); // Настройка кнопок
+    renderCart();  
     loadUserOrders();
     loadAccountData();
-    renderCart();  // Отображаем корзину
-    checkAuthStatus(); // Проверяем авторизацию
-    loadCartFromLocalStorage();  // Загружаем корзину из localStorage
-    loadUserData(); // Загружаем данные пользователя, если есть
-    initializeAddToCartButtons(); // Настраиваем кнопки "Добавить в корзину"
-    setupAuthButtons(); // Настраиваем кнопки авторизации (если есть)
-    loadOrders(); // Загружаем заказы для личного кабинета (если есть)
+    loadCartFromLocalStorage();
+    loadUserData();
+    initializeAddToCartButtons();
+    loadOrders();
 });
 
 
