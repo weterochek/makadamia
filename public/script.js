@@ -269,7 +269,7 @@ function addToCart(productId, productName, price) {
 function renderCart() {
     const cartContainer = document.getElementById('cart-items');
     
-    // Проверяем, существует ли элемент cart-items перед манипуляциями с ним
+    // Проверка на существование элемента cart-items перед манипуляциями с ним
     if (!cartContainer) {
         console.error("Элемент с id 'cart-items' не найден на странице.");
         return;  // Прерываем выполнение, если элемент не найден
@@ -278,6 +278,10 @@ function renderCart() {
     cartContainer.innerHTML = '';  // Очищаем корзину
 
     const cartItems = getCartItems();  // Получаем элементы корзины
+    if (cartItems.length === 0) {
+        cartContainer.innerHTML = '<p>Корзина пуста</p>';
+        return;  // Если корзина пуста, выводим сообщение
+    }
 
     cartItems.forEach(item => {
         const itemElement = document.createElement('div');
@@ -290,6 +294,7 @@ function renderCart() {
         cartContainer.appendChild(itemElement);  // Добавляем товар в корзину
     });
 }
+
 
 function updateQuantityDisplay(productName) {
     const quantityElement = document.getElementById(`quantity_${productName}`);
@@ -406,18 +411,23 @@ function replaceAddButtonWithControls(productId) {
     const addButtonControl = document.getElementById(`addBtn_${productId}_inc`);
     const quantityDisplay = document.getElementById(`quantity_${productId}`);
 
+    // Проверка на существование элементов
+    if (!addButton || !removeButton || !addButtonControl || !quantityDisplay) {
+        console.error("Не все элементы найдены для обновления: ", productId);
+        return;
+    }
+
     let cartItems = getCartItems();
     const item = cartItems.find(item => item.productId === productId);
 
     if (item) {
-        addButton.style.display = "none";  // Прячем кнопку "Добавить"
-        removeButton.style.display = "inline-block";  // Показываем кнопку "-"
-        addButtonControl.style.display = "inline-block";  // Показываем кнопку "+"
-        quantityDisplay.style.display = "inline-block";  // Показываем количество
-        quantityDisplay.textContent = item.quantity;  // Отображаем количество товара
+        addButton.style.display = "none";  // Скрыть кнопку "Добавить"
+        removeButton.style.display = "inline-block";  // Показать кнопку "-"
+        addButtonControl.style.display = "inline-block";  // Показать кнопку "+"
+        quantityDisplay.style.display = "inline-block";  // Показать количество
+        quantityDisplay.textContent = item.quantity;  // Отобразить количество товара
     }
 }
-
 
 
 function revertControlsToAddButton(productId) {
