@@ -68,7 +68,16 @@ function isTokenExpired(token) {
     }
 }
 
-
+// Для получения заказов пользователя
+app.get('/user-orders/:userId', authMiddleware, async (req, res) => {
+    try {
+        const orders = await Order.find({ user: req.params.userId });
+        res.json(orders);
+    } catch (error) {
+        console.error("Ошибка при получении заказов:", error);
+        res.status(500).json({ message: "Ошибка при получении заказов" });
+    }
+});
 // Перенаправление HTTP на HTTPS
 app.use((req, res, next) => {
     if (process.env.NODE_ENV === "production") {
