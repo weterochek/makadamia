@@ -75,7 +75,7 @@ function renderCheckoutCart() {
 
 // Уменьшение количества товара
 function incrementItem(productId) {
-    let cart = JSON.parse(localStorage.getItem('cartItems')) || [];
+    let cartItems = JSON.parse(localStorage.getItem('cartItems') || '[]');
     const item = cart.find(item => item.productId === productId);
     if (item) {
         item.quantity += 1;
@@ -85,7 +85,7 @@ function incrementItem(productId) {
 }
 
 function decrementItem(productId) {
-    let cart = JSON.parse(localStorage.getItem('cartItems')) || [];
+    let cartItems = JSON.parse(localStorage.getItem('cartItems') || '[]')
     const index = cart.findIndex(item => item.productId === productId);
     if (index !== -1) {
         cart[index].quantity -= 1;
