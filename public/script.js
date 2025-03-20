@@ -794,6 +794,20 @@ async function loadUserData() {
         alert("Не удалось загрузить данные профиля.");
     }
 }
+function setupAuthButtons() {
+    const authButton = document.getElementById("authButton");
+    const cabinetButton = document.getElementById("cabinetButton");
+
+    // Логика для отображения кнопок входа и кабинета
+    if (localStorage.getItem("accessToken")) {
+        authButton.style.display = "none";
+        cabinetButton.style.display = "inline-block";
+    } else {
+        authButton.style.display = "inline-block";
+        cabinetButton.style.display = "none";
+    }
+}
+
 
 document.addEventListener("DOMContentLoaded", async () => {
     await loadProductMap(); 
