@@ -16,16 +16,14 @@ window.onload = function () {
 };
 async function loadProductMap() {
     try {
-        const response = await fetch("/api/products");
+        const response = await fetch('https://makadamia.onrender.com/api/products');
         const products = await response.json();
-
         products.forEach(product => {
             productMap[product._id] = { name: product.name, price: product.price };
         });
-
         console.log("✅ Product Map загружен:", productMap);
     } catch (error) {
-        console.error("Ошибка загрузки продуктов:", error);
+        console.error("Ошибка загрузки productMap:", error);
     }
 }
 
@@ -188,13 +186,9 @@ async function handleCheckoutFormSubmit(event) {
     }
 }
 document.addEventListener("DOMContentLoaded", () => {
-    loadProductMap().then(() => {
-        loadCartFromLocalStorage();
-        renderCart();
-        loadUserData(); // если есть
-        setupAuthButtons(); // если есть кнопки авторизации
-    });
-});
+    renderCheckoutCart();
+    loadUserData();
+    initializeAddToCartButtons();
 
     const backToShoppingButton = document.getElementById("backToShopping");
     if (backToShoppingButton) {
@@ -249,53 +243,48 @@ function updateProductControls(productName, price) {
     }
 }
 
-function addToCart(productId, productName, productPrice) {
-    let cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
-    const existingItem = cartItems.find(item => item.productId === productId);
+function addToCart(productId, productName, price) {
+    let cartItems = getCartItems();
 
+    const existingItem = cartItems.find(item => item.productId === productId);
     if (existingItem) {
         existingItem.quantity += 1;
     } else {
-        cartItems.push({ productId: productId, quantity: 1 });
+        cartItems.push({
+            productId: productId,
+            productName: productName,
+            price: price,
+            quantity: 1
+        });
     }
 
     localStorage.setItem('cartItems', JSON.stringify(cartItems));
     renderCart();
+    updateCardControls(productId); // чтобы кнопки поменялись
 }
 
 
-
 function renderCart() {
-    const cartItemsContainer = document.getElementById('cartItems');
-    const totalAmountElement = document.getElementById('totalAmount');
+    const cartContainer = document.getElementById('cart-items');
+    cartContainer.innerHTML = '';
 
-    if (!cartItemsContainer || !totalAmountElement) return;
-
-    cartItemsContainer.innerHTML = "";
-    let totalAmount = 0;
-    const cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+    const cartItems = getCartItems(); // исправлено
 
     cartItems.forEach(item => {
-        const product = productMap[item.productId];
-        if (!product) return;
-
-        const itemTotal = product.price * item.quantity;
-        totalAmount += itemTotal;
-
-        const cartItem = document.createElement('div');
-        cartItem.className = 'cart-item';
-        cartItem.innerHTML = `
-            <div>${product.name} - ${item.quantity} шт. - ${itemTotal} ₽</div>
-            <div>
-                <button onclick="decrementItem('${item.productId}')">-</button>
-                <span>${item.quantity}</span>
-                <button onclick="incrementItem('${item.productId}', ${product.price})">+</button>
-            </div>
+        const itemElement = document.createElement('div');
+        itemElement.innerHTML = `
+            ${item.productName} - ${item.quantity} шт. - ${item.price * item.quantity} ₽
+            <button class="quantity-control quantity-button-size" onclick="decrementItem('${item.productId}')">-</button>
+            <span>${item.quantity}</span>
+            <button class="quantity-control quantity-button-size" onclick="incrementItem('${item.productId}', ${item.price})">+</button>
         `;
-        cartItemsContainer.appendChild(cartItem);
+        cartContainer.appendChild(itemElement);
+
+        // Обновляем кнопки в карточке
+        updateProductControls(item.productId, item.price);
     });
 
-    totalAmountElement.textContent = `Итого: ${totalAmount} ₽`;
+    updateTotal();
 }
 
 
