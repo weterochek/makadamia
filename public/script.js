@@ -245,7 +245,6 @@ function updateProductControls(productName, price) {
 
 function addToCart(productId, productName, price) {
     let cartItems = getCartItems();
-
     const existingItem = cartItems.find(item => item.productId === productId);
     if (existingItem) {
         existingItem.quantity += 1;
@@ -257,10 +256,8 @@ function addToCart(productId, productName, price) {
             quantity: 1
         });
     }
-
     localStorage.setItem('cartItems', JSON.stringify(cartItems));
     renderCart();
-    updateCardControls(productId); // чтобы кнопки поменялись
 }
 
 
@@ -345,10 +342,9 @@ function decrementItem(productName) {
 // Увеличение количества товара
 function incrementItem(productId) {
     let cartItems = getCartItems();
-    const itemIndex = cartItems.findIndex(item => item.productId === productId);
-
-    if (itemIndex !== -1) {
-        cartItems[itemIndex].quantity += 1;
+    const item = cartItems.find(item => item.productId === productId);
+    if (item) {
+        item.quantity += 1;
         localStorage.setItem('cartItems', JSON.stringify(cartItems));
         renderCart();
     }
@@ -356,12 +352,11 @@ function incrementItem(productId) {
 
 function decrementItem(productId) {
     let cartItems = getCartItems();
-    const itemIndex = cartItems.findIndex(item => item.productId === productId);
-
-    if (itemIndex !== -1) {
-        cartItems[itemIndex].quantity -= 1;
-        if (cartItems[itemIndex].quantity === 0) {
-            cartItems.splice(itemIndex, 1);
+    const item = cartItems.find(item => item.productId === productId);
+    if (item) {
+        item.quantity -= 1;
+        if (item.quantity <= 0) {
+            cartItems = cartItems.filter(i => i.productId !== productId);
         }
         localStorage.setItem('cartItems', JSON.stringify(cartItems));
         renderCart();
