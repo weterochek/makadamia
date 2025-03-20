@@ -26,36 +26,42 @@ function saveCartToLocalStorage() {
 
 
 // Отображение корзины
-async function renderCheckoutCart() {
+function renderCheckoutCart() {
+    const cartItemsContainer = document.getElementById("cartItems");
+    const totalAmountElement = document.getElementById("totalAmount");
+    cartItemsContainer.innerHTML = "";
+    let totalAmount = 0;
+
+    // ✅ Безопасно парсим корзину:
+    let cart = [];
     const cartRaw = localStorage.getItem('cartItems');
-    const cart = cartRaw ? JSON.parse(cartRaw) : [];
-    const productListContainer = document.querySelector('.checkout__list');
-    const checkoutTotal = document.querySelector('.checkout__total-price span');
-
-    productListContainer.innerHTML = "";
-    let totalPrice = 0;
-
-    for (const item of cart) {
-        const product = productMap[item.productId];
-        if (!product) continue;
-
-        const itemTotal = product.price * item.quantity;
-        totalPrice += itemTotal;
-
-        const itemElement = document.createElement('div');
-        itemElement.classList.add('checkout__item');
-        itemElement.innerHTML = `
-            <div class="checkout__item-info">
-                <p>${product.name}</p>
-                <p>Количество: ${item.quantity}</p>
-                <p>Цена: ${item.price} ₽</p>
-            </div>
-        `;
-        productListContainer.appendChild(itemElement);
+    try {
+        if (cartRaw && cartRaw !== 'undefined') {
+            cart = JSON.parse(cartRaw);
+        }
+    } catch (e) {
+        console.error("❌ Ошибка парсинга cartItems в renderCheckoutCart:", e);
+        cart = [];
     }
 
-    checkoutTotal.textContent = totalPrice + ' ₽';
+    cart.forEach(item => {
+        const product = productMap[item.productId];
+        if (!product) return;
+
+        const itemTotal = product.price * item.quantity;
+        totalAmount += itemTotal;
+
+        const cartItem = document.createElement('div');
+        cartItem.className = 'cart-item';
+        cartItem.innerHTML = `
+            <div>${product.name} - ${item.quantity} шт. - ${itemTotal} ₽</div>
+        `;
+        cartItemsContainer.appendChild(cartItem);
+    });
+
+    totalAmountElement.textContent = `Итого: ${totalAmount} ₽`;
 }
+
 
 
 
@@ -195,13 +201,23 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 }); //
 function loadCartFromLocalStorage() {
-    const cartRaw = localStorage.getItem('cartItems');
-    const cart = cartRaw ? JSON.parse(cartRaw) : [];
     const orderSummary = document.getElementById('orderSummary');
     if (!orderSummary) return;
     orderSummary.innerHTML = '';
 
     let totalAmount = 0;
+
+    // ✅ Безопасно парсим корзину:
+    let cart = [];
+    const cartRaw = localStorage.getItem('cartItems');
+    try {
+        if (cartRaw && cartRaw !== 'undefined') {
+            cart = JSON.parse(cartRaw);
+        }
+    } catch (e) {
+        console.error("❌ Ошибка парсинга cartItems в loadCartFromLocalStorage:", e);
+        cart = [];
+    }
 
     cart.forEach(item => {
         const product = productMap[item.productId];
@@ -220,6 +236,7 @@ function loadCartFromLocalStorage() {
         totalOrderAmount.textContent = totalAmount + ' ₽';
     }
 }
+
             // Загружаем корзину
 
 
