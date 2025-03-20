@@ -248,7 +248,7 @@ function addToCart(productId, productName, price) {
     const existingItem = cartItems.find(item => item.productId === productId);
 
     if (existingItem) {
-        existingItem.quantity += 1;  // Увеличиваем количество
+        existingItem.quantity += 1;  // Увеличиваем количество товара
     } else {
         cartItems.push({
             productId: productId,
@@ -265,9 +265,10 @@ function addToCart(productId, productName, price) {
 
 
 
+
 function renderCart() {
     const cartContainer = document.getElementById('cart-items');
-
+    
     // Проверяем, существует ли элемент cart-items перед манипуляциями с ним
     if (!cartContainer) {
         console.error("Элемент с id 'cart-items' не найден на странице.");
@@ -289,7 +290,6 @@ function renderCart() {
         cartContainer.appendChild(itemElement);  // Добавляем товар в корзину
     });
 }
-
 
 function updateQuantityDisplay(productName) {
     const quantityElement = document.getElementById(`quantity_${productName}`);
@@ -356,15 +356,15 @@ function incrementItem(productId, price) {
 function decrementItem(productId) {
     let cartItems = getCartItems();
     const item = cartItems.find(item => item.productId === productId);
-    
+
     if (item) {
         item.quantity -= 1;  // Уменьшаем количество
 
-        // Если количество товара равно нулю, удаляем товар из корзины и показываем кнопку "Добавить"
         if (item.quantity <= 0) {
-            cartItems = cartItems.filter(i => i.productId !== productId);  // Удаляем товар из корзины
+            // Удаляем товар из корзины, если его количество равно 0
+            cartItems = cartItems.filter(i => i.productId !== productId);
             localStorage.setItem('cartItems', JSON.stringify(cartItems));  // Обновляем корзину в localStorage
-            renderCart();  // Обновляем корзину
+            renderCart();  // Обновляем корзину на странице
             replaceAddButtonWithControls(productId);  // Возвращаем кнопку "Добавить"
         } else {
             localStorage.setItem('cartItems', JSON.stringify(cartItems));  // Обновляем корзину
@@ -372,6 +372,7 @@ function decrementItem(productId) {
         }
     }
 }
+
 
 function decrementItem(productId) {
     let cartData = localStorage.getItem('cartItems');
@@ -402,7 +403,7 @@ function getCookie(name) {
 function replaceAddButtonWithControls(productId) {
     const addButton = document.getElementById(`addButton_${productId}`);
     const removeButton = document.getElementById(`removeBtn_${productId}`);
-    const addButtonControl = document.getElementById(`addBtn_${productId}`);
+    const addButtonControl = document.getElementById(`addBtn_${productId}_inc`);
     const quantityDisplay = document.getElementById(`quantity_${productId}`);
 
     let cartItems = getCartItems();
@@ -413,14 +414,10 @@ function replaceAddButtonWithControls(productId) {
         removeButton.style.display = "inline-block";  // Показываем кнопку "-"
         addButtonControl.style.display = "inline-block";  // Показываем кнопку "+"
         quantityDisplay.style.display = "inline-block";  // Показываем количество
-        quantityDisplay.textContent = item.quantity;  // Отображаем текущее количество товара
-    } else {
-        addButton.style.display = "inline-block";  // Показываем кнопку "Добавить"
-        removeButton.style.display = "none";  // Прячем кнопку "-"
-        addButtonControl.style.display = "none";  // Прячем кнопку "+"
-        quantityDisplay.style.display = "none";  // Прячем количество
+        quantityDisplay.textContent = item.quantity;  // Отображаем количество товара
     }
 }
+
 
 
 function revertControlsToAddButton(productId) {
