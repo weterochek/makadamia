@@ -222,32 +222,25 @@ function initializeAddToCartButtons() {
 }
 function getCartItems() {
     const username = localStorage.getItem("username") || "guest";
-    const stored = localStorage.getItem(`cart_${username}`);
-    if (!stored) return [];
-    try {
-        const parsed = JSON.parse(stored);
-        return Array.isArray(parsed) ? parsed : [];
-    } catch (err) {
-        console.error("Ошибка при загрузке корзины:", err);
-        return [];
-    }
+    const storedCart = localStorage.getItem(`cart_${username}`);
+    return storedCart ? JSON.parse(storedCart) : [];
 }
-
 function saveCartItems(cartItems) {
     const username = localStorage.getItem("username") || "guest";
-    localStorage.setItem(`cart_${username}`, JSON.stringify(cartItems));
+    localStorage.setItem(`cart_${username}`, JSON.stringify(cartItems)); // Сохраняем корзину для конкретного пользователя
 }
-function updateProductControls(productName, price) {
-    document.getElementById(`addButton_${productName}`).style.display = 'none';
-    document.getElementById(`removeBtn_${productName}`).style.display = 'inline-block';
-    document.getElementById(`quantity_${productName}`).style.display = 'inline-block';
-    document.getElementById(`addBtn_${productName}_inc`).style.display = 'inline-block';
+function updateProductControls(productId) {
+    const addButton = document.getElementById(`addButton_${productId}`);
+    const removeButton = document.getElementById(`removeBtn_${productId}`);
+    const quantityDisplay = document.getElementById(`quantity_${productId}`);
+    const addButtonControl = document.getElementById(`addBtn_${productId}_inc`);
 
-    const item = cartItems.find(item => item.productName === productName);
-    if (item) {
-        document.getElementById(`quantity_${productName}`).innerText = item.quantity;
-    }
+    if (addButton) addButton.style.display = "none";
+    if (removeButton) removeButton.style.display = "inline-block";
+    if (quantityDisplay) quantityDisplay.style.display = "inline-block";
+    if (addButtonControl) addButtonControl.style.display = "inline-block";
 }
+
 
 // Обработчик добавления товара в корзину
 function addToCart(productId, productName, price) {
@@ -273,14 +266,14 @@ function addToCart(productId, productName, price) {
 
 
 function renderCart() {
-    const cartContainer = document.getElementById('cartItems');
+    const cartContainer = document.getElementById('cart-items');
     const totalAmount = document.getElementById('totalAmount');
 
     if (!cartContainer) return;
 
-    cartContainer.innerHTML = '';
+    cartContainer.innerHTML = '';  // Очищаем корзину
 
-    const cartItems = getCartItems();
+    const cartItems = getCartItems();  // Получаем товары корзины
     if (cartItems.length === 0) {
         cartContainer.innerHTML = '<p>Корзина пуста</p>';
         totalAmount.textContent = 'Итого: 0 ₽';
@@ -297,11 +290,12 @@ function renderCart() {
             <span>${item.quantity}</span>
             <button class="quantity-control" onclick="incrementItem('${item.productId}', ${item.price})">+</button>
         `;
-        cartContainer.appendChild(itemElement);
+        cartContainer.appendChild(itemElement);  // Добавляем товар в корзину
     });
 
     totalAmount.textContent = `Итого: ${total} ₽`;
 }
+
 
 
 
@@ -612,16 +606,13 @@ document.addEventListener("DOMContentLoaded", () => {
         const price = parseFloat(button.closest(".menu-item").querySelector(".price-container b").textContent.replace("₽", "").trim());
 
         button.addEventListener("click", () => {
-            addToCart(productId, productName, price);
+            addToCart(productId, productName, price);  // Добавление товара в корзину
         });
     });
 
-    renderCart(); // Показать корзину при старте
-
-    // После загрузки страницы сразу меняем кнопки в зависимости от localStorage
-    const cartItems = getCartItems();
-    cartItems.forEach(item => replaceAddButtonWithControls(item.productId));
+    renderCart(); // Загружаем корзину при старте
 });
+
 
 // Сохранение корзины в localStorage
 function saveCartToLocalStorage(cart) {
