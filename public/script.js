@@ -261,7 +261,9 @@ function addToCart(productId, productName, price) {
 
     localStorage.setItem('cartItems', JSON.stringify(cartItems));  // Сохраняем корзину в localStorage
     renderCart();  // Обновляем корзину
+    replaceAddButtonWithControls(productId);  // Заменяем кнопку "Добавить" на кнопки "+" и "-"
 }
+
 
 function renderCart() {
     const cartContainer = document.getElementById('cartItems');  // Используем контейнер с ID 'cartItems'
