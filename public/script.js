@@ -541,7 +541,16 @@ function updateTotal() {
         totalAmount.textContent = `Итого: ${total} ₽`;
     }
 }
-
+function getCartItems() {
+    const stored = localStorage.getItem('cartItems');
+    if (!stored) return [];
+    try {
+        const parsed = JSON.parse(stored);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (err) {
+        return [];
+    }
+}
 // Оформление заказа
 function checkout() {
     alert("Ваш заказ оформлен!");
