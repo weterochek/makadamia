@@ -88,52 +88,56 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Оформление заказа
 if (checkoutForm) {
-    checkoutForm.addEventListener("submit", async function (e) {
-        e.preventDefault();
-        const token = getToken();
+    // Обработчик кнопки "Оформить заказ"
+document.getElementById('checkoutForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
 
-        if (!token) {
-            alert("Вы не авторизованы!");
+    const token = getToken();
+    if (!token) {
+        alert("Вы не авторизованы!");
+        return;
+    }
+
+    // Формируем данные заказа
+    const orderData = {
+        address: document.getElementById("customerAddress").value,
+        additionalInfo: document.getElementById("additionalInfo").value,
+        items: Object.keys(cart).map(productId => ({
+            productId: productId,
+            quantity: cart[productId].quantity
+        }))
+    };
+
+    try {
+        const response = await fetch("https://makadamia.onrender.com/api/order", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(orderData)
+        });
+
+        if (!response.ok) {
+            console.error(`Ошибка ${response.status}:`, response.statusText);
+            alert("Ошибка при оформлении заказа.");
             return;
         }
 
-        const orderData = {
-            address: document.getElementById("customerAddress").value,
-            additionalInfo: document.getElementById("additionalInfo").value,
-            items: Object.keys(cart).map(productId => ({
-                productId: productId,
-                quantity: cart[productId].quantity
-            }))
-        };
+        const responseData = await response.json();
+        alert("🎉 Заказ успешно оформлен!");
 
-        try {
-            const response = await fetch("https://makadamia.onrender.com/api/order", {
-                method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${token}`,
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(orderData)
-            });
+        // Очистка корзины после успешного оформления
+        cart = {}; // Очищаем корзину
+        localStorage.removeItem('cart'); // Удаляем корзину из localStorage
+        renderCartItems();  // Обновляем отображение корзины
+        window.location.href = "account.html";  // Перенаправление на страницу спасибо
+    } catch (error) {
+        console.error("Ошибка при оформлении заказа:", error);
+        alert("Ошибка при оформлении заказа.");
+    }
+});
 
-            if (!response.ok) {
-                console.error(`❌ Ошибка ${response.status}:`, response.statusText);
-                alert("Ошибка при оформлении заказа.");
-                return;
-            }
-
-            const responseData = await response.json();
-            alert("🎉 Заказ успешно оформлен!");
-            cart = {}; // Очищаем корзину
-            localStorage.removeItem(`cart_${localStorage.getItem("username") || "guest"}`);
-            renderCartItems(); // Перерисовываем корзину
-            window.location.href = "thankyou.html";
-        } catch (error) {
-            console.error("❌ Ошибка сети или сервера:", error);
-            alert("Ошибка при оформлении заказа.");
-        }
-    });
-}
 
     // Кнопка "Вернуться к покупкам"
     if (backToShoppingButton) {
