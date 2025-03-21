@@ -1015,6 +1015,7 @@ function displayOrders(orders) {
     });
 }
 window.onload = function () {
+    // Вызов updateControls для всех товаров в корзине
     for (const productId in cart) {
         updateControls(productId);
     }
