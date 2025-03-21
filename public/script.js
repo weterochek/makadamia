@@ -17,75 +17,30 @@ window.onload = function () {
 async function fetchWithAuth(url, options = {}) {
     let token = localStorage.getItem("accessToken");
     if (!options.headers) options.headers = {};
-    options.headers["Authorization"] = `Bearer ${token}`;
+    if (token) options.headers["Authorization"] = `Bearer ${token}`;
 
     let response = await fetch(url, options);
 
     if (response.status === 401) {
-        console.log("⏳ Токен истёк, пробую обновить...");
-
-        const refreshResponse = await fetch('/refresh', { credentials: 'include' });
+        console.log("Отправка запроса на /refresh");
+        const refreshResponse = await fetch("/refresh", { credentials: "include" });
         if (refreshResponse.ok) {
             const refreshData = await refreshResponse.json();
             localStorage.setItem("accessToken", refreshData.accessToken);
             token = refreshData.accessToken;
             options.headers["Authorization"] = `Bearer ${token}`;
-            console.log("✅ Access Token обновлён:", token);
-
-            // Повторно отправляем запрос с новым токеном
             response = await fetch(url, options);
         } else {
-            console.log("❌ Не удалось обновить токен");
-            window.location.href = '/login.html'; // отправить на логин
+            localStorage.removeItem("accessToken");
+            localStorage.removeItem("username");
+            localStorage.removeItem("userId");
+            alert("Сессия истекла. Пожалуйста, войдите снова.");
+            window.location.href = "/login.html";
         }
     }
     return response;
 }
 
-async function checkAndRefreshToken() {
-    let token = localStorage.getItem("accessToken");
-    if (!token) {
-        console.log("❌ Нет accessToken, пользователь не авторизован");
-        return false;
-    }
-
-    // Декодируем токен (можно через jwt-decode библиотеку или вручную)
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    const now = Date.now() / 1000;
-
-    if (payload.exp < now) {
-        console.log("⏳ AccessToken истёк, пробуем обновить...");
-        const refreshResponse = await fetch('/refresh', { credentials: 'include' });
-        if (refreshResponse.ok) {
-            const refreshData = await refreshResponse.json();
-            localStorage.setItem("accessToken", refreshData.accessToken);
-            console.log("✅ AccessToken обновлён");
-            return true;
-        } else {
-            console.log("❌ Не удалось обновить токен");
-            return false;
-        }
-    } else {
-        console.log("✅ AccessToken валиден");
-        return true;
-    }
-}
-document.addEventListener("DOMContentLoaded", async () => {
-    const isAuth = await checkAndRefreshToken();
-
-    const loginButton = document.getElementById("loginButton");
-    const accountButton = document.getElementById("accountButton");
-
-    if (isAuth) {
-        // Показываем ЛК, скрываем Вход
-        if (loginButton) loginButton.style.display = "none";
-        if (accountButton) accountButton.style.display = "block";
-    } else {
-        // Показываем Вход
-        if (loginButton) loginButton.style.display = "block";
-        if (accountButton) accountButton.style.display = "none";
-    }
-});
 async function loadProductMap() {
     try {
         const response = await fetch('/api/products');
@@ -1013,7 +968,6 @@ function loadUserData() {
     if (additionalInfoInput) additionalInfoInput.value = userData.additionalInfo || "";
 }
 document.addEventListener("DOMContentLoaded", async () => {
-    console.log("accessToken:", localStorage.getItem("accessToken"));
     await loadProductMap();  // Загружаем продукты
     loadUserOrders();
     loadAccountData();
