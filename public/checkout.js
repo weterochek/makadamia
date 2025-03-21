@@ -87,59 +87,53 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Оформление заказа
-    if (checkoutForm) {
-        checkoutForm.addEventListener("submit", async function (e) {
-            e.preventDefault();
-            const token = getToken();
+if (checkoutForm) {
+    checkoutForm.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        const token = getToken();
 
-            if (!token) {
-                alert("Вы не авторизованы!");
+        if (!token) {
+            alert("Вы не авторизованы!");
+            return;
+        }
+
+        const orderData = {
+            address: document.getElementById("customerAddress").value,
+            additionalInfo: document.getElementById("additionalInfo").value,
+            items: Object.keys(cart).map(productId => ({
+                productId: productId,
+                quantity: cart[productId].quantity
+            }))
+        };
+
+        try {
+            const response = await fetch("https://makadamia.onrender.com/api/order", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(orderData)
+            });
+
+            if (!response.ok) {
+                console.error(`❌ Ошибка ${response.status}:`, response.statusText);
+                alert("Ошибка при оформлении заказа.");
                 return;
             }
 
-            const orderData = {
-                address: document.getElementById("customerAddress").value,
-                additionalInfo: document.getElementById("additionalInfo").value,
-                items: Object.keys(cart).map(productId => ({
-                    productId: productId,
-                    quantity: cart[productId].quantity
-                }))
-            };
-
-            console.log("📡 Отправка данных заказа:", orderData);
-
-            try {
-                const response = await fetch("https://makadamia.onrender.com/api/order", {
-                    method: "POST",
-                    headers: {
-                        "Authorization": `Bearer ${token}`,
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(orderData)
-                });
-
-                console.log("📥 Ответ от сервера:", response);
-
-                if (!response.ok) {
-                    console.error(`❌ Ошибка ${response.status}:`, response.statusText);
-                    alert("Ошибка при оформлении заказа.");
-                    return;
-                }
-
-                const responseData = await response.json();
-                console.log("✅ Заказ успешно оформлен:", responseData);
-
-                alert("🎉 Заказ успешно оформлен!");
-                cart = {};
-                localStorage.removeItem('cart');
-                renderCartItems();
-                window.location.href = "thankyou.html";
-            } catch (error) {
-                console.error("❌ Ошибка сети или сервера:", error);
-                alert("Ошибка при оформлении заказа. Проверьте соединение.");
-            }
-        });
-    }
+            const responseData = await response.json();
+            alert("🎉 Заказ успешно оформлен!");
+            cart = {}; // Очищаем корзину
+            localStorage.removeItem(`cart_${localStorage.getItem("username") || "guest"}`);
+            renderCartItems(); // Перерисовываем корзину
+            window.location.href = "thankyou.html";
+        } catch (error) {
+            console.error("❌ Ошибка сети или сервера:", error);
+            alert("Ошибка при оформлении заказа.");
+        }
+    });
+}
 
     // Кнопка "Вернуться к покупкам"
     if (backToShoppingButton) {
