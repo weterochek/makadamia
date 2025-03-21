@@ -149,6 +149,7 @@ function updateControls(productId) {
 
 
 
+
 function renderCart() {
     const cartItems = document.getElementById("cartItems");
     if (!cartItems) return;
@@ -289,7 +290,7 @@ function initializeAddToCartButtons() {
 function addToCart(productId, productName, productPrice) {
     if (!cart[productId]) {
         cart[productId] = {
-            name: productName,  // Сохраняем название товара
+            name: productName,
             price: productPrice,
             quantity: 1
         };
@@ -301,6 +302,7 @@ function addToCart(productId, productName, productPrice) {
     updateControls(productId);  // Обновляем кнопки и количество
     updateCartDisplay();  // Обновляем отображение корзины
 }
+
 
 function updateCartDisplay() {
     const cartItems = document.getElementById("cartItems");
@@ -474,58 +476,23 @@ function updateCartDisplay() {
     const cartItems = document.getElementById("cartItems");
     if (!cartItems) return;
 
-    cartItems.innerHTML = ""; // Очищаем список товаров
+    cartItems.innerHTML = "";  // Очищаем список товаров
     let totalAmount = 0;
 
     for (const productId in cart) {
-    const item = cart[productId]; // item = { name, price, quantity }
-    const itemTotal = item.price * item.quantity;
-    totalAmount += itemTotal;
-
-    const cartItem = document.createElement("div");
-    cartItem.className = "cart-item";
-    cartItem.setAttribute("data-id", productId); // Назовём честно productId, а не name
-    cartItem.innerHTML = `
-        <div class="item-info">${item.name} - ${itemTotal} ₽</div>
-        <div class="cart-buttons">
-            <button onclick="decrementItem('${productId}')">-</button>
-            <span class="quantity">${item.quantity}</span>
-            <button onclick="incrementItem('${productId}', ${item.price})">+</button>
-        </div>
-    `;
-    cartItems.appendChild(cartItem);
-}
-
-
-    document.getElementById("totalAmount").textContent = `Итого: ${totalAmount} ₽`;
-
-    // Если корзина пуста, скрываем её
-    if (Object.keys(cart).length === 0) {
-        document.getElementById("cartDropdown").style.display = "none";
-    }
-}
-
-// Обновление отображения корзины и количества товара на карточке
-function updateCartDisplay() {
-    const cartItems = document.getElementById("cartItems");
-    if (!cartItems) return;
-
-    cartItems.innerHTML = ""; // Очищаем список товаров
-    let totalAmount = 0;
-
-    for (const item in cart) {
-        const itemTotal = cart[item].price * cart[item].quantity;
+        const item = cart[productId];  // item = { name, price, quantity }
+        const itemTotal = item.price * item.quantity;
         totalAmount += itemTotal;
 
         const cartItem = document.createElement("div");
         cartItem.className = "cart-item";
-        cartItem.setAttribute("data-name", item); // Добавляем атрибут для поиска
+        cartItem.setAttribute("data-id", productId); // Назовём честно productId, а не name
         cartItem.innerHTML = `
-            <div class="item-info">${item} - ${itemTotal} ₽</div>
+            <div class="item-info">${item.name} - ${itemTotal} ₽</div>
             <div class="cart-buttons">
-                <button onclick="decrementItem('${item}')">-</button>
-                <span class="quantity">${cart[item].quantity}</span>
-                <button onclick="incrementItem('${item}', ${cart[item].price})">+</button>
+                <button onclick="decrementItem('${productId}')">-</button>
+                <span class="quantity">${item.quantity}</span>
+                <button onclick="incrementItem('${productId}', ${item.price})">+</button>
             </div>
         `;
         cartItems.appendChild(cartItem);
