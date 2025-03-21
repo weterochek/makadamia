@@ -129,7 +129,6 @@ function updateControls(productId) {
     const quantityDisplay = document.getElementById(`quantity_${productId}`);
     const addButtonControl = document.getElementById(`addBtn_${productId}`);
 
-    // Если количество товара больше 0, показываем кнопки "+" и "-"
     if (cart[productId].quantity > 0) {
         addButton.style.display = "none";
         removeButton.style.display = "inline-block";
@@ -143,7 +142,6 @@ function updateControls(productId) {
         quantityDisplay.style.display = "none";
     }
 }
-
 
 
 function renderCart() {
@@ -161,7 +159,7 @@ function renderCart() {
         cartItem.className = 'cart-item';
         cartItem.setAttribute('data-id', productId);
         cartItem.innerHTML = `
-<div class="item-info">${item.name} - ${itemTotal} ₽</div> <!-- Используем item.name -->
+<div class="item-info">${item.name} - ${itemTotal} ₽</div>  <!-- Используем item.name -->
     <div class="cart-buttons">
         <button onclick="decrementItem('${productId}')">-</button>
         <span class="quantity">${item.quantity}</span>
