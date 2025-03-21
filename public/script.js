@@ -755,23 +755,29 @@ document.addEventListener("DOMContentLoaded", () => {
     .catch(error => console.error("❌ Ошибка загрузки профиля:", error));
 });
 
-document.addEventListener("DOMContentLoaded", () => {
-    console.log("Страница загружена");
+document.getElementById('editName').addEventListener('click', () => {
+    document.getElementById('nameInput').disabled = false;
+    document.getElementById('saveName').style.display = 'inline-block';
+});
 
-    const editNameBtn = document.getElementById("editName");
-    const editCityBtn = document.getElementById("editCity");
+document.getElementById('saveName').addEventListener('click', async () => {
+    const newName = document.getElementById('nameInput').value;
+    await updateAccountField({ name: newName });
+    document.getElementById('nameInput').disabled = true;
+    document.getElementById('saveName').style.display = 'none';
+});
 
-    if (editNameBtn) {
-        editNameBtn.addEventListener("click", () => editField("name"));
-    } else {
-        console.warn("Кнопка editName не найдена!");
-    }
+// Аккаунт: редактировать город
+document.getElementById('editCity').addEventListener('click', () => {
+    document.getElementById('cityInput').disabled = false;
+    document.getElementById('saveCity').style.display = 'inline-block';
+});
 
-    if (editCityBtn) {
-        editCityBtn.addEventListener("click", () => editField("city"));
-    } else {
-        console.warn("Кнопка editCity не найдена!");
-    }
+document.getElementById('saveCity').addEventListener('click', async () => {
+    const newCity = document.getElementById('cityInput').value;
+    await updateAccountField({ city: newCity });
+    document.getElementById('cityInput').disabled = true;
+    document.getElementById('saveCity').style.display = 'none';
 });
 // Проверка состояния авторизации
 function checkAuthStatus() {
