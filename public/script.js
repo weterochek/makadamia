@@ -124,41 +124,34 @@ function saveCart() {
 }
 
 function updateControls(productId) {
-    const product = cart[productId];
     const addButton = document.getElementById(`addButton_${productId}`);
-    const removeBtn = document.getElementById(`removeBtn_${productId}`);
+    const removeButton = document.getElementById(`removeBtn_${productId}`);
     const quantityDisplay = document.getElementById(`quantity_${productId}`);
-    const addBtn = document.getElementById(`addBtn_${productId}`);
+    const addButtonControl = document.getElementById(`addBtn_${productId}`);
 
-    if (!addButton || !removeBtn || !quantityDisplay || !addBtn) return;
-
-    if (product && product.quantity > 0) {
-        addButton.style.display = 'none';
-        removeBtn.style.display = 'inline-block';
-        quantityDisplay.style.display = 'inline-block';
-        quantityDisplay.textContent = product.quantity;
-        addBtn.style.display = 'inline-block';
+    // Если количество товара больше 0, показываем кнопки "+" и "-"
+    if (cart[productId].quantity > 0) {
+        addButton.style.display = "none";
+        removeButton.style.display = "inline-block";
+        addButtonControl.style.display = "inline-block";
+        quantityDisplay.style.display = "inline-block";
+        quantityDisplay.textContent = cart[productId].quantity;
     } else {
-        addButton.style.display = 'inline-block';
-        removeBtn.style.display = 'none';
-        quantityDisplay.style.display = 'none';
-        addBtn.style.display = 'none';
+        addButton.style.display = "inline-block";
+        removeButton.style.display = "none";
+        addButtonControl.style.display = "none";
+        quantityDisplay.style.display = "none";
     }
 }
 
 
+
 function renderCart() {
     const cartContainer = document.getElementById('cart-items');
-    if (!cartContainer) {
-        console.error('Контейнер для корзины не найден!');
-        return;
-    }
-
     cartContainer.innerHTML = '';  // Очищаем контейнер перед отрисовкой
 
     let totalPrice = 0;
 
-    // Проходим по всем товарам в корзине и отображаем их
     for (const productId in cart) {
         const item = cart[productId];
         const itemTotal = item.price * item.quantity;
@@ -168,7 +161,7 @@ function renderCart() {
         cartItem.className = 'cart-item';
         cartItem.setAttribute('data-id', productId);
         cartItem.innerHTML = `
-            <div class="item-info">${item.name} - ${itemTotal} ₽</div>
+            <div class="item-info">${item.name} - ${itemTotal} ₽</div> <!-- Используем item.name -->
             <div class="cart-buttons">
                 <button onclick="decrementItem('${productId}')">-</button>
                 <span class="quantity">${item.quantity}</span>
@@ -178,10 +171,7 @@ function renderCart() {
         cartContainer.appendChild(cartItem);  // Добавляем товар в корзину
     }
 
-    const totalElement = document.getElementById('cart-total');
-    if (totalElement) {
-        totalElement.textContent = `Итого: ${totalPrice} ₽`;  // Выводим итоговую стоимость
-    }
+    document.getElementById("totalAmount").textContent = `Итого: ${totalPrice} ₽`;
 }
 
 
@@ -295,7 +285,7 @@ function initializeAddToCartButtons() {
 function addToCart(productId, productName, productPrice) {
     if (!cart[productId]) {
         cart[productId] = {
-            name: productName,
+            name: productName,  // Добавляем название товара
             price: productPrice,
             quantity: 1
         };
@@ -304,6 +294,7 @@ function addToCart(productId, productName, productPrice) {
     }
 
     localStorage.setItem('cart', JSON.stringify(cart));  // Сохраняем корзину
+    updateControls(productId);  // Обновляем кнопки и количество
     updateCartDisplay();  // Обновляем отображение корзины
 }
 
