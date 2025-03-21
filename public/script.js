@@ -162,9 +162,9 @@ function renderCart() {
 
         const cartItem = document.createElement("div");
         cartItem.className = "cart-item";
-        cartItem.setAttribute("data-id", productId); // Назовём честно productId, а не name
+        cartItem.setAttribute("data-id", productId); // Назовём честно productId
         cartItem.innerHTML = `
-            <div class="item-info">${item.name} - ${itemTotal} ₽</div> <!-- Исправлено на item.name -->
+            <div class="item-info">${item.name} - ${itemTotal} ₽</div>
             <div class="cart-buttons">
                 <button onclick="decrementItem('${productId}')">-</button>
                 <span class="quantity">${item.quantity}</span>
@@ -176,6 +176,7 @@ function renderCart() {
 
     document.getElementById("totalAmount").textContent = `Итого: ${totalAmount} ₽`;
 }
+
 
 
 function updateAddToCartButton(productId) {
@@ -356,13 +357,11 @@ function incrementItem(productId, price) {
     if (cart[productId]) {
         cart[productId].quantity += 1;
         saveCart();
-        updateControls(productId);
-        updateCartDisplay();
+        updateControls(productId);  // Обновляем кнопки и количество
+        updateCartDisplay();  // Обновляем отображение корзины
     }
 }
 
-
-// Уменьшение количества товара
 function decrementItem(productId) {
     if (cart[productId]) {
         cart[productId].quantity -= 1;
