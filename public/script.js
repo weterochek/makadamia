@@ -30,7 +30,13 @@ async function loadProductMap() {
 
 console.log("Отправка запроса на /refresh");
 console.log("Токен перед запросом:", localStorage.getItem("accessToken"));
-
+window.onload = function () {
+    // Вызов updateControls для всех товаров в корзине
+    for (const productId in cart) {
+        updateControls(productId);
+    }
+    updateCartDisplay();
+};
 document.addEventListener("DOMContentLoaded", async function () {
     const token = localStorage.getItem("accessToken");
 
@@ -1023,10 +1029,4 @@ function displayOrders(orders) {
         ordersContainer.appendChild(orderElement);
     });
 }
-window.onload = function () {
-    // Вызов updateControls для всех товаров в корзине
-    for (const productId in cart) {
-        updateControls(productId);
-    }
-    updateCartDisplay();
-};
+
