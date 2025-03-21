@@ -129,19 +129,24 @@ function updateControls(productId) {
     const quantityDisplay = document.getElementById(`quantity_${productId}`);
     const addButtonControl = document.getElementById(`addBtn_${productId}`);
 
-    if (cart[productId].quantity > 0) {
-        addButton.style.display = "none";
-        removeButton.style.display = "inline-block";
-        addButtonControl.style.display = "inline-block";
-        quantityDisplay.style.display = "inline-block";
-        quantityDisplay.textContent = cart[productId].quantity;
+    if (cart[productId] && cart[productId].quantity > 0) {
+        if (addButton) addButton.style.display = "none";
+        if (removeButton) removeButton.style.display = "inline-block";
+        if (addButtonControl) addButtonControl.style.display = "inline-block";
+        if (quantityDisplay) {
+            quantityDisplay.style.display = "inline-block";
+            quantityDisplay.textContent = cart[productId].quantity;
+        }
     } else {
-        addButton.style.display = "inline-block";
-        removeButton.style.display = "none";
-        addButtonControl.style.display = "none";
-        quantityDisplay.style.display = "none";
+        if (addButton) addButton.style.display = "inline-block";
+        if (removeButton) removeButton.style.display = "none";
+        if (addButtonControl) addButtonControl.style.display = "none";
+        if (quantityDisplay) {
+            quantityDisplay.style.display = "none";
+        }
     }
 }
+
 
 
 function renderCart() {
@@ -361,14 +366,13 @@ function decrementItem(productId) {
     if (cart[productId]) {
         cart[productId].quantity -= 1;
         if (cart[productId].quantity <= 0) {
-            delete cart[productId]; // Удаляем товар из корзины, если количество <= 0
+            delete cart[productId]; // Удаляем товар из корзины
         }
         saveCart();
-        updateControls(productId); // Обновляем кнопку и количество товара
-        updateCartDisplay(); // Обновляем отображение корзины
+        updateControls(productId); // Обновляем кнопки
+        updateCartDisplay(); // Обновляем корзину
     }
 }
-
 
 
 function updateQuantityDisplay(productName) {
