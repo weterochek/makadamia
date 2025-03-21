@@ -396,10 +396,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (clearCartButton) {
         clearCartButton.addEventListener('click', () => {
             cart = {};  // Очищаем корзину
-            const username = localStorage.getItem("username") || "guest";
-            localStorage.removeItem(`cart_${username}`); // Убираем корзину из localStorage
+            localStorage.removeItem('cart'); // Удаляем корзину
             updateCartDisplay();  // Обновляем отображение корзины
-            cartTotal.textContent = 'Итого: 0 ₽';  // Обновляем итоговую сумму
+            if (cartTotal) {
+                cartTotal.textContent = 'Итого: 0 ₽';
+            }
 
             const productCards = document.querySelectorAll(".card-dish");
             productCards.forEach(card => {
@@ -408,7 +409,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const addButtonControl = card.querySelector(".quantity-size-button");
                 const quantityDisplay = card.querySelector(".quantity-display");
 
-                // Скрываем кнопки и количество, если корзина пуста
+                // Скрываем кнопки и количество
                 if (addButton) addButton.style.display = "inline-block";
                 if (removeButton) removeButton.style.display = "none";
                 if (addButtonControl) addButtonControl.style.display = "none";
@@ -417,9 +418,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     quantityDisplay.style.display = "none";
                 }
             });
-
-            // Обновляем корзину на странице
-            renderCart();  // Важно вызвать renderCart для отображения актуальной корзины
         });
     }
 });
