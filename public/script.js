@@ -148,6 +148,7 @@ function updateControls(productId) {
 }
 
 
+
 function renderCart() {
     const cartItems = document.getElementById("cartItems");
     if (!cartItems) return;
@@ -1009,11 +1010,6 @@ function displayOrders(orders) {
         ordersContainer.appendChild(orderElement);
     });
 }
-window.onload = function() {
-    for (const productId in cart) {
-        updateControls(productId);
-    }
-};
 window.onload = function () {
     for (const productId in cart) {
         updateControls(productId);
