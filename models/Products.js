@@ -6,6 +6,6 @@ const productSchema = new mongoose.Schema({
     // Добавьте другие поля, если необходимо
 });
 
-const Product = mongoose.model('Products', productSchema); // Убедитесь, что модель называется 'Products'
+const Product = mongoose.model('Product', productSchema); // Убедитесь, что модель называется 'Products'
 
 module.exports = Product;
