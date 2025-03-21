@@ -16,6 +16,6 @@ const orderSchema = new mongoose.Schema({
     totalAmount: { type: Number, required: true }  // Общая сумма
 });
 
+// Экспортируем модель заказа
 const Order = mongoose.model('Order', orderSchema);
 module.exports = Order;
-module.exports = mongoose.model('Order', orderSchema);
