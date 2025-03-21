@@ -292,17 +292,21 @@ function initializeAddToCartButtons() {
 
 
 // Добавление товара
-function addToCart(productId, name, price) {
-    if (cart[productId]) {
-        cart[productId].quantity += 1;
+function addToCart(productId, productName, productPrice) {
+    if (!cart[productId]) {
+        cart[productId] = {
+            name: productName,
+            price: productPrice,
+            quantity: 1
+        };
     } else {
-        cart[productId] = { name, price, quantity: 1 };
+        cart[productId].quantity++;
     }
 
-    saveCart();
-    updateControls(productId);
-    updateCartDisplay();
+    localStorage.setItem('cart', JSON.stringify(cart));  // Сохраняем корзину
+    updateCartDisplay();  // Обновляем отображение корзины
 }
+
 function updateCartDisplay() {
     const cartItems = document.getElementById("cartItems");
     if (!cartItems) return;  // Нет корзины на этой странице
