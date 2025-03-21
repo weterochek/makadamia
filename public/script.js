@@ -125,11 +125,12 @@ function saveCart() {
 
 function updateControls(productId) {
     const product = cart[productId];
-    const controls = document.getElementById(`controls_${product.name}`);
-    const addButton = document.getElementById(`addButton_${product.name}`);
-    const removeBtn = document.getElementById(`removeBtn_${product.name}`);
-    const quantityDisplay = document.getElementById(`quantity_${product.name}`);
-    const addBtn = document.getElementById(`addBtn_${product.name}`);
+const controls = document.getElementById(`controls_${productId}`);
+const addButton = document.getElementById(`addButton_${productId}`);
+const removeBtn = document.getElementById(`removeBtn_${productId}`);
+const quantityDisplay = document.getElementById(`quantity_${productId}`);
+const addBtn = document.getElementById(`addBtn_${productId}`);
+
 
     if (product.quantity > 0) {
         addButton.style.display = 'none';
