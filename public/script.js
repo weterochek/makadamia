@@ -304,21 +304,21 @@ function addToCart(productId, productName, productPrice) {
 
 function updateCartDisplay() {
     const cartItems = document.getElementById("cartItems");
-    if (!cartItems) return;  // Нет корзины на этой странице
+    if (!cartItems) return;
 
     cartItems.innerHTML = ""; 
     let totalAmount = 0;
 
     for (const productId in cart) {
-        const item = cart[productId];
+        const item = cart[productId]; // item = { name, price, quantity }
         const itemTotal = item.price * item.quantity;
         totalAmount += itemTotal;
 
         const cartItem = document.createElement("div");
         cartItem.className = "cart-item";
-        cartItem.setAttribute("data-id", productId);
+        cartItem.setAttribute("data-id", productId); // Назовём честно productId
         cartItem.innerHTML = `
-            <div class="item-info">${item.name} - ${itemTotal} ₽</div>
+            <div class="item-info">${item.name} - ${itemTotal} ₽</div>  <!-- Используем item.name для отображения названия товара -->
             <div class="cart-buttons">
                 <button onclick="decrementItem('${productId}')">-</button>
                 <span class="quantity">${item.quantity}</span>
@@ -330,6 +330,7 @@ function updateCartDisplay() {
 
     document.getElementById("totalAmount").textContent = `Итого: ${totalAmount} ₽`;
 }
+
 
 function updateQuantityDisplay(productName) {
     const quantityElement = document.getElementById(`quantity_${productName}`);
