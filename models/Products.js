@@ -1,9 +1,11 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const productSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  price: { type: Number, required: true },
-  // Добавьте другие поля, если необходимо
+    name: String,
+    price: Number,
+    // Добавьте другие поля, если необходимо
 });
 
-module.exports = mongoose.model("Products", productSchema);
+const Product = mongoose.model('Products', productSchema); // Убедитесь, что модель называется 'Products'
+
+module.exports = Product;
