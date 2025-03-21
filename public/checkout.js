@@ -1,5 +1,7 @@
 let cart = {};
-
+function getToken() {
+    return localStorage.getItem("accessToken");
+}
 // Загрузка корзины из localStorage
 function loadCartFromLocalStorage() {
     const username = localStorage.getItem("username") || "guest"; // Используем имя пользователя или guest
@@ -74,7 +76,7 @@ function incrementItem(itemName, itemPrice) {
 
 // Загрузка данных пользователя
 async function loadUserData() {
-    const token = localStorage.getItem("token");
+    const token = getToken();
     if (!token) {
         alert("Вы не авторизованы! Пожалуйста, войдите в аккаунт.");
         window.location.href = "login.html";
@@ -120,7 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (checkoutForm) {
         checkoutForm.addEventListener("submit", async function (e) {
             e.preventDefault();
-            const token = localStorage.getItem("token");
+            const token = getToken();
 
             if (!token) {
                 alert("Вы не авторизованы!");
@@ -128,13 +130,13 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             // Формируем данные заказа
-           const orderData = {
+          const orderData = {
     address: document.getElementById("customerAddress").value,
     additionalInfo: document.getElementById("additionalInfo").value,
-    items: Object.keys(cart).map(key => ({
-        productId: cart[key].productId, 
-        quantity: cart[key].quantity
-    })) // ✅ Теперь cart передается как items
+    items: Object.keys(cart).map(productId => ({
+        productId: productId, // <-- Используем ключ как productId
+        quantity: cart[productId].quantity
+    }))
 };
 
 
