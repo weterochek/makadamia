@@ -137,7 +137,7 @@ document.getElementById('checkoutForm').addEventListener('submit', async functio
         alert("Ошибка при оформлении заказа.");
     }
 });
-
+}
 
     // Кнопка "Вернуться к покупкам"
     if (backToShoppingButton) {
