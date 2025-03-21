@@ -12,19 +12,21 @@ router.post("/order", authMiddleware, async (req, res) => {
             return res.status(400).json({ message: "Корзина не может быть пустой" });
         }
 
-       const populatedItems = [];
+        const populatedItems = [];
+        let totalAmount = 0;
 
-for (let item of items) {
-    const product = await Product.findById(item.productId);  // Используем Product для поиска
-    if (!product) {
-        return res.status(404).json({ message: `Товар с id ${item.productId} не найден` });
-    }
-    populatedItems.push({
-        productId: product._id,
-        quantity: item.quantity
-    });
-}
-
+        for (let item of items) {
+            const product = await Product.findById(item.productId);
+            if (!product) {
+                return res.status(404).json({ message: `Товар с id ${item.productId} не найден` });
+            }
+            populatedItems.push({
+                productId: product._id,
+                quantity: item.quantity,
+                price: product.price
+            });
+            totalAmount += product.price * item.quantity;
+        }
 
         const newOrder = new Order({
             userId: req.user.id,
@@ -32,7 +34,8 @@ for (let item of items) {
             address,
             additionalInfo,
             items: populatedItems,
-            status: "Оформлен"
+            totalAmount,
+            createdAt: new Date()
         });
 
         await newOrder.save();
