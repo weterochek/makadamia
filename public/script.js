@@ -130,11 +130,6 @@ function updateControls(productId) {
     const quantityDisplay = document.getElementById(`quantity_${productId}`);
     const addBtn = document.getElementById(`addBtn_${productId}`);
 
-    if (!addButton || !removeBtn || !quantityDisplay || !addBtn) {
-        console.error(`Не найден элемент для productId: ${productId}`);
-        return;
-    }
-
     if (product.quantity > 0) {
         addButton.style.display = 'none';  // Скрываем кнопку "Добавить"
         removeBtn.style.display = 'inline-block';  // Показываем кнопку "-"
@@ -148,6 +143,7 @@ function updateControls(productId) {
         addBtn.style.display = 'none';  // Скрываем кнопку "+"
     }
 }
+
 function renderCart() {
     const cartContainer = document.getElementById('cart-items');
     cartContainer.innerHTML = '';  // Очищаем контейнер перед отрисовкой
@@ -286,14 +282,13 @@ function initializeAddToCartButtons() {
 
 function addToCart(productId, name, price) {
     if (cart[productId]) {
-        cart[productId].quantity += 1;  // Увеличиваем количество, если товар уже в корзине
+        cart[productId].quantity += 1;
     } else {
-        cart[productId] = { name, price, quantity: 1 };  // Добавляем товар в корзину
+        cart[productId] = { name, price, quantity: 1 };
     }
-    
-    saveCart();  // Сохраняем корзину в localStorage
-    updateControls(productId);  // Обновляем отображение кнопки и количества
-    renderCart();  // Обновляем корзину на странице
+    saveCart();
+    updateControls(productId);
+    renderCart();  // Обновляем корзину немедленно
 }
 
 function updateQuantityDisplay(productName) {
@@ -317,24 +312,29 @@ function checkForEmptyCart(productName) {
 
 // Увеличение количества товара
 function incrementItem(productId, price) {
-    cart[productId].quantity += 1; // Увеличиваем количество
-    saveCart(); // Сохраняем корзину
-    updateControls(productId); // Обновляем кнопки
-    renderCart(); // Обновляем корзину на странице
+    if (cart[productId]) {
+        cart[productId].quantity += 1;  // Увеличиваем количество
+        saveCart();  // Сохраняем корзину
+        updateControls(productId);  // Обновляем кнопки
+        renderCart();  // Обновляем корзину на странице
+    } else {
+        console.error(`Ошибка: товар с ID ${productId} не найден в корзине`);
+    }
 }
 
 // Функция для уменьшения количества товара
 function decrementItem(productId) {
     if (cart[productId]) {
-        cart[productId].quantity -= 1; // Уменьшаем количество
+        cart[productId].quantity -= 1;
         if (cart[productId].quantity <= 0) {
-            delete cart[productId]; // Удаляем товар из корзины, если количество <= 0
+            delete cart[productId];  // Удаляем товар из корзины, если его количество <= 0
         }
-        saveCart(); // Сохраняем корзину
-        updateControls(productId); // Обновляем кнопки
-        renderCart(); // Обновляем корзину на странице
+        saveCart();
+        updateControls(productId);  // Обновляем кнопки
+        renderCart();  // Обновляем корзину на странице
     }
 }
+
 function updateQuantityDisplay(productName) {
     const quantityElement = document.getElementById(`quantity_${productName}`);
     if (quantityElement) {
