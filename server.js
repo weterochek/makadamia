@@ -119,15 +119,6 @@ app.post('/cart/add', authMiddleware, async (req, res) => {
 // Указание папки со статическими файлами
 app.use(express.static(path.join(__dirname, "public")));
 
-// Схема и модель пользователя
-const userSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  name: { type: String, default: "" },
-  city: { type: String, default: "" }
-});
-const User = mongoose.model("User", userSchema);
-// Получение товара по ID
 // Маршрут для получения товара по ID
 app.get('/s/:id', async (req, res) => {
   try {
