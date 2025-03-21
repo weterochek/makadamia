@@ -2,77 +2,118 @@ let cart = {};
 function getToken() {
     return localStorage.getItem("accessToken");
 }
-// Загрузка корзины из localStorage
-function loadCartFromLocalStorage() {
-    const username = localStorage.getItem("username") || "guest"; // Используем имя пользователя или guest
-    const storedCart = localStorage.getItem(`cart_${username}`);
-    if (storedCart) {
-        cart = JSON.parse(storedCart); // Загружаем корзину только если она есть
-    }
-}
+document.addEventListener("DOMContentLoaded", () => {
 
+    const cartItemsContainer = document.getElementById("cartItems");
+    const totalAmountElement = document.getElementById("totalAmount");
+    const checkoutForm = document.getElementById("checkoutForm");
+    const backToShoppingButton = document.getElementById("backToShopping");
+
+    // Загружаем корзину из localStorage
+    let cart = JSON.parse(localStorage.getItem('cart')) || {};
+
+    // Отображаем товары в корзине
+    function renderCartItems() {
+        cartItemsContainer.innerHTML = '';
+        let totalAmount = 0;
+
+        for (const productId in cart) {
+            const item = cart[productId];
+            const itemElement = document.createElement('div');
+            itemElement.className = 'cart-item';
+            itemElement.innerHTML = `
+                <span>${item.name}</span>
+                <span>${item.price} ₽</span>
+                <span>
+                    <button class="decrease-quantity" data-id="${productId}">-</button>
+                    ${item.quantity}
+                    <button class="increase-quantity" data-id="${productId}">+</button>
+                </span>
+                <span>${item.price * item.quantity} ₽</span>
+            `;
+            cartItemsContainer.appendChild(itemElement);
+            totalAmount += item.price * item.quantity;
+        }
+
+        totalAmountElement.textContent = `Итого: ${totalAmount} ₽`;
+    }
+
+    // Изменение количества товара (+ и -)
+    cartItemsContainer.addEventListener('click', (event) => {
+        const target = event.target;
+        const productId = target.getAttribute('data-id');
+
+        if (target.classList.contains('increase-quantity')) {
+            cart[productId].quantity++;
+        } else if (target.classList.contains('decrease-quantity')) {
+            cart[productId].quantity--;
+            if (cart[productId].quantity === 0) {
+                delete cart[productId];
+            }
+        }
+
+        localStorage.setItem('cart', JSON.stringify(cart));
+        renderCartItems();
+    });
 // Сохранение корзины в localStorage
 function saveCartToLocalStorage() {
     const username = localStorage.getItem("username") || "guest"; // Используем имя пользователя или guest
     localStorage.setItem(`cart_${username}`, JSON.stringify(cart)); // Сохраняем корзину
 }
-
-// Отображение корзины
-function renderCheckoutCart() {
+document.addEventListener("DOMContentLoaded", () => {
     const cartItemsContainer = document.getElementById("cartItems");
     const totalAmountElement = document.getElementById("totalAmount");
+    const checkoutForm = document.getElementById("checkoutForm");
+    const backToShoppingButton = document.getElementById("backToShopping");
 
-    if (!cartItemsContainer || !totalAmountElement) return;
+    // Загрузка корзины из localStorage
+    let cart = JSON.parse(localStorage.getItem('cart')) || {};
 
-    cartItemsContainer.innerHTML = ""; // Очищаем список
-    let totalAmount = 0;
+    // Функция для отображения товаров в корзине
+    function renderCartItems() {
+        cartItemsContainer.innerHTML = '';
+        let totalAmount = 0;
 
-    for (const item in cart) {
-        const itemTotal = cart[item].price * cart[item].quantity;
-        totalAmount += itemTotal;
-
-        // Генерация HTML для каждого товара
-        const cartItem = document.createElement("div");
-        cartItem.className = "cart-item";
-        cartItem.innerHTML = `
-            <div class="item-info">
-                ${item} - ${cart[item].quantity} шт. - ${itemTotal} ₽
-            </div>
-            <div class="cart-buttons">
-                <button onclick="decrementItem('${item}')">-</button>
-                <span class="quantity">${cart[item].quantity}</span>
-                <button onclick="incrementItem('${item}', ${cart[item].price})">+</button>
-            </div>
-        `;
-        cartItemsContainer.appendChild(cartItem);
-    }
-
-    // Итоговая сумма
-    totalAmountElement.textContent = `Итого: ${totalAmount} ₽`;
-}
-
-// Уменьшение количества товара
-function decrementItem(itemName) {
-    if (cart[itemName]) {
-        cart[itemName].quantity -= 1;
-        if (cart[itemName].quantity === 0) {
-            delete cart[itemName];
+        for (const productId in cart) {
+            const item = cart[productId];
+            const itemElement = document.createElement('div');
+            itemElement.className = 'cart-item';
+            itemElement.innerHTML = `
+                <span>${item.name}</span>
+                <span>${item.price} руб.</span>
+                <span>
+                    <button class="decrease-quantity" data-id="${productId}">-</button>
+                    ${item.quantity}
+                    <button class="increase-quantity" data-id="${productId}">+</button>
+                </span>
+                <span>${item.price * item.quantity} руб.</span>
+            `;
+            cartItemsContainer.appendChild(itemElement);
+            totalAmount += item.price * item.quantity;
         }
-        saveCartToLocalStorage();
-        renderCheckoutCart(); // После изменения корзины обновляем отображение
-    }
-}
 
-// Увеличение количества товара
-function incrementItem(itemName, itemPrice) {
-    if (cart[itemName]) {
-        cart[itemName].quantity += 1;
-    } else {
-        cart[itemName] = { price: itemPrice, quantity: 1 };
+        totalAmountElement.textContent = `Итого: ${totalAmount} руб.`;
     }
-    saveCartToLocalStorage();
-    renderCheckoutCart(); // После изменения корзины обновляем отображение
-}
+
+    // Обработчики для изменения количества товаров
+    cartItemsContainer.addEventListener('click', (event) => {
+        const target = event.target;
+        const productId = target.getAttribute('data-id');
+
+        if (target.classList.contains('increase-quantity')) {
+            cart[productId].quantity++;
+        } else if (target.classList.contains('decrease-quantity')) {
+            cart[productId].quantity--;
+            if (cart[productId].quantity === 0) {
+                delete cart[productId];
+            }
+        }
+
+        localStorage.setItem('cart', JSON.stringify(cart));
+        renderCartItems();
+    });
+// Отображение корзины
+
 
 // Загрузка данных пользователя
 async function loadUserData() {
@@ -164,9 +205,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 console.log("✅ Заказ успешно оформлен:", responseData);
 
                 alert("🎉 Заказ успешно оформлен!");
-                cart = {}; // Очищаем корзину
-                saveCartToLocalStorage();
-                window.location.href = "thankyou.html";
+                cart = {};
+                localStorage.removeItem('cart');;
+                window.location.href = "index.html";
             } catch (error) {
                 console.error("❌ Ошибка сети или сервера:", error);
                 alert("Ошибка при оформлении заказа. Проверьте соединение.");
