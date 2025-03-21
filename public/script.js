@@ -768,6 +768,30 @@ document.addEventListener("DOMContentLoaded", () => {
     })
     .catch(error => console.error("❌ Ошибка загрузки профиля:", error));
 });
+async function updateAccountField(data) {
+    const token = localStorage.getItem("accessToken");
+
+    try {
+        const response = await fetch("https://makadamia.onrender.com/account", {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}` // Без этого сервер отклонит запрос
+            },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            throw new Error("Ошибка при обновлении данных");
+        }
+
+        const result = await response.json();
+        console.log("✅ Данные успешно обновлены:", result);
+    } catch (error) {
+        console.error("❌ Ошибка обновления данных:", error);
+    }
+}
+
 
 document.getElementById('editName').addEventListener('click', () => {
     document.getElementById('nameInput').disabled = false;
