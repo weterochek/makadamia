@@ -1,6 +1,6 @@
 // Получаем токен из localStorage
 async function loadUserOrders() {
-    const token = localStorage.getItem("token");
+const token = localStorage.getItem("accessToken");
 
     if (!token) {
         console.error("Ошибка: Токен не найден!");
