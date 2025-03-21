@@ -514,7 +514,7 @@ function resetAddToCartButtons() {
         revertControlsToAddButton(itemName);
     }
 }
-let cart = JSON.parse(localStorage.getItem('cart')) || {};
+
 // Загрузка корзины из localStorage при загрузке страницы
 document.addEventListener("DOMContentLoaded", () => {
     loadCartFromLocalStorage();
