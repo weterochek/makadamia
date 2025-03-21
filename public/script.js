@@ -17,30 +17,67 @@ window.onload = function () {
 async function fetchWithAuth(url, options = {}) {
     let token = localStorage.getItem("accessToken");
     if (!options.headers) options.headers = {};
-    if (token) options.headers["Authorization"] = `Bearer ${token}`;
+    options.headers["Authorization"] = `Bearer ${token}`;
 
     let response = await fetch(url, options);
 
     if (response.status === 401) {
-        console.log("Отправка запроса на /refresh");
-        const refreshResponse = await fetch("/refresh", { credentials: "include" });
+        console.log("⏳ Токен истёк, пробую обновить...");
+
+        const refreshResponse = await fetch('/refresh', { credentials: 'include' });
         if (refreshResponse.ok) {
             const refreshData = await refreshResponse.json();
             localStorage.setItem("accessToken", refreshData.accessToken);
             token = refreshData.accessToken;
             options.headers["Authorization"] = `Bearer ${token}`;
+            console.log("✅ Access Token обновлён:", token);
+
+            // Повторно отправляем запрос с новым токеном
             response = await fetch(url, options);
         } else {
-            localStorage.removeItem("accessToken");
-            localStorage.removeItem("username");
-            localStorage.removeItem("userId");
-            alert("Сессия истекла. Пожалуйста, войдите снова.");
-            window.location.href = "/login.html";
+            console.log("❌ Не удалось обновить токен");
+            window.location.href = '/login.html'; // отправить на логин
         }
     }
     return response;
 }
+    // Декодируем токен (можно через jwt-decode библиотеку или вручную)
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const now = Date.now() / 1000;
 
+    if (payload.exp < now) {
+        console.log("⏳ AccessToken истёк, пробуем обновить...");
+        const refreshResponse = await fetch('/refresh', { credentials: 'include' });
+        if (refreshResponse.ok) {
+            const refreshData = await refreshResponse.json();
+            localStorage.setItem("accessToken", refreshData.accessToken);
+            console.log("✅ AccessToken обновлён");
+            return true;
+        } else {
+            console.log("❌ Не удалось обновить токен");
+            return false;
+        }
+    } else {
+        console.log("✅ AccessToken валиден");
+        return true;
+    }
+
+document.addEventListener("DOMContentLoaded", async () => {
+    const isAuth = await checkAndRefreshToken();
+
+    const loginButton = document.getElementById("loginButton");
+    const accountButton = document.getElementById("accountButton");
+
+    if (isAuth) {
+        // Показываем ЛК, скрываем Вход
+        if (loginButton) loginButton.style.display = "none";
+        if (accountButton) accountButton.style.display = "block";
+    } else {
+        // Показываем Вход
+        if (loginButton) loginButton.style.display = "block";
+        if (accountButton) accountButton.style.display = "none";
+    }
+});
 async function loadProductMap() {
     try {
         const response = await fetch('/api/products');
@@ -785,12 +822,11 @@ function editField(field) {
         .catch(error => console.log("Ошибка обновления профиля:", error));
     }
 }
-function setupAuthButtons() {
-    const token = localStorage.getItem("accessToken");
+function setupAuthButtons(isAuth) {
     const authButton = document.getElementById("authButton");
     const cabinetButton = document.getElementById("cabinetButton");
 
-    if (token && !isTokenExpired(token)) {
+    if (isAuth) {
         if (authButton) authButton.style.display = "none";
         if (cabinetButton) {
             cabinetButton.style.display = "inline-block";
@@ -806,36 +842,6 @@ function setupAuthButtons() {
             });
         }
         if (cabinetButton) cabinetButton.style.display = "none";
-    }
-}
-// Проверка состояния авторизации
-function checkAuthStatus() {
-    const token = localStorage.getItem("accessToken");
-    const username = localStorage.getItem("username");
-    const authButton = document.getElementById("authButton");
-    const cabinetButton = document.getElementById("cabinetButton");
-
-    if (!authButton || !cabinetButton) {
-        console.warn("❌ Кнопки 'Вход' или 'Личный кабинет' не найдены");
-        return;
-    }
-
-    if (token && username && !isTokenExpired(token)) {
-        console.log("✅ Пользователь авторизован");
-        authButton.style.display = "none";
-        cabinetButton.style.display = "inline-block";
-
-        cabinetButton.onclick = () => {
-            window.location.href = "/account.html";
-        };
-    } else {
-        console.log("⚠️ Пользователь не авторизован");
-        authButton.style.display = "inline-block";
-        cabinetButton.style.display = "none";
-
-        authButton.onclick = () => {
-            window.location.href = "/login.html";
-        };
     }
 }
 
@@ -967,19 +973,25 @@ function loadUserData() {
     if (customerAddressInput) customerAddressInput.value = userData.address || "";
     if (additionalInfoInput) additionalInfoInput.value = userData.additionalInfo || "";
 }
-document.addEventListener("DOMContentLoaded", async () => {
-    await loadProductMap();  // Загружаем продукты
-    loadUserOrders();
-    loadAccountData();
-    renderCart();  // Отображаем корзину
-    checkAuthStatus(); // Проверяем авторизацию
-    loadCartFromLocalStorage();  // Загружаем корзину из localStorage
-    loadUserData(); // Загружаем данные пользователя, если есть
-    initializeAddToCartButtons(); // Настраиваем кнопки "Добавить в корзину"
-    setupAuthButtons(); // Настраиваем кнопки авторизации (если есть)
-    loadOrders(); // Загружаем заказы для личного кабинета (если есть)
-});
+document.addEventListener("DOMContentLoaded", () => {
+    (async () => {
+        await loadProductMap();
+        loadUserOrders();
+        loadAccountData();
+        renderCart();  
+        checkAuthStatus();
+        loadCartFromLocalStorage();  
+        loadUserData(); 
+        initializeAddToCartButtons(); 
 
+        // Добавляем проверку токена!
+        const token = localStorage.getItem("accessToken");
+        const isAuth = token && !isTokenExpired(token);
+        setupAuthButtons(isAuth); // ✅ Теперь переменная есть!
+
+        loadOrders();
+    })();
+});
 
 
 async function loadOrders() {
