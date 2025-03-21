@@ -161,12 +161,12 @@ function renderCart() {
         cartItem.className = 'cart-item';
         cartItem.setAttribute('data-id', productId);
         cartItem.innerHTML = `
-            <div class="item-info">${item.name} - ${itemTotal} ₽</div> <!-- Используем item.name -->
-            <div class="cart-buttons">
-                <button onclick="decrementItem('${productId}')">-</button>
-                <span class="quantity">${item.quantity}</span>
-                <button onclick="incrementItem('${productId}', ${item.price})">+</button>
-            </div>
+<div class="item-info">${item.name} - ${itemTotal} ₽</div> <!-- Используем item.name -->
+    <div class="cart-buttons">
+        <button onclick="decrementItem('${productId}')">-</button>
+        <span class="quantity">${item.quantity}</span>
+        <button onclick="incrementItem('${productId}', ${item.price})">+</button>
+    </div>
         `;
         cartContainer.appendChild(cartItem);  // Добавляем товар в корзину
     }
@@ -285,7 +285,7 @@ function initializeAddToCartButtons() {
 function addToCart(productId, productName, productPrice) {
     if (!cart[productId]) {
         cart[productId] = {
-            name: productName,  // Добавляем название товара
+            name: productName,  // Сохраняем название товара
             price: productPrice,
             quantity: 1
         };
@@ -297,6 +297,7 @@ function addToCart(productId, productName, productPrice) {
     updateControls(productId);  // Обновляем кнопки и количество
     updateCartDisplay();  // Обновляем отображение корзины
 }
+
 
 function updateCartDisplay() {
     const cartItems = document.getElementById("cartItems");
