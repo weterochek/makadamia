@@ -145,31 +145,32 @@ function updateControls(productId) {
 
 
 function renderCart() {
-    const cartContainer = document.getElementById('cart-items');
-    cartContainer.innerHTML = '';  // Очищаем контейнер перед отрисовкой
+    const cartItems = document.getElementById("cartItems");
+    if (!cartItems) return;
 
-    let totalPrice = 0;
+    cartItems.innerHTML = ""; // Очищаем список товаров
+    let totalAmount = 0;
 
     for (const productId in cart) {
-        const item = cart[productId];
+        const item = cart[productId]; // item = { name, price, quantity }
         const itemTotal = item.price * item.quantity;
-        totalPrice += itemTotal;
+        totalAmount += itemTotal;
 
-        const cartItem = document.createElement('div');
-        cartItem.className = 'cart-item';
-        cartItem.setAttribute('data-id', productId);
+        const cartItem = document.createElement("div");
+        cartItem.className = "cart-item";
+        cartItem.setAttribute("data-id", productId); // Назовём честно productId, а не name
         cartItem.innerHTML = `
-<div class="item-info">${item.name} - ${itemTotal} ₽</div>  <!-- Используем item.name -->
-    <div class="cart-buttons">
-        <button onclick="decrementItem('${productId}')">-</button>
-        <span class="quantity">${item.quantity}</span>
-        <button onclick="incrementItem('${productId}', ${item.price})">+</button>
-    </div>
+            <div class="item-info">${item.name} - ${itemTotal} ₽</div> <!-- Исправлено на item.name -->
+            <div class="cart-buttons">
+                <button onclick="decrementItem('${productId}')">-</button>
+                <span class="quantity">${item.quantity}</span>
+                <button onclick="incrementItem('${productId}', ${item.price})">+</button>
+            </div>
         `;
-        cartContainer.appendChild(cartItem);  // Добавляем товар в корзину
+        cartItems.appendChild(cartItem);
     }
 
-    document.getElementById("totalAmount").textContent = `Итого: ${totalPrice} ₽`;
+    document.getElementById("totalAmount").textContent = `Итого: ${totalAmount} ₽`;
 }
 
 
@@ -296,7 +297,6 @@ function addToCart(productId, productName, productPrice) {
     updateCartDisplay();  // Обновляем отображение корзины
 }
 
-
 function updateCartDisplay() {
     const cartItems = document.getElementById("cartItems");
     if (!cartItems) return;  // Нет корзины на этой странице
@@ -361,13 +361,14 @@ function decrementItem(productId) {
     if (cart[productId]) {
         cart[productId].quantity -= 1;
         if (cart[productId].quantity <= 0) {
-            delete cart[productId];
+            delete cart[productId]; // Удаляем товар из корзины, если количество <= 0
         }
         saveCart();
-        updateControls(productId);
-        updateCartDisplay();
+        updateControls(productId); // Обновляем кнопку и количество товара
+        updateCartDisplay(); // Обновляем отображение корзины
     }
 }
+
 
 
 function updateQuantityDisplay(productName) {
