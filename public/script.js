@@ -283,14 +283,16 @@ function initializeAddToCartButtons() {
 
 function addToCart(productId, name, price) {
     if (cart[productId]) {
-        cart[productId].quantity += 1;  // Увеличиваем количество, если товар уже в корзине
+        cart[productId].quantity += 1;
     } else {
-        cart[productId] = { name, price, quantity: 1 };  // Добавляем товар в корзину, если его нет
+        cart[productId] = { name, price, quantity: 1 };
     }
 
     saveCart();  // Сохраняем корзину в localStorage
     updateControls(productId);  // Обновляем отображение кнопки и количества
+    renderCart();  // Обновляем корзину на странице
 }
+
 
 
 
