@@ -152,16 +152,14 @@ app.get('/orders', async (req, res) => {
         res.status(500).json({ message: "Ошибка получения заказов" });
     }
 });
-router.post("/order", authMiddleware, async (req, res) => {
+app.post("/api/order", authMiddleware, async (req, res) => {
     try {
         const { items, address, additionalInfo, createdAt } = req.body;
 
-        // Проверка, что корзина не пуста
         if (!items || items.length === 0) {
             return res.status(400).json({ message: "Корзина не может быть пустой" });
         }
 
-        // Создание заказа
         const newOrder = new Order({
             userId: req.user.id,
             address,
@@ -175,7 +173,7 @@ router.post("/order", authMiddleware, async (req, res) => {
         res.status(201).json({ message: "Заказ успешно оформлен", order: newOrder });
     } catch (error) {
         console.error("Ошибка при создании заказа:", error);
-        res.status(500).json({ message: "Ошибка при создании заказа" });
+        res.status(500).json({ message: "Ошибка при создании заказа", error: error.message });
     }
 });
 
