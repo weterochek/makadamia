@@ -148,8 +148,6 @@ function updateControls(productId) {
 }
 
 
-
-
 function renderCart() {
     const cartItems = document.getElementById("cartItems");
     if (!cartItems) return;
