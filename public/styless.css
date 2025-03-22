@@ -10,6 +10,54 @@ body {
     color: #333;
     background-color: #fdfdfd;
 }
+  #toggleHistoryBtn {
+  display: block;
+  margin: 20px auto; /* Центрирование */
+  padding: 10px 20px;
+  background-color: #333;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+#toggleHistoryBtn:hover {
+  background-color: #555;
+}
+
+    .order {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.order h3 {
+    margin-top: 0;
+    color: #333;
+}
+
+.order p {
+    margin: 5px 0;
+}
+
+.order ul {
+    list-style: none;
+    padding: 0;
+}
+
+.order ul li {
+    padding: 5px 0;
+    border-bottom: 1px dashed #ccc;
+}
+
+hr {
+    border: none;
+    border-top: 1px solid #ddd;
+}
 
  #ordersContainer {
         max-width: 900px;
