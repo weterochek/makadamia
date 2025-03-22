@@ -82,15 +82,20 @@ router.get("/user-orders", authMiddleware, async (req, res) => {
 
 
 // Получение всех заказов (например, для админов)
-router.get("/all-orders", authMiddleware, async (req, res) => {
+// Все заказы для админки или orders.html
+router.get("/all-orders", async (req, res) => {
     try {
-        const orders = await Order.find();
-        res.json(orders);
+        const orders = await Order.find()
+            .populate("userId", "username")  // Чтобы видеть, кто заказал
+            .populate("items.productId", "name price");
+
+        res.status(200).json(orders);
     } catch (error) {
-        console.error("Ошибка загрузки всех заказов:", error);
-        res.status(500).json({ message: "Ошибка сервера" });
+        console.error("Ошибка при загрузке всех заказов:", error);
+        res.status(500).json({ message: "Ошибка сервера при загрузке всех заказов" });
     }
 });
+
 
 // Обновление статуса заказа
 router.put("/order/:id", authMiddleware, async (req, res) => {
