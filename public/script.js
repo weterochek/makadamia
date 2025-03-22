@@ -446,7 +446,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 document.addEventListener("DOMContentLoaded", () => {
     const token = localStorage.getItem("accessToken");
-    const userId = localStorage.getItem("userId"); // Получаем userId
+    const userId = localStorage.getItem("userId");
 
     if (!token || !userId) {
         console.log("Пользователь не авторизован");
@@ -459,10 +459,9 @@ document.addEventListener("DOMContentLoaded", () => {
             "Authorization": `Bearer ${token}`
         }
     })
-
     .then(res => res.json())
     .then(orders => {
-        const container = document.getElementById("ordersContainer"); // Блок с таким id
+        const container = document.getElementById("ordersContainer");
 
         if (orders.length === 0) {
             container.innerHTML = "<p>У вас пока нет заказов.</p>";
@@ -473,15 +472,21 @@ document.addEventListener("DOMContentLoaded", () => {
             const orderDiv = document.createElement("div");
             orderDiv.classList.add("order");
 
+            // Сначала формируем список товаров
+            const itemsList = order.items.map(item => {
+                if (item.productId && item.productId.name) {
+                    return `<li>${item.productId.name} — ${item.quantity} шт.</li>`;
+                } else {
+                    return `<li>Товар не найден</li>`;
+                }
+            }).join('');
+
+            // Теперь вставляем в HTML
             orderDiv.innerHTML = `
-                <h3>Заказ №${order._id}</h3>
+                <h3>Заказ №${order._id.slice(0, 8)}</h3>
                 <p>Адрес: ${order.address}</p>
                 <p>Дата: ${new Date(order.createdAt).toLocaleDateString()}</p>
-                <ul>
-                    ${order.items.map(item => `
-                        <li>${item.productId.name} — ${item.quantity} шт. (${item.productId.price} ₽)</li>
-                    `).join("")}
-                </ul>
+                <ul>${itemsList}</ul>
                 <hr>
             `;
             container.appendChild(orderDiv);
@@ -491,6 +496,7 @@ document.addEventListener("DOMContentLoaded", () => {
         console.error("Ошибка загрузки заказов:", err);
     });
 });
+
 // Обновление отображения корзины после очистки
 function updateCartDisplay() {
     const cartItems = document.getElementById("cartItems");
