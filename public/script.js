@@ -509,8 +509,8 @@ document.addEventListener("DOMContentLoaded", () => {
         "Authorization": `Bearer ${token}`
     }
 })
-    .then(res => res.json())
-    .then(orders => {
+.then(res => res.json())
+.then(orders => {
     const container = document.getElementById("ordersContainer");
 
     if (orders.length === 0) {
@@ -518,10 +518,13 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    // Показываем только последний заказ
-    displayOrder(orders[orders.length - 1], container);
+    // Сортируем от новых к старым
+    orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-    // Обработчик кнопки истории
+    // Показываем самый последний заказ
+    displayOrder(orders[0], container);
+
+    // Логика кнопки истории
     const toggleBtn = document.getElementById('toggleHistoryBtn');
     const ordersHistory = document.getElementById('ordersHistory');
 
@@ -535,11 +538,15 @@ document.addEventListener("DOMContentLoaded", () => {
             ordersHistory.style.display = 'none';
             toggleBtn.textContent = 'Показать историю заказов';
             ordersHistory.innerHTML = '';
-            displayOrder(orders[orders.length - 1], ordersHistory); // Снова последний заказ
+            displayOrder(orders[0], ordersHistory); // Показываем снова последний
         }
     });
 })
+.catch(err => {
+    console.error("Ошибка загрузки заказов:", err);
+});
 })
+
 
 // Обновление отображения корзины после очистки
 function updateCartDisplay() {
@@ -1086,36 +1093,30 @@ async function loadOrders() {
 }
 
 // Отображение заказов на странице
-function displayOrders(orders) {
-    const ordersContainer = document.getElementById("ordersContainer");
-    const noOrdersMessage = document.getElementById("noOrdersMessage");
+function displayOrder(order, container) {
+    const itemsList = order.items.map(item => {
+        if (item.productId && item.productId.name) {
+            return `<li>${item.productId.name} — ${item.quantity} шт. (${item.price} ₽)</li>`;
+        } else {
+            return `<li>Товар не найден</li>`;
+        }
+    }).join('');
 
-    // Если заказов нет, показываем сообщение
-    if (orders.length === 0) {
-        noOrdersMessage.style.display = 'block';
-        return;
-    } else {
-        noOrdersMessage.style.display = 'none';
+    let orderHTML = `
+        <div class="order">
+            <h3>Заказ №${order._id.slice(0, 8)}</h3>
+            <p>Адрес: ${order.address}</p>
+            <p>Дата оформления: ${new Date(order.createdAt).toLocaleDateString()} ${new Date(order.createdAt).toLocaleTimeString()}</p>
+            <p>Время доставки: ${order.deliveryTime || 'Не указано'}</p>
+            <p>Общая сумма: ${order.totalAmount} ₽</p>
+    `;
+
+    if (order.additionalInfo) {
+        orderHTML += `<p>Дополнительная информация: ${order.additionalInfo}</p>`;
     }
 
-    ordersContainer.innerHTML = ""; // Очищаем контейнер
+    orderHTML += `<ul>${itemsList}</ul></div><hr>`;
 
-    orders.forEach(order => {
-        const orderElement = document.createElement("div");
-        orderElement.classList.add("order");
-
-        orderElement.innerHTML = `
-            <h3>Заказ №${order._id}</h3>
-            <p>Адрес: ${order.address}</p>
-            <p>Доп. информация: ${order.additionalInfo || "Нет"}</p>
-            <p>Статус: <strong>${order.status}</strong></p>
-            <p>Дата: ${new Date(order.createdAt).toLocaleDateString()}</p>
-            <ul>
-                ${order.items.map(item => `
-                    <li>${item.productId} - ${item.quantity} шт.</li>
-                `).join("")}
-            </ul>
-        `;
-        ordersContainer.appendChild(orderElement);
-    });
+    container.innerHTML += orderHTML;
 }
+
