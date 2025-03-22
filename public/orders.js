@@ -28,6 +28,11 @@ async function loadUserOrders() {
 function displayOrders(orders) {
     const ordersContainer = document.getElementById('ordersContainer');
     const noOrdersMessage = document.getElementById('noOrdersMessage');
+    
+    if (!noOrdersMessage) {
+        console.error("Элемент noOrdersMessage не найден!");
+        return;  // Прерываем выполнение функции, если элемента нет
+    }
 
     if (orders.length === 0) {
         noOrdersMessage.style.display = 'block';  // Показываем сообщение о пустых заказах
@@ -42,16 +47,15 @@ function displayOrders(orders) {
     orders.forEach(order => {
         let orderHTML = `
             <div class="order">
-                <h3>Заказ №${order._id.slice(0, 8)}</h3> <!-- Сделаем № заказа короче -->
+                <h3>Заказ №${order._id.slice(0, 8)}</h3>
                 <p>Адрес: ${order.address}</p>
-                <p>Дата: ${new Date(order.createdAt).toLocaleDateString()} ${new Date(order.createdAt).toLocaleTimeString()}</p> <!-- Дата и время -->
+                <p>Дата: ${new Date(order.createdAt).toLocaleDateString()} ${new Date(order.createdAt).toLocaleTimeString()}</p>
                 <p>Общая сумма: ${order.totalAmount} ₽</p>`;
 
         if (order.additionalInfo) {
             orderHTML += `<p>Дополнительная информация: ${order.additionalInfo}</p>`;
         }
 
-        // Выводим товары в заказе
         order.items.forEach(item => {
             orderHTML += `
                 <p>${item.productId.name} — ${item.quantity} шт. (${item.price} ₽ за шт.)</p>
@@ -62,6 +66,7 @@ function displayOrders(orders) {
         ordersContainer.innerHTML += orderHTML;
     });
 }
+
 
 
 // Загружаем заказы при загрузке страницы
