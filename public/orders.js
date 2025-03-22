@@ -1,59 +1,59 @@
 // Получаем токен из localStorage
 async function loadUserOrders() {
-const token = localStorage.getItem("accessToken");
-
+    const token = localStorage.getItem('accessToken');
     if (!token) {
-        console.error("Ошибка: Токен не найден!");
-        return; // Если токен не найден, выходим из функции
+        alert("Вы не авторизованы!");
+        return;
     }
 
     try {
-        const response = await fetch("/orders", {
-            method: "GET",
+        const response = await fetch('/account/orders', {
+            method: 'GET',
             headers: {
-                "Authorization": `Bearer ${token}`,  // Отправляем токен в заголовках запроса
+                'Authorization': `Bearer ${token}`
             }
         });
 
-        if (response.ok) {
-            const orders = await response.json();
-            displayOrders(orders);
-        } else {
-            console.error("Ошибка при загрузке заказов:", response.statusText);
+        if (!response.ok) {
+            throw new Error("Ошибка при загрузке заказов");
         }
+
+        const orders = await response.json();
+        displayOrders(orders);  // Передаем заказы в функцию отображения
+
     } catch (error) {
         console.error("Ошибка при загрузке заказов:", error);
+        alert("Не удалось загрузить заказы.");
     }
 }
 
 // Отображение заказов
 function displayOrders(orders) {
-    const ordersContainer = document.getElementById("ordersContainer");
-    if (orders.length === 0) {
-        ordersContainer.innerHTML = "<p>У вас нет заказов.</p>";
-    } else {
-        orders.forEach(order => {
-            const orderElement = document.createElement("div");
+    const ordersContainer = document.getElementById('ordersContainer');
+    ordersContainer.innerHTML = '';  // Очищаем контейнер
 
-            // Форматируем дату заказа
-            const orderDate = new Date(order.createdAt).toLocaleString();
+    orders.forEach(order => {
+        let orderHTML = `<div class="order">
+            <h3>Заказ №${order._id}</h3>
+            <p>Адрес: ${order.address}</p>
+            <p>Дата: ${new Date(order.createdAt).toLocaleDateString()}</p>
+            <p>Общая сумма: ${order.totalAmount} ₽</p>`;
 
-            orderElement.innerHTML = `
-                <h3>Заказ №${order._id}</h3>
-                <p>Адрес: ${order.address}</p>
-                <p>Статус: ${order.status}</p>
-                <p>Время заказа: ${orderDate}</p>
-                <ul>
-                    ${order.items.map(item => 
-                        `<li>${item.productId.name} - ${item.quantity} шт. по ${item.productId.price} ₽</li>`
-                    ).join('')}
-                </ul>
+        if (order.additionalInfo) {
+            orderHTML += `<p>Дополнительная информация: ${order.additionalInfo}</p>`;
+        }
+
+        // Выводим товары в заказе
+        order.items.forEach(item => {
+            orderHTML += `
+                <p>${item.productId.name} — ${item.quantity} шт. (${item.price} ₽ за шт.)</p>
             `;
-            ordersContainer.appendChild(orderElement);
         });
-    }
-}
 
+        orderHTML += `</div><hr>`;
+        ordersContainer.innerHTML += orderHTML;
+    });
+}
 
 
 // Загрузка заказов при загрузке страницы
