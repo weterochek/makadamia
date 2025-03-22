@@ -496,12 +496,12 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    fetch(`https://makadamia.onrender.com/user-orders/${userId}`, { 
-        method: "GET",
-        headers: {
-            "Authorization": `Bearer ${token}`
-        }
-    })
+fetch(`https://makadamia.onrender.com/user-orders`, { 
+    method: "GET",
+    headers: {
+        "Authorization": `Bearer ${token}`
+    }
+})
     .then(res => res.json())
     .then(orders => {
         const container = document.getElementById("ordersContainer");
