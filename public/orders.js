@@ -7,7 +7,7 @@ async function loadUserOrders() {
     }
 
     try {
-        const response = await fetch('/account/orders', {
+        const response = await fetch('/api/orders', {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`
