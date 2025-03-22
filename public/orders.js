@@ -6,10 +6,11 @@ async function loadUserOrders() {
     }
 
     try {
-        const response = await fetch('/api/orders', {  // Путь для получения заказов
+        const response = await fetch('/api/orders', {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${token}`,  // Передача токена в заголовке
+                'Authorization': `Bearer ${token}`,  // Токен передается в заголовке
+                'Content-Type': 'application/json'
             }
         });
 
@@ -18,7 +19,9 @@ async function loadUserOrders() {
         }
 
         const orders = await response.json();
-        displayOrders(orders);  // Отображаем заказы на странице
+        console.log("Полученные заказы:", orders);  // Для проверки
+
+        displayOrders(orders);  // Отображаем заказы
 
     } catch (error) {
         console.error("Ошибка при загрузке заказов:", error);
@@ -53,12 +56,12 @@ function displayOrders(orders) {
 
         // Выводим товары в заказе
         order.items.forEach(item => {
-            if (item.productId && item.productId.name) {  // Проверяем, существует ли productId и его имя
+            if (item.productId && item.productId.name) {  // Проверка на наличие productId и name
                 orderHTML += `
                     <p>${item.productId.name} — ${item.quantity} шт. (${item.price} ₽ за шт.)</p>
                 `;
             } else {
-                orderHTML += `<p>Товар не найден</p>`;  // Если товар не найден, показываем сообщение
+                orderHTML += `<p>Товар не найден</p>`;  // Если товара нет, выводим сообщение
             }
         });
 
