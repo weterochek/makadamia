@@ -326,27 +326,44 @@ function initializeAddToCartButtons() {
         }
     });
 }
-const toggleBtn = document.getElementById('toggleHistoryBtn');
-const ordersHistory = document.getElementById('ordersHistory');
-
-// Показать последний заказ
-if (orders.length > 0) {
-    displayOrder(orders[0], ordersHistory); // функцию displayOrder напишем ниже
-}
-
-// Обработчик кнопки
-toggleBtn.addEventListener('click', () => {
-    if (ordersHistory.style.display === 'none') {
-        ordersHistory.style.display = 'block';
-        toggleBtn.textContent = 'Скрыть историю заказов';
-        orders.forEach(order => displayOrder(order, ordersHistory));
-    } else {
-        ordersHistory.style.display = 'none';
-        toggleBtn.textContent = 'Показать историю заказов';
-        ordersHistory.innerHTML = ''; // Очищаем
-        displayOrder(orders[0], ordersHistory); // Показываем только последний
+fetch(`https://makadamia.onrender.com/user-orders`, { 
+    method: "GET",
+    headers: {
+        "Authorization": `Bearer ${token}`
     }
+})
+.then(res => res.json())
+.then(orders => {
+    const container = document.getElementById("ordersContainer");
+
+    if (orders.length === 0) {
+        container.innerHTML = "<p>У вас пока нет заказов.</p>";
+        return;
+    }
+
+    // Показываем последний заказ
+    displayOrder(orders[0], container);
+
+    const toggleBtn = document.getElementById('toggleHistoryBtn');
+    const ordersHistory = document.getElementById('ordersHistory');
+
+    toggleBtn.addEventListener('click', () => {
+        if (ordersHistory.style.display === 'none') {
+            ordersHistory.style.display = 'block';
+            toggleBtn.textContent = 'Скрыть историю заказов';
+            orders.forEach(order => displayOrder(order, ordersHistory));
+        } else {
+            ordersHistory.style.display = 'none';
+            toggleBtn.textContent = 'Показать историю заказов';
+            ordersHistory.innerHTML = '';
+            displayOrder(orders[0], ordersHistory);
+        }
+    });
+})
+.catch(err => {
+    console.error("Ошибка загрузки заказов:", err);
 });
+
 
 
 // Добавление товара
@@ -580,12 +597,16 @@ function saveCart() {
     localStorage.setItem('cart', JSON.stringify(cart));
 }
 function renderCheckoutCart() {
-    const cart = JSON.parse(localStorage.getItem('cart')) || {};
     const cartItemsContainer = document.getElementById("cartItems");
     const cartTotalPrice = document.getElementById("cartTotalPrice");
 
+    // Проверка — если элемента нет, выходим
+    if (!cartItemsContainer || !cartTotalPrice) return;
+
     cartItemsContainer.innerHTML = "";
     let totalPrice = 0;
+
+    const cart = JSON.parse(localStorage.getItem('cart')) || {};
 
     for (const productId in cart) {
         const item = cart[productId];
@@ -604,6 +625,7 @@ function renderCheckoutCart() {
 
     cartTotalPrice.textContent = totalPrice.toFixed(2) + " ₽";
 }
+
 function updateTotal() {
     const cartItems = getCartItems();
     const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -830,6 +852,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (nameInput) nameInput.value = data.name || "";
         if (cityInput) cityInput.value = data.city || "";
+
+        document.getElementById('authButton').style.display = 'none';
+        document.getElementById('cabinetButton').style.display = 'inline-block';
     })
     .catch(error => console.error("❌ Ошибка загрузки профиля:", error));
 });
