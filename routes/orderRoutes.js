@@ -49,7 +49,7 @@ router.post("/order", authMiddleware, async (req, res) => {
 // Получение всех заказов
 router.get("/orders", async (req, res) => {
     try {
-    const orders = await Order.find({ userId }).populate("items.productId", "name price");
+    const orders = await Order.find({ userId: req.user.id }).populate("items.productId", "name price");
         res.status(200).json(orders);
     } catch (error) {
         res.status(500).json({ error: "Ошибка при загрузке заказов" });
