@@ -1,4 +1,3 @@
-// Получаем токен из localStorage
 async function loadUserOrders() {
     const token = localStorage.getItem('accessToken');
     if (!token) {
@@ -7,10 +6,10 @@ async function loadUserOrders() {
     }
 
     try {
-        const response = await fetch('/api/user-orders', {
+        const response = await fetch('/api/orders', {  // Путь для отображения всех заказов
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${token}`,  // Передаем токен в заголовке
+                'Authorization': `Bearer ${token}`
             }
         });
 
@@ -27,15 +26,16 @@ async function loadUserOrders() {
     }
 }
 
-// Отображение заказов
 function displayOrders(orders) {
     const ordersContainer = document.getElementById('ordersContainer');
     const noOrdersMessage = document.getElementById('noOrdersMessage');
     
     if (orders.length === 0) {
         noOrdersMessage.style.display = 'block';  // Показываем сообщение о пустых заказах
+        ordersContainer.style.display = 'none';
     } else {
-        noOrdersMessage.style.display = 'none';  // Скрываем сообщение о пустых заказах
+        noOrdersMessage.style.display = 'none';
+        ordersContainer.style.display = 'block';
     }
 
     ordersContainer.innerHTML = '';  // Очищаем контейнер
@@ -63,6 +63,9 @@ function displayOrders(orders) {
         ordersContainer.innerHTML += orderHTML;
     });
 }
+
+// Загружаем заказы при загрузке страницы
+window.onload = loadUserOrders;
 
 // Загрузка заказов при загрузке страницы
 document.addEventListener("DOMContentLoaded", loadUserOrders);
