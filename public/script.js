@@ -326,8 +326,27 @@ function initializeAddToCartButtons() {
         }
     });
 }
+const toggleBtn = document.getElementById('toggleHistoryBtn');
+const ordersHistory = document.getElementById('ordersHistory');
 
+// Показать последний заказ
+if (orders.length > 0) {
+    displayOrder(orders[0], ordersHistory); // функцию displayOrder напишем ниже
+}
 
+// Обработчик кнопки
+toggleBtn.addEventListener('click', () => {
+    if (ordersHistory.style.display === 'none') {
+        ordersHistory.style.display = 'block';
+        toggleBtn.textContent = 'Скрыть историю заказов';
+        orders.forEach(order => displayOrder(order, ordersHistory));
+    } else {
+        ordersHistory.style.display = 'none';
+        toggleBtn.textContent = 'Показать историю заказов';
+        ordersHistory.innerHTML = ''; // Очищаем
+        displayOrder(orders[0], ordersHistory); // Показываем только последний
+    }
+});
 
 
 // Добавление товара
