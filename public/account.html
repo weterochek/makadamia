@@ -53,12 +53,19 @@
     <p><button onclick="logout()">Выйти</button></p>
   </div>
 </div>
-<h2>История заказов</h2>
+<h2>Ваши заказы</h2>
 
-<div id="ordersContainer">
-    <!-- Если заказов нет, покажем уведомление -->
+<!-- Кнопка для показа/скрытия истории заказов -->
+<button id="toggleHistoryBtn">Показать историю заказов</button>
+<!-- Контейнер для истории заказов -->
+<div id="ordersHistory" style="display: none;">
+  <!-- Сюда будем динамически добавлять все заказы -->
+  <div id="ordersContainer">
+    <!-- Сообщение если заказов нет -->
     <div class="no-orders" id="noOrdersMessage">У вас еще нет заказов.</div>
+  </div>
 </div>
+
 <script src="script.js"></script>
 </body>
 </html>
