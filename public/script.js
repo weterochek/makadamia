@@ -152,10 +152,10 @@ function updateControls(productId) {
         }
     }
 }
-function displayUserOrders(orders) {
+function displayOrders(orders) {
     const ordersContainer = document.getElementById('ordersContainer');
     const noOrdersMessage = document.getElementById('noOrdersMessage');
-
+    
     if (orders.length === 0) {
         noOrdersMessage.style.display = 'block';
         ordersContainer.style.display = 'none';
@@ -193,8 +193,6 @@ function displayUserOrders(orders) {
         ordersContainer.innerHTML += orderHTML;
     });
 }
-
-
 
 function renderCart() {
     const cartItems = document.getElementById("cartItems");
@@ -1120,4 +1118,3 @@ function displayOrders(orders) {
         ordersContainer.appendChild(orderElement);
     });
 }
-
