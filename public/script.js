@@ -1,19 +1,31 @@
 let productMap = {};// Будет заполнен динамически
 let cart = JSON.parse(localStorage.getItem('cart')) || {};
-window.onload = function () {
+document.addEventListener("DOMContentLoaded", function () {
     const userAgent = navigator.userAgent.toLowerCase();
     const currentURL = window.location.href;
 
-    if (sessionStorage.getItem("redirected")) return; // ✅ Проверка на зацикливание редиректа
+    console.log("User-Agent:", userAgent);
+    console.log("Текущий URL:", currentURL);
+    console.log("sessionStorage.redirected:", sessionStorage.getItem("redirected"));
+
+    if (sessionStorage.getItem("redirected")) {
+        console.log("Редирект уже выполнялся, прерываем.");
+        return;
+    }
 
     if (userAgent.includes("mobile") && !currentURL.includes("mobile-site.onrender.com")) {
-        sessionStorage.setItem("redirected", "true"); 
+        console.log("🟢 Должен быть редирект на мобильную версию...");
+        sessionStorage.setItem("redirected", "true");
         window.location.href = "https://mobile-site.onrender.com";
     } else if (!userAgent.includes("mobile") && !currentURL.includes("makadamia.onrender.com")) {
-        sessionStorage.setItem("redirected", "true"); 
+        console.log("🟢 Должен быть редирект на десктопную версию...");
+        sessionStorage.setItem("redirected", "true");
         window.location.href = "https://makadamia.onrender.com";
+    } else {
+        console.log("🔴 Условие редиректа не выполнено.");
     }
-};
+});
+
 
 
 async function loadProductMap() {
