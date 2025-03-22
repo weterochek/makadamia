@@ -59,13 +59,13 @@ router.get("/orders", async (req, res) => {
 // Получение заказов текущего пользователя
 router.get("/user-orders", authMiddleware, async (req, res) => {
     try {
-        const userId = req.user.id;
+        const userId = req.user.id; // Получаем userId из токена (authMiddleware)
         console.log("Запрос на заказы пользователя:", userId);  // Логирование
 
         const orders = await Order.find({ userId }).populate("items.productId", "name price");
         console.log("Найдено заказов:", orders.length);  // Логирование
 
-        res.status(200).json(orders);
+        res.status(200).json(orders);  // Отправляем заказы
     } catch (error) {
         console.error("Ошибка при загрузке заказов:", error);  // Логирование ошибки
         res.status(500).json({ error: "Ошибка при загрузке заказов пользователя" });
