@@ -44,16 +44,14 @@ function displayOrders(orders) {
     ordersContainer.innerHTML = '';
 
     orders.forEach(order => {
-        // Сначала формируем список товаров
         const itemsList = order.items.map(item => {
             if (item.productId && item.productId.name) {
-                return `<li>${item.productId.name} — ${item.quantity} шт. (${item.price} ₽ за шт.)</li>`;
+                return `<li>${item.productId.name} — ${item.quantity} шт. (${item.price} ₽)</li>`;
             } else {
                 return `<li>Товар не найден</li>`;
             }
         }).join('');
 
-        // Формируем HTML блока заказа
         let orderHTML = `
             <div class="order">
                 <h3>Заказ №${order._id.slice(0, 8)}</h3>
@@ -68,13 +66,11 @@ function displayOrders(orders) {
             orderHTML += `<p>Дополнительная информация: ${order.additionalInfo}</p>`;
         }
 
-        // Добавляем список товаров
         orderHTML += `<ul>${itemsList}</ul></div><hr>`;
 
         ordersContainer.innerHTML += orderHTML;
     });
 }
-
 
 
 
