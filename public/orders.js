@@ -7,10 +7,10 @@ async function loadUserOrders() {
     }
 
     try {
-        const response = await fetch('/api/orders', {
+        const response = await fetch('/api/user-orders', {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${token}`
+                'Authorization': `Bearer ${token}`,  // Передаем токен в заголовке
             }
         });
 
