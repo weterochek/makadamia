@@ -50,15 +50,18 @@ router.post("/order", authMiddleware, async (req, res) => {
 router.get("/orders", authMiddleware, async (req, res) => {
     try {
         const userId = req.user.id;  // Получаем userId из токена
-        console.log("Запрос на заказы пользователя с ID:", userId);
 
-        const orders = await Order.find({ userId }).populate("items.productId", "name price");
-        res.status(200).json(orders);  // Отправляем заказанные данные
+        const orders = await Order.find({ userId })
+            .populate("items.productId", "name price")  // Загружаем имя и цену продукта
+            .exec();  // Выполняем запрос
+
+        res.status(200).json(orders);  // Возвращаем заказы
     } catch (error) {
         console.error("Ошибка при загрузке заказов:", error);
         res.status(500).json({ message: "Ошибка сервера при загрузке заказов" });
     }
 });
+
 
 
 // Получение заказов текущего пользователя
