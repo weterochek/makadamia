@@ -453,7 +453,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    fetch(`https://makadamia.onrender.com/user-orders`, { 
+    fetch(`https://makadamia.onrender.com/user-orders/${userId}`, { 
         method: "GET",
         headers: {
             "Authorization": `Bearer ${token}`
