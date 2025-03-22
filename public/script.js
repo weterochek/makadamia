@@ -152,6 +152,22 @@ function updateControls(productId) {
         }
     }
 }
+function displayOrders(orders) {
+    const ordersContainer = document.getElementById('ordersContainer');
+    const noOrdersMessage = document.getElementById('noOrdersMessage');
+    
+    if (orders.length === 0) {
+        noOrdersMessage.style.display = 'block';  // Показываем сообщение о пустых заказах
+    } else {
+        noOrdersMessage.style.display = 'none';  // Скрываем сообщение о пустых заказах
+    }
+
+    ordersContainer.innerHTML = '';  // Очищаем контейнер
+
+    orders.forEach(order => {
+        // Заполнение данных заказа
+    });
+}
 
 
 function renderCart() {
