@@ -485,41 +485,34 @@ document.addEventListener("DOMContentLoaded", () => {
 })
     .then(res => res.json())
     .then(orders => {
-        const container = document.getElementById("ordersContainer");
+    const container = document.getElementById("ordersContainer");
 
-        if (orders.length === 0) {
-            container.innerHTML = "<p>У вас пока нет заказов.</p>";
-            return;
+    if (orders.length === 0) {
+        container.innerHTML = "<p>У вас пока нет заказов.</p>";
+        return;
+    }
+
+    // Показываем только последний заказ
+    displayOrder(orders[orders.length - 1], container);
+
+    // Обработчик кнопки истории
+    const toggleBtn = document.getElementById('toggleHistoryBtn');
+    const ordersHistory = document.getElementById('ordersHistory');
+
+    toggleBtn.addEventListener('click', () => {
+        if (ordersHistory.style.display === 'none') {
+            ordersHistory.style.display = 'block';
+            toggleBtn.textContent = 'Скрыть историю заказов';
+            ordersHistory.innerHTML = '';
+            orders.forEach(order => displayOrder(order, ordersHistory));
+        } else {
+            ordersHistory.style.display = 'none';
+            toggleBtn.textContent = 'Показать историю заказов';
+            ordersHistory.innerHTML = '';
+            displayOrder(orders[orders.length - 1], ordersHistory); // Снова последний заказ
         }
-
-        orders.forEach(order => {
-            const orderDiv = document.createElement("div");
-            orderDiv.classList.add("order");
-
-            // Сначала формируем список товаров
-            const itemsList = order.items.map(item => {
-                if (item.productId && item.productId.name) {
-                    return `<li>${item.productId.name} — ${item.quantity} шт.</li>`;
-                } else {
-                    return `<li>Товар не найден</li>`;
-                }
-            }).join('');
-
-            // Теперь вставляем в HTML
-            orderDiv.innerHTML = `
-                <h3>Заказ №${order._id.slice(0, 8)}</h3>
-                <p>Адрес: ${order.address}</p>
-                <p>Дата: ${new Date(order.createdAt).toLocaleDateString()}</p>
-                <ul>${itemsList}</ul>
-                <hr>
-            `;
-            container.appendChild(orderDiv);
-        });
-    })
-    .catch(err => {
-        console.error("Ошибка загрузки заказов:", err);
     });
-});
+})
 
 // Обновление отображения корзины после очистки
 function updateCartDisplay() {
