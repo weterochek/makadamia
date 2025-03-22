@@ -6,10 +6,10 @@ async function loadUserOrders() {
     }
 
     try {
-        const response = await fetch('/api/orders', {  // Путь для отображения всех заказов
+        const response = await fetch('/api/orders', {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${token}`
+                'Authorization': `Bearer ${token}`,
             }
         });
 
@@ -25,11 +25,10 @@ async function loadUserOrders() {
         alert("Не удалось загрузить заказы.");
     }
 }
-
 function displayOrders(orders) {
     const ordersContainer = document.getElementById('ordersContainer');
     const noOrdersMessage = document.getElementById('noOrdersMessage');
-    
+
     if (orders.length === 0) {
         noOrdersMessage.style.display = 'block';  // Показываем сообщение о пустых заказах
         ordersContainer.style.display = 'none';
@@ -63,6 +62,7 @@ function displayOrders(orders) {
         ordersContainer.innerHTML += orderHTML;
     });
 }
+
 
 // Загружаем заказы при загрузке страницы
 window.onload = loadUserOrders;
