@@ -513,6 +513,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 })
+})
 
 // Обновление отображения корзины после очистки
 function updateCartDisplay() {
@@ -1092,4 +1093,3 @@ function displayOrders(orders) {
         ordersContainer.appendChild(orderElement);
     });
 }
-
