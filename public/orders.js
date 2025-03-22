@@ -6,10 +6,10 @@ async function loadUserOrders() {
     }
 
     try {
-        const response = await fetch('/api/orders', {
+        const response = await fetch('/api/orders', {  // Путь для получения заказов
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${token}`,
+                'Authorization': `Bearer ${token}`,  // Передача токена в заголовке
             }
         });
 
@@ -18,7 +18,7 @@ async function loadUserOrders() {
         }
 
         const orders = await response.json();
-        displayOrders(orders);  // Передаем заказы в функцию отображения
+        displayOrders(orders);  // Отображаем заказы на странице
 
     } catch (error) {
         console.error("Ошибка при загрузке заказов:", error);
