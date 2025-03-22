@@ -6,14 +6,14 @@ async function loadUserOrders() {
     }
 
     try {
-       fetch(`https://makadamia.onrender.com/all-orders`, {
-    method: "GET"
-})
-            headers: {
-                'Authorization': `Bearer ${token}`,  // Токен передается в заголовке
-                'Content-Type': 'application/json'
-            }
-        });
+      const response = await fetch(`https://makadamia.onrender.com/all-orders`, {
+    method: "GET",
+    headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+    }
+});
+
 
         if (!response.ok) {
             throw new Error("Ошибка при загрузке заказов");
@@ -71,11 +71,6 @@ function displayOrders(orders) {
         ordersContainer.innerHTML += orderHTML;
     });
 }
-
-
-
-// Загружаем заказы при загрузке страницы
-window.onload = loadUserOrders;
 
 // Загрузка заказов при загрузке страницы
 document.addEventListener("DOMContentLoaded", loadUserOrders);
