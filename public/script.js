@@ -157,42 +157,18 @@ function displayOrders(orders) {
     const noOrdersMessage = document.getElementById('noOrdersMessage');
     
     if (orders.length === 0) {
-        noOrdersMessage.style.display = 'block';
-        ordersContainer.style.display = 'none';
+        noOrdersMessage.style.display = 'block';  // Показываем сообщение о пустых заказах
     } else {
-        noOrdersMessage.style.display = 'none';
-        ordersContainer.style.display = 'block';
+        noOrdersMessage.style.display = 'none';  // Скрываем сообщение о пустых заказах
     }
 
-    ordersContainer.innerHTML = '';
+    ordersContainer.innerHTML = '';  // Очищаем контейнер
 
     orders.forEach(order => {
-        const itemsList = order.items.map(item => {
-            if (item.productId && item.productId.name) {
-                return `<li>${item.productId.name} — ${item.quantity} шт. (${item.price} ₽)</li>`;
-            } else {
-                return `<li>Товар не найден</li>`;
-            }
-        }).join('');
-
-        let orderHTML = `
-            <div class="order">
-                <h3>Заказ №${order._id.slice(0, 8)}</h3>
-                <p>Адрес: ${order.address}</p>
-                <p>Дата оформления: ${new Date(order.createdAt).toLocaleDateString()} ${new Date(order.createdAt).toLocaleTimeString()}</p>
-                <p>Время доставки: ${order.deliveryTime || 'Не указано'}</p>
-                <p>Общая сумма: ${order.totalAmount} ₽</p>
-        `;
-
-        if (order.additionalInfo) {
-            orderHTML += `<p>Дополнительная информация: ${order.additionalInfo}</p>`;
-        }
-
-        orderHTML += `<ul>${itemsList}</ul></div><hr>`;
-
-        ordersContainer.innerHTML += orderHTML;
+        // Заполнение данных заказа
     });
 }
+
 
 function renderCart() {
     const cartItems = document.getElementById("cartItems");
@@ -326,43 +302,7 @@ function initializeAddToCartButtons() {
         }
     });
 }
-fetch(`https://makadamia.onrender.com/user-orders`, { 
-    method: "GET",
-    headers: {
-        "Authorization": `Bearer ${token}`
-    }
-})
-.then(res => res.json())
-.then(orders => {
-    const container = document.getElementById("ordersContainer");
 
-    if (orders.length === 0) {
-        container.innerHTML = "<p>У вас пока нет заказов.</p>";
-        return;
-    }
-
-    // Показываем последний заказ
-    displayOrder(orders[0], container);
-
-    const toggleBtn = document.getElementById('toggleHistoryBtn');
-    const ordersHistory = document.getElementById('ordersHistory');
-
-    toggleBtn.addEventListener('click', () => {
-        if (ordersHistory.style.display === 'none') {
-            ordersHistory.style.display = 'block';
-            toggleBtn.textContent = 'Скрыть историю заказов';
-            orders.forEach(order => displayOrder(order, ordersHistory));
-        } else {
-            ordersHistory.style.display = 'none';
-            toggleBtn.textContent = 'Показать историю заказов';
-            ordersHistory.innerHTML = '';
-            displayOrder(orders[0], ordersHistory);
-        }
-    });
-})
-.catch(err => {
-    console.error("Ошибка загрузки заказов:", err);
-});
 
 
 
@@ -597,16 +537,12 @@ function saveCart() {
     localStorage.setItem('cart', JSON.stringify(cart));
 }
 function renderCheckoutCart() {
+    const cart = JSON.parse(localStorage.getItem('cart')) || {};
     const cartItemsContainer = document.getElementById("cartItems");
     const cartTotalPrice = document.getElementById("cartTotalPrice");
 
-    // Проверка — если элемента нет, выходим
-    if (!cartItemsContainer || !cartTotalPrice) return;
-
     cartItemsContainer.innerHTML = "";
     let totalPrice = 0;
-
-    const cart = JSON.parse(localStorage.getItem('cart')) || {};
 
     for (const productId in cart) {
         const item = cart[productId];
@@ -625,7 +561,6 @@ function renderCheckoutCart() {
 
     cartTotalPrice.textContent = totalPrice.toFixed(2) + " ₽";
 }
-
 function updateTotal() {
     const cartItems = getCartItems();
     const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -852,9 +787,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (nameInput) nameInput.value = data.name || "";
         if (cityInput) cityInput.value = data.city || "";
-
-        document.getElementById('authButton').style.display = 'none';
-        document.getElementById('cabinetButton').style.display = 'inline-block';
     })
     .catch(error => console.error("❌ Ошибка загрузки профиля:", error));
 });
