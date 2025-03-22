@@ -6,14 +6,13 @@ async function loadUserOrders() {
     }
 
     try {
-      const response = await fetch(`https://makadamia.onrender.com/all-orders`, {
-    method: "GET",
-    headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-    }
-});
-
+        const response = await fetch('/api/all-orders', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,  // Токен передается в заголовке
+                'Content-Type': 'application/json'
+            }
+        });
 
         if (!response.ok) {
             throw new Error("Ошибка при загрузке заказов");
@@ -34,43 +33,43 @@ function displayOrders(orders) {
     const noOrdersMessage = document.getElementById('noOrdersMessage');
     
     if (orders.length === 0) {
-        noOrdersMessage.style.display = 'block';
+        noOrdersMessage.style.display = 'block';  // Показываем сообщение о пустых заказах
         ordersContainer.style.display = 'none';
     } else {
         noOrdersMessage.style.display = 'none';
         ordersContainer.style.display = 'block';
     }
 
-    ordersContainer.innerHTML = '';
+    ordersContainer.innerHTML = '';  // Очищаем контейнер
 
     orders.forEach(order => {
-        const itemsList = order.items.map(item => {
-            if (item.productId && item.productId.name) {
-                return `<li>${item.productId.name} — ${item.quantity} шт. (${item.price} ₽)</li>`;
-            } else {
-                return `<li>Товар не найден</li>`;
-            }
-        }).join('');
-
         let orderHTML = `
             <div class="order">
                 <h3>Заказ №${order._id.slice(0, 8)}</h3>
-                <p>Пользователь: ${order.userId?.username || 'Неизвестно'}</p>
                 <p>Адрес: ${order.address}</p>
-                <p>Дата оформления: ${new Date(order.createdAt).toLocaleDateString()} ${new Date(order.createdAt).toLocaleTimeString()}</p>
-                <p>Время доставки: ${order.deliveryTime || 'Не указано'}</p>
-                <p>Общая сумма: ${order.totalAmount} ₽</p>
-        `;
+                <p>Дата: ${new Date(order.createdAt).toLocaleDateString()} ${new Date(order.createdAt).toLocaleTimeString()}</p>
+                <p>Общая сумма: ${order.totalAmount} ₽</p>`;
 
         if (order.additionalInfo) {
             orderHTML += `<p>Дополнительная информация: ${order.additionalInfo}</p>`;
         }
 
-        orderHTML += `<ul>${itemsList}</ul></div><hr>`;
+        // Выводим товары в заказе
+        order.items.forEach(item => {
+            if (item.productId && item.productId.name) {  // Проверка на наличие productId и name
+                orderHTML += `
+                    <p>${item.productId.name} — ${item.quantity} шт. (${item.price} ₽ за шт.)</p>
+                `;
+            } else {
+                orderHTML += `<p>Товар не найден</p>`;  // Если товара нет, выводим сообщение
+            }
+        });
 
+        orderHTML += `</div><hr>`;
         ordersContainer.innerHTML += orderHTML;
     });
 }
+
 
 // Загрузка заказов при загрузке страницы
 document.addEventListener("DOMContentLoaded", loadUserOrders);
