@@ -6,8 +6,9 @@ async function loadUserOrders() {
     }
 
     try {
-        const response = await fetch('/api/all-orders', {
-            method: 'GET',
+       fetch(`https://makadamia.onrender.com/all-orders`, {
+    method: "GET"
+})
             headers: {
                 'Authorization': `Bearer ${token}`,  // Токен передается в заголовке
                 'Content-Type': 'application/json'
