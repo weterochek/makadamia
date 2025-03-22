@@ -29,11 +29,6 @@ function displayOrders(orders) {
     const ordersContainer = document.getElementById('ordersContainer');
     const noOrdersMessage = document.getElementById('noOrdersMessage');
     
-    if (!noOrdersMessage) {
-        console.error("Элемент noOrdersMessage не найден!");
-        return;  // Прерываем выполнение функции, если элемента нет
-    }
-
     if (orders.length === 0) {
         noOrdersMessage.style.display = 'block';  // Показываем сообщение о пустых заказах
         ordersContainer.style.display = 'none';
@@ -56,10 +51,15 @@ function displayOrders(orders) {
             orderHTML += `<p>Дополнительная информация: ${order.additionalInfo}</p>`;
         }
 
+        // Выводим товары в заказе
         order.items.forEach(item => {
-            orderHTML += `
-                <p>${item.productId.name} — ${item.quantity} шт. (${item.price} ₽ за шт.)</p>
-            `;
+            if (item.productId && item.productId.name) {  // Проверяем, существует ли productId и его имя
+                orderHTML += `
+                    <p>${item.productId.name} — ${item.quantity} шт. (${item.price} ₽ за шт.)</p>
+                `;
+            } else {
+                orderHTML += `<p>Товар не найден</p>`;  // Если товар не найден, показываем сообщение
+            }
         });
 
         orderHTML += `</div><hr>`;
