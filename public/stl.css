@@ -46,7 +46,24 @@ main {
 }
 
 #cartItems {
-    margin-bottom: 15px;
+    display: table;
+    width: 100%;
+}
+
+.cart-item {
+    display: table-row;
+}
+
+.cart-item .item-info, 
+.cart-item .cart-buttons, 
+.cart-item .quantity {
+    display: table-cell;
+    padding: 10px;
+    text-align: center;
+}
+
+.cart-item .cart-buttons {
+    white-space: nowrap; /* Не позволяет кнопкам переноситься */
 }
 
 #totalAmount {
