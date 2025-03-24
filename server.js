@@ -310,7 +310,6 @@ app.post('/refresh', async (req, res) => {
     });
 });
 
-
 async function refreshAccessToken() {
     try {
         console.log("🔄 Отправляем запрос на обновление токена...");
