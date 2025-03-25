@@ -1,11 +1,6 @@
 let productMap = {};// Будет заполнен динамически
-let cart = {};
-try {
-    cart = JSON.parse(localStorage.getItem('cart')) || {};
-} catch (error) {
-    console.warn("⚠️ Ошибка при загрузке cart из localStorage:", error);
-}
-(() => {
+let cart = JSON.parse(localStorage.getItem('cart')) || {};
+document.addEventListener("DOMContentLoaded", function () {
     const userAgent = navigator.userAgent.toLowerCase();
     const currentURL = window.location.href;
 
@@ -29,37 +24,17 @@ try {
     } else {
         console.log("🔴 Условие редиректа не выполнено.");
     }
-})();
-
-(async () => {
-    console.log("🔄 Мгновенная проверка и обновление токена...");
+});
+window.addEventListener("load", async () => {
+    console.log("🔄 Проверяем и обновляем токен при загрузке страницы...");
 
     const token = localStorage.getItem("accessToken");
 
-    if (!token) {
-        console.log("⏳ Access-токен отсутствует, обновляем немедленно...");
-        await refreshAccessToken();
-    } else if (isTokenExpired(token)) {
-        console.log("⚠️ Access-токен истёк, обновляем...");
+    if (!token || isTokenExpired(token)) { 
+        console.log("⏳ Access-токен отсутствует или истёк, обновляем...");
         await refreshAccessToken();
     } else {
         console.log("✅ Access-токен активен, обновление не требуется.");
-    }
-})();
-
-document.addEventListener("DOMContentLoaded", async () => {
-    console.log("🔄 Дополнительная проверка токена после загрузки DOM...");
-
-    const token = localStorage.getItem("accessToken");
-
-    if (!token || isTokenExpired(token)) {
-        console.log("⏳ Повторная попытка обновления токена...");
-
-        try {
-            await refreshAccessToken();
-        } catch (error) {
-            console.error("❌ Ошибка при обновлении токена после загрузки:", error);
-        }
     }
 });
 
@@ -804,22 +779,25 @@ async function refreshAccessToken() {
     try {
         const response = await fetch("https://makadamia.onrender.com/refresh", {
             method: "POST",
-            credentials: "include", // ✅ Обязательно для отправки cookies!
-            headers: { "Content-Type": "application/json" }
+            credentials: "include"  // Отправляем cookies
         });
 
-        const data = await response.json();
         if (!response.ok) {
+            const data = await response.json();
             console.warn("❌ Ошибка обновления токена:", data.message);
+
             if (data.message.includes("Refresh-токен истек") || data.message.includes("Недействителен")) {
                 console.error("⏳ Refresh-токен окончательно истек. Требуется повторный вход!");
-                logout(); // ✅ Выход из аккаунта
+                logout();
             }
+            
             return null;
         }
 
-        console.log("✅ Новый accessToken получен:", data.accessToken);
-        localStorage.setItem("accessToken", data.accessToken); // ✅ Сохраняем токен
+        const data = await response.json();
+        console.log("✅ Новый accessToken:", data.accessToken);
+
+        localStorage.setItem("accessToken", data.accessToken);  // ✅ Сохраняем access-токен!
         return data.accessToken;
     } catch (error) {
         console.error("❌ Ошибка при обновлении токена:", error);
@@ -849,16 +827,13 @@ function generateTokens(user, site) {
 
 
 function isTokenExpired(token) {
-    if (!token || token.split(".").length !== 3) {
-        console.warn("⚠️ Токен отсутствует или имеет неверный формат.");
-        return true; // Если токен пустой или некорректный, считаем его истёкшим
-    }
+    if (!token) return true;
 
     try {
         const payload = JSON.parse(atob(token.split(".")[1]));
         return (Date.now() / 1000) >= payload.exp;
     } catch (e) {
-        console.error("❌ Ошибка декодирования токена:", e);
+        console.error("Ошибка декодирования токена:", e);
         return true;
     }
 }
