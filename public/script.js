@@ -762,32 +762,31 @@ function getTokenExp(token) {
 
 
 async function refreshAccessToken() {
-    console.log("🔄 Запрос на обновление токена...");
-
-    const token = localStorage.getItem("accessToken"); // Проверка наличия токена
-    if (!token) {
-        console.warn("❌ Нет токена, пропускаем обновление");
-        return null; // Если токена нет, не отправляем запрос на обновление
-    }
+    console.log("🔄 Запрос на обновление access-токена...");
 
     try {
         const response = await fetch("https://makadamia.onrender.com/refresh", {
             method: "POST",
-            credentials: 'include'
+            credentials: "include",
         });
 
+        const data = await response.json();
         if (!response.ok) {
-            console.warn(`❌ Ошибка обновления токена (${response.status})`);
+            console.warn("❌ Ошибка обновления токена:", data.message);
+            
+            if (data.message === "Refresh-токен истек") {
+                console.error("⏳ Refresh-токен протух, требуется повторный вход!");
+                logout(); // Выход из аккаунта
+            }
+            
             return null;
         }
 
-        const data = await response.json();
-        console.log("✅ Новый токен получен:", data.accessToken);
-        localStorage.setItem("accessToken", data.accessToken);  // Сохраняем новый токен
+        console.log("✅ Новый accessToken:", data.accessToken);
+        localStorage.setItem("accessToken", data.accessToken);
         return data.accessToken;
     } catch (error) {
         console.error("❌ Ошибка при обновлении токена:", error);
-        logout();
         return null;
     }
 }
@@ -813,30 +812,32 @@ function generateTokens(user, site) {
 
 
 function isTokenExpired(token) {
-    if (!token) return true; // Если токена нет, он считается истекшим
+    if (!token) return true;
 
     try {
-        const base64 = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"); // Исправляем base64
-        const payload = JSON.parse(atob(base64)); // Декодируем payload
-        return (Date.now() / 1000) >= payload.exp; // Проверяем срок действия
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        return (Date.now() / 1000) >= payload.exp;
     } catch (e) {
-        console.error("❌ Ошибка декодирования токена:", e);
+        console.error("Ошибка декодирования токена:", e);
         return true;
     }
 }
 
 
-// Запускаем проверку токена раз в минуту
-setInterval(() => {
-    if (isTokenExpired()) {
-      console.log("⏳ Проверяем обновление токена...");
-        console.log("🔄 Токен истёк, обновляем...");
-        refreshAccessToken().then(newToken => {
-            console.log("✅ Новый токен после автообновления:", newToken);
-        }).catch(err => console.error("❌ Ошибка обновления:", err));
-    }
-}, 60000); // 1 раз в минуту
 
+// Запускаем проверку токена раз в минуту
+setInterval(async () => {
+    const token = localStorage.getItem("accessToken");
+    if (token) {
+        const exp = getTokenExp(token); // Получаем время истечения
+        const now = Math.floor(Date.now() / 1000);
+        
+        if (exp && (exp - now) < 300) { // Если осталось меньше 5 минут
+            console.log("⏳ Access-токен скоро истечет, обновляем...");
+            await refreshAccessToken();
+        }
+    }
+}, 30000); // Проверяем каждые 30 секунд
 function editField(field) {
     const input = document.getElementById(field + "Input");
     console.log("Редактируем поле:", field, "Значение:", input.value);
@@ -965,34 +966,32 @@ function checkAuthStatus() {
 }
 
 async function logout() {
-    const token = localStorage.getItem("accessToken"); // Получаем токен
-
     try {
-        const response = await fetch("https://makadamia.onrender.com/logout", {
-            method: "POST",
-            credentials: 'include', // Обязательно передаем cookies
-            headers: {
-                "Authorization": `Bearer ${token}`  // Отправка токена для выхода
-            }
+        const response = await fetch("https://makadamia.onrender.com/logout", { 
+            method: "POST", 
+            credentials: "include"
         });
 
-        if (response.ok) {
-            // Очистка токенов и cookies
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('userId');
-            localStorage.removeItem('username');
-            document.cookie = "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
-            document.cookie = "refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
-            
-            window.location.href = "/index.html"; // Перенаправление на страницу входа
-        } else {
-            console.error("❌ Ошибка при выходе:", response.status);
+        if (!response.ok) {
+            console.error("❌ Ошибка выхода:", response.status);
         }
+
+        console.log("✅ Выход выполнен успешно!");
     } catch (error) {
         console.error("❌ Ошибка при выходе:", error);
     }
-}
 
+    // Очистка локального хранилища
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("username");
+    localStorage.removeItem("userId");
+    sessionStorage.clear();
+
+    // Удаление куков
+    document.cookie = "refreshTokenDesktop=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+    
+    window.location.href = "/login.html";
+}
 
 function handleAuthClick() {
     const token = localStorage.getItem('accessToken');
