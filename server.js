@@ -270,23 +270,30 @@ app.post('/login', async (req, res) => {
 
 // Обработка запроса на обновление токена для ПК-версии
 app.post('/refresh', async (req, res) => {
-    const refreshToken = req.cookies.refreshTokenDesktop;  // Используем refreshTokenDesktop для ПК-версии
+    const refreshToken = req.cookies.refreshTokenDesktop;
 
     if (!refreshToken) {
         console.error("❌ Refresh-токен отсутствует в cookies");
         return res.status(401).json({ message: "Не авторизован" });
     }
-  
+
     console.log("🔍 Полученный refreshToken:", refreshToken);
+    
     jwt.verify(refreshToken, REFRESH_SECRET, async (err, decodedUser) => {
         if (err) {
             console.error("❌ Ошибка проверки refresh-токена:", err.message);
+            
+            if (err.name === "TokenExpiredError") {
+                return res.status(403).json({ message: "Refresh-токен истек" });
+            }
+            
             return res.status(403).json({ message: "Недействительный refresh-токен" });
         }
 
-        if (!decodedUser || decodedUser.site !== "https://makadamia.onrender.com") {
-            console.error("❌ Токен не соответствует сайту:", decodedUser);
-            return res.status(403).json({ message: "Недействительный refresh-токен" });
+        // Проверяем, не истек ли refresh-токен
+        if (Date.now() / 1000 >= decodedUser.exp) {
+            console.error("❌ Refresh-токен окончательно истек, требуется повторный вход");
+            return res.status(403).json({ message: "Refresh-токен истек" });
         }
 
         const user = await User.findById(decodedUser.id);
@@ -302,7 +309,7 @@ app.post('/refresh', async (req, res) => {
             secure: true,
             sameSite: "None",
             path: "/",
-            maxAge: 30 * 24 * 60 * 60 * 1000  // Обновляем refreshToken на 30 дней
+            maxAge: 30 * 24 * 60 * 60 * 1000  // 30 дней
         });
 
         console.log("✅ Refresh-токен обновлен успешно");
