@@ -1,5 +1,10 @@
 let productMap = {};// Будет заполнен динамически
-let cart = JSON.parse(localStorage.getItem('cart')) || {};
+let cart = {};
+try {
+    cart = JSON.parse(localStorage.getItem('cart')) || {};
+} catch (error) {
+    console.warn("⚠️ Ошибка при загрузке cart из localStorage:", error);
+}
 (() => {
     const userAgent = navigator.userAgent.toLowerCase();
     const currentURL = window.location.href;
@@ -46,12 +51,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.log("🔄 Дополнительная проверка токена после загрузки DOM...");
 
     const token = localStorage.getItem("accessToken");
+
     if (!token || isTokenExpired(token)) {
         console.log("⏳ Повторная попытка обновления токена...");
-        await refreshAccessToken();
+
+        try {
+            await refreshAccessToken();
+        } catch (error) {
+            console.error("❌ Ошибка при обновлении токена после загрузки:", error);
+        }
     }
 });
-
 
 
 
