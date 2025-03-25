@@ -993,6 +993,7 @@ async function logout() {
     window.location.href = "/login.html";
 }
 
+
 function handleAuthClick() {
     const token = localStorage.getItem('accessToken');
     if (token) {
