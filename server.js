@@ -279,81 +279,33 @@ app.post('/refresh', async (req, res) => {
 
     console.log("🔍 Полученный refreshToken:", refreshToken);
     
-    jwt.verify(refreshToken, REFRESH_SECRET, async (err, decodedUser) => {
-        if (err) {
-            console.error("❌ Ошибка проверки refresh-токена:", err.message);
-            
-            if (err.name === "TokenExpiredError") {
-                return res.status(403).json({ message: "Refresh-токен истек" });
-            }
-            
-            return res.status(403).json({ message: "Недействительный refresh-токен" });
-        }
+   jwt.verify(refreshToken, REFRESH_SECRET, async (err, decoded) => {
+    if (err) {
+        console.error("❌ Ошибка проверки refresh-токена:", err.message);
+        return res.status(403).json({ message: "Refresh-токен недействителен или истёк" });
+    }
 
-        // Проверяем, не истек ли refresh-токен
-        if (Date.now() / 1000 >= decodedUser.exp) {
-            console.error("❌ Refresh-токен окончательно истек, требуется повторный вход");
-            return res.status(403).json({ message: "Refresh-токен истек" });
-        }
+    const user = await User.findById(decoded.id);  // Используем id из расшифрованного токена
+    if (!user) {
+        console.error("❌ Пользователь не найден по ID:", decoded.id);
+        return res.status(404).json({ message: "Пользователь не найден" });
+    }
 
-        const user = await User.findById(decodedUser.id);
-        if (!user) {
-            console.error("❌ Пользователь не найден по ID:", decodedUser.id);
-            return res.status(404).json({ message: "Пользователь не найден" });
-        }
+    const { accessToken, refreshToken: newRefreshToken } = generateTokens(user);
 
-        const { accessToken, refreshToken: newRefreshToken } = generateTokens(user);
-
-        res.cookie("refreshTokenDesktop", newRefreshToken, {
-            httpOnly: true,
-            secure: true,
-            sameSite: "None",
-            path: "/",
-            maxAge: 30 * 24 * 60 * 60 * 1000  // 30 дней
-        });
-
-        console.log("✅ Refresh-токен обновлен успешно");
-        res.json({ accessToken });
+    res.cookie("refreshTokenDesktop", newRefreshToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "None",
+        path: "/",
+        maxAge: 30 * 24 * 60 * 60 * 1000  // 30 дней
     });
+
+    console.log("✅ Refresh-токен обновлен успешно");
+    res.json({ accessToken });
+});
 });
 
-async function refreshAccessToken() {
-    console.log("🔄 Запрос на обновление access-токена...");
-
-    const refreshToken = getCookie("refreshTokenDesktop");
-    
-    if (!refreshToken || isTokenExpired(refreshToken)) {
-        console.error("❌ Refresh-токен истек или отсутствует. Требуется повторный вход!");
-        logout();
-        return null;
-    }
-
-    try {
-        const response = await fetch("https://makadamia.onrender.com/refresh", {
-            method: "POST",
-            credentials: "include",
-        });
-
-        const data = await response.json();
-        if (!response.ok) {
-            console.warn("❌ Ошибка обновления токена:", data.message);
-
-            if (data.message === "Refresh-токен истек") {
-                console.error("⏳ Refresh-токен окончательно истек. Требуется повторный вход!");
-                logout();
-            }
-            
-            return null;
-        }
-
-        console.log("✅ Новый accessToken:", data.accessToken);
-        localStorage.setItem("accessToken", data.accessToken);
-        return data.accessToken;
-    } catch (error) {
-        console.error("❌ Ошибка при обновлении токена:", error);
-        return null;
-    }
-}
 
 app.post('/logout', (req, res) => {
     console.log("🔄 Выход из аккаунта...");
