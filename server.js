@@ -309,7 +309,7 @@ app.post('/refresh', async (req, res) => {
             const { accessToken, refreshToken: newRefreshToken } = generateTokens(user);
             res.setHeader("Access-Control-Allow-Credentials", "true"); // ✅ Добавляем поддержку credentials
 
-res.cookie("refreshTokenDesktop", refreshToken, { 
+res.cookie("refreshTokenDesktop", newRefreshToken, {
     httpOnly: true,
     secure: true,
     sameSite: "None",
