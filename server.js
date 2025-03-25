@@ -254,14 +254,15 @@ app.post('/login', async (req, res) => {
     }
 
     const { accessToken, refreshToken } = generateTokens(user);
-    res.setHeader("Access-Control-Allow-Credentials", "true"); // ✅ Добавили заголовок
-    res.cookie("refreshTokenDesktop", refreshToken, { 
-        httpOnly: true,
-        secure: true,
-        sameSite: "None",
-        path: "/",
-        maxAge: 30 * 24 * 60 * 60 * 1000  // Устанавливаем refreshToken на 30 дней
-    });
+res.setHeader("Access-Control-Allow-Credentials", "true"); // ✅ Добавляем поддержку credentials
+
+res.cookie("refreshTokenDesktop", refreshToken, { 
+    httpOnly: true,
+    secure: true,
+    sameSite: "None",
+    path: "/",
+    expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 дней
+});
 
     res.json({ accessToken, userId: user._id });
 });
@@ -306,19 +307,19 @@ app.post('/refresh', async (req, res) => {
             }
 
             const { accessToken, refreshToken: newRefreshToken } = generateTokens(user);
-            res.setHeader("Access-Control-Allow-Credentials", "true"); // ✅ Добавили заголовок
-            res.cookie("refreshTokenDesktop", newRefreshToken, {
-                httpOnly: true,
-                secure: true,
-                sameSite: "None",
-                path: "/",
-                maxAge: 30 * 24 * 60 * 60 * 1000  // 30 дней
-            });
+            res.setHeader("Access-Control-Allow-Credentials", "true"); // ✅ Добавляем поддержку credentials
+
+res.cookie("refreshTokenDesktop", refreshToken, { 
+    httpOnly: true,
+    secure: true,
+    sameSite: "None",
+    path: "/",
+    expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 дней
+});
 
             console.log("✅ Refresh-токен обновлён успешно");
 
             // 🚀 Отключаем кеширование
-            res.setHeader("Access-Control-Allow-Credentials", "true"); // ✅ Добавили заголовок
             res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
             res.setHeader("Pragma", "no-cache");
             res.setHeader("Expires", "0");
