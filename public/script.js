@@ -767,29 +767,32 @@ async function refreshAccessToken() {
     try {
         const response = await fetch("https://makadamia.onrender.com/refresh", {
             method: "POST",
-            credentials: "include",
+            credentials: "include"  // Отправляем cookies
         });
 
-        const data = await response.json();
         if (!response.ok) {
+            const data = await response.json();
             console.warn("❌ Ошибка обновления токена:", data.message);
-            
-            if (data.message === "Refresh-токен истек") {
-                console.error("⏳ Refresh-токен протух, требуется повторный вход!");
-                logout(); // Выход из аккаунта
+
+            if (data.message.includes("Refresh-токен истек") || data.message.includes("Недействителен")) {
+                console.error("⏳ Refresh-токен окончательно истек. Требуется повторный вход!");
+                logout();
             }
             
             return null;
         }
 
+        const data = await response.json();
         console.log("✅ Новый accessToken:", data.accessToken);
-        localStorage.setItem("accessToken", data.accessToken);
+
+        localStorage.setItem("accessToken", data.accessToken);  // ✅ Сохраняем access-токен!
         return data.accessToken;
     } catch (error) {
         console.error("❌ Ошибка при обновлении токена:", error);
         return null;
     }
 }
+
 
 
 function generateTokens(user, site) {
