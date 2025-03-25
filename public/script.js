@@ -854,13 +854,16 @@ function generateTokens(user, site) {
 
 
 function isTokenExpired(token) {
-    if (!token) return true;
+    if (!token || token.split(".").length !== 3) {
+        console.warn("⚠️ Токен отсутствует или имеет неверный формат.");
+        return true; // Если токен пустой или некорректный, считаем его истёкшим
+    }
 
     try {
         const payload = JSON.parse(atob(token.split(".")[1]));
         return (Date.now() / 1000) >= payload.exp;
     } catch (e) {
-        console.error("Ошибка декодирования токена:", e);
+        console.error("❌ Ошибка декодирования токена:", e);
         return true;
     }
 }
