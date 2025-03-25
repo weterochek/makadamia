@@ -254,7 +254,7 @@ app.post('/login', async (req, res) => {
     }
 
     const { accessToken, refreshToken } = generateTokens(user);
-
+    res.setHeader("Access-Control-Allow-Credentials", "true"); // ✅ Добавили заголовок
     res.cookie("refreshTokenDesktop", refreshToken, { 
         httpOnly: true,
         secure: true,
@@ -306,7 +306,7 @@ app.post('/refresh', async (req, res) => {
             }
 
             const { accessToken, refreshToken: newRefreshToken } = generateTokens(user);
-
+            res.setHeader("Access-Control-Allow-Credentials", "true"); // ✅ Добавили заголовок
             res.cookie("refreshTokenDesktop", newRefreshToken, {
                 httpOnly: true,
                 secure: true,
@@ -318,6 +318,7 @@ app.post('/refresh', async (req, res) => {
             console.log("✅ Refresh-токен обновлён успешно");
 
             // 🚀 Отключаем кеширование
+            res.setHeader("Access-Control-Allow-Credentials", "true"); // ✅ Добавили заголовок
             res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
             res.setHeader("Pragma", "no-cache");
             res.setHeader("Expires", "0");
@@ -379,6 +380,7 @@ app.get('/account', authMiddleware, async (req, res) => {
             return res.status(404).json({ message: "Пользователь не найден" });
         }
               // 🚀 Отключаем кеширование
+        res.setHeader("Access-Control-Allow-Credentials", "true"); // ✅ Добавили заголовок
         res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
         res.setHeader("Pragma", "no-cache");
         res.setHeader("Expires", "0");
