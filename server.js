@@ -311,27 +311,43 @@ app.post('/refresh', async (req, res) => {
 });
 
 async function refreshAccessToken() {
+    console.log("🔄 Запрос на обновление access-токена...");
+
+    const refreshToken = getCookie("refreshTokenDesktop");
+    
+    if (!refreshToken || isTokenExpired(refreshToken)) {
+        console.error("❌ Refresh-токен истек или отсутствует. Требуется повторный вход!");
+        logout();
+        return null;
+    }
+
     try {
-        console.log("🔄 Отправляем запрос на обновление токена...");
-        const response = await fetch(`${window.location.origin}/refresh`, { // ✅ Автоматически берёт URL
+        const response = await fetch("https://makadamia.onrender.com/refresh", {
             method: "POST",
-            credentials: "include"
+            credentials: "include",
         });
 
+        const data = await response.json();
         if (!response.ok) {
-            console.warn("❌ Ошибка обновления токена:", response.status);
+            console.warn("❌ Ошибка обновления токена:", data.message);
+
+            if (data.message === "Refresh-токен истек") {
+                console.error("⏳ Refresh-токен окончательно истек. Требуется повторный вход!");
+                logout();
+            }
+            
             return null;
         }
 
-        const data = await response.json(); // ✅ Получаем новый accessToken
         console.log("✅ Новый accessToken:", data.accessToken);
         localStorage.setItem("accessToken", data.accessToken);
         return data.accessToken;
-    } catch (error) {  // ✅ Добавили catch
-        console.error("Ошибка при обновлении токена:", error);
+    } catch (error) {
+        console.error("❌ Ошибка при обновлении токена:", error);
         return null;
     }
 }
+
 app.post('/logout', (req, res) => {
     console.log("🔄 Выход из аккаунта...");
     
