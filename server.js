@@ -332,7 +332,9 @@ async function refreshAccessToken() {
         return null;
     }
 }
-app.post('/logout', authMiddleware, (req, res) => {
+app.post('/logout', (req, res) => {
+    console.log("🔄 Выход из аккаунта...");
+    
     res.clearCookie("refreshTokenDesktop", {
         httpOnly: true,
         secure: true,
