@@ -278,20 +278,47 @@ app.post('/refresh', async (req, res) => {
     }
 
     console.log("🔍 Полученный refreshToken:", refreshToken);
-    
+    console.log("🔍 Проверяем refreshToken:", refreshToken);
+
+// Декодируем токен, чтобы посмотреть срок истечения
+const decoded = jwt.decode(refreshToken);
+if (decoded) {
+    console.log("📅 Refresh-токен истекает:", new Date(decoded.exp * 1000));
+} else {
+    console.error("⚠️ Ошибка: токен не удалось декодировать!");
+}
     jwt.verify(refreshToken, REFRESH_SECRET, async (err, decoded) => {
         if (err) {
-            console.error("❌ Ошибка проверки refresh-токена:", err.message);
-            
-            res.clearCookie("refreshTokenDesktop", {
-                httpOnly: true,
-                secure: true,
-                sameSite: "None",
-                path: "/"
-            });
+            if (err) {
+    console.error("❌ Ошибка проверки refresh-токена:", err.message);
 
-            return res.status(403).json({ message: "Refresh-токен недействителен или истёк" });
-        }
+    if (err.message === "jwt expired") {
+        console.log("🔄 Refresh-токен истёк, создаём новый...");
+        
+        // Создаём новый токен
+        const newRefreshToken = jwt.sign(
+            { id: decoded.id, username: decoded.username },
+            REFRESH_SECRET,
+            { expiresIn: "7d" } // Новый токен на 7 дней
+        );
+
+        // Сохраняем новый refresh-токен в куки
+        res.cookie("refreshTokenDesktop", newRefreshToken, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "None",
+            path: "/",
+            expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 дней
+        });
+
+        return res.status(200).json({ message: "Токен обновлён", refreshToken: newRefreshToken });
+    }
+
+    // Если ошибка не связана с истечением токена, удаляем куки
+    res.clearCookie("refreshTokenDesktop", { path: "/" });
+    return res.status(403).json({ message: "Refresh-токен недействителен" });
+}
+
 
         if (!decoded.exp || (decoded.exp * 1000 < Date.now())) {
             console.error("❌ Refresh-токен окончательно истёк!");
