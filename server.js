@@ -6,7 +6,6 @@ const cors = require("cors");
 const path = require("path");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
-const Joi = require("joi");
 const app = express();
 const orderRoutes = require("./routes/orderRoutes");
 const authMiddleware = require('./middleware/authMiddleware');
