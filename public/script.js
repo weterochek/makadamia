@@ -797,28 +797,37 @@ async function refreshAccessToken() {
             credentials: "include"  // Отправляем cookies
         });
 
+        const data = await response.json(); // ✅ Вызываем `json()` только один раз
+
         if (!response.ok) {
-            const data = await response.json();
             console.warn("❌ Ошибка обновления токена:", data.message);
 
             if (data.message.includes("Refresh-токен истек") || data.message.includes("Недействителен")) {
                 console.error("⏳ Refresh-токен окончательно истек. Требуется повторный вход!");
-                logout();
+                logout(); // ❌ Выход из аккаунта, если refreshToken истёк
             }
             
             return null;
         }
 
-        const data = await response.json();
-        console.log("✅ Новый accessToken:", data.accessToken);
+        console.log("✅ Новый accessToken получен:", data.accessToken);
 
-        localStorage.setItem("accessToken", data.accessToken);  // ✅ Сохраняем access-токен!
+        // ✅ Сохраняем новый accessToken
+        localStorage.setItem("accessToken", data.accessToken);
+
+        // ✅ Проверяем, пришёл ли новый refreshToken и сохраняем его
+        if (data.refreshToken) {
+            console.log("🔄 Обновление refresh-токена в cookies...");
+            document.cookie = `refreshTokenDesktop=${data.refreshToken}; path=/; secure; samesite=None;`;
+        }
+
         return data.accessToken;
     } catch (error) {
         console.error("❌ Ошибка при обновлении токена:", error);
         return null;
     }
 }
+
 
 
 
