@@ -78,28 +78,7 @@ loginForm.addEventListener("submit", async (e) => {
 
 
 // === Функция обновления accessToken ===
-async function refreshAccessToken() {
-    try {
-        const response = await fetch("https://makadamia.onrender.com/refresh", {
-            method: "POST",
-            credentials: "include",
-        });
 
-        const data = await response.json();
-        if (response.ok) {
-            localStorage.setItem("accessToken", data.accessToken);
-            console.log("🔄 Access Token обновлён!");
-            return data.accessToken;
-        } else {
-            logout();
-            return null;
-        }
-    } catch (error) {
-        console.error("Ошибка при обновлении токена:", error);
-        logout();
-        return null;
-    }
-}
 
 // === Выход ===
 function logout() {
@@ -117,17 +96,7 @@ function logout() {
         .catch((error) => console.error("Ошибка выхода:", error));
 }
 
-// === Автообновление токена каждые 5 минут ===
-setInterval(async () => {
-    const token = localStorage.getItem("accessToken");
-    if (token) {
-        const exp = getTokenExp(token);
-        const now = Math.floor(Date.now() / 1000);
-        if (exp && (exp - now) < 300) {
-            await refreshAccessToken();
-        }
-    }
-}, 60000);
+
 
 // === Функция для работы с авторизованными запросами ===
 async function fetchWithAuth(url, options = {}) {
