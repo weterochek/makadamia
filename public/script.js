@@ -804,7 +804,7 @@ async function refreshAccessToken() {
     try {
         const response = await fetch("https://makadamia.onrender.com/refresh", {
             method: "POST",
-            credentials: "include"  // Отправляем cookies
+            credentials: "include"  // ✅ Отправляем cookies
         });
 
         const data = await response.json(); // ✅ Вызываем `json()` только один раз
@@ -814,7 +814,7 @@ async function refreshAccessToken() {
 
             if (data.message.includes("Refresh-токен истек") || data.message.includes("Недействителен")) {
                 console.error("⏳ Refresh-токен окончательно истек. Требуется повторный вход!");
-                logout(); // ❌ Выход из аккаунта, если refreshToken истёк
+                logout(); // ✅ Выход из аккаунта, если refreshToken истёк
             }
             
             return null;
@@ -825,19 +825,12 @@ async function refreshAccessToken() {
         // ✅ Сохраняем новый accessToken
         localStorage.setItem("accessToken", data.accessToken);
 
-        // ✅ Проверяем, пришёл ли новый refreshToken и сохраняем его
-        if (data.refreshToken) {
-            console.log("🔄 Обновление refresh-токена в cookies...");
-            document.cookie = `refreshTokenDesktop=${data.refreshToken}; path=/; secure; samesite=None;`;
-        }
-
         return data.accessToken;
     } catch (error) {
         console.error("❌ Ошибка при обновлении токена:", error);
         return null;
     }
 }
-
 
 
 
