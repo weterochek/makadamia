@@ -279,31 +279,51 @@ app.post('/refresh', async (req, res) => {
 
     console.log("🔍 Полученный refreshToken:", refreshToken);
     
-   jwt.verify(refreshToken, REFRESH_SECRET, async (err, decoded) => {
-    if (err) {
-        console.error("❌ Ошибка проверки refresh-токена:", err.message);
-        return res.status(403).json({ message: "Refresh-токен недействителен или истёк" });
-    }
+    jwt.verify(refreshToken, REFRESH_SECRET, async (err, decoded) => {
+        if (err) {
+            console.error("❌ Ошибка проверки refresh-токена:", err.message);
+            
+            res.clearCookie("refreshTokenDesktop", {
+                httpOnly: true,
+                secure: true,
+                sameSite: "None",
+                path: "/"
+            });
 
-    const user = await User.findById(decoded.id);  // Используем id из расшифрованного токена
-    if (!user) {
-        console.error("❌ Пользователь не найден по ID:", decoded.id);
-        return res.status(404).json({ message: "Пользователь не найден" });
-    }
+            return res.status(403).json({ message: "Refresh-токен недействителен или истёк" });
+        }
 
-    const { accessToken, refreshToken: newRefreshToken } = generateTokens(user);
+        if (!decoded.exp || (decoded.exp * 1000 < Date.now())) {
+            console.error("❌ Refresh-токен окончательно истёк!");
+            res.clearCookie("refreshTokenDesktop", { path: "/" });
+            return res.status(403).json({ message: "Refresh-токен истёк" });
+        }
 
-    res.cookie("refreshTokenDesktop", newRefreshToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: "None",
-        path: "/",
-        maxAge: 30 * 24 * 60 * 60 * 1000  // 30 дней
+        try {
+            const user = await User.findById(decoded.id);
+            if (!user) {
+                console.error("❌ Пользователь не найден по ID:", decoded.id);
+                return res.status(404).json({ message: "Пользователь не найден" });
+            }
+
+            const { accessToken, refreshToken: newRefreshToken } = generateTokens(user);
+
+            res.cookie("refreshTokenDesktop", newRefreshToken, {
+                httpOnly: true,
+                secure: true,
+                sameSite: "None",
+                path: "/",
+                maxAge: 30 * 24 * 60 * 60 * 1000  // 30 дней
+            });
+
+            console.log("✅ Refresh-токен обновлён успешно");
+            res.json({ accessToken });
+
+        } catch (error) {
+            console.error("❌ Ошибка при поиске пользователя:", error);
+            return res.status(500).json({ message: "Ошибка сервера" });
+        }
     });
-
-    console.log("✅ Refresh-токен обновлен успешно");
-    res.json({ accessToken });
-});
 });
 
 
