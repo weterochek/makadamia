@@ -804,27 +804,22 @@ async function refreshAccessToken() {
     try {
         const response = await fetch("https://makadamia.onrender.com/refresh", {
             method: "POST",
-            credentials: "include"  // ✅ Отправляем cookies
+            credentials: "include", // ✅ Обязательно для отправки cookies!
+            headers: { "Content-Type": "application/json" }
         });
 
-        const data = await response.json(); // ✅ Вызываем `json()` только один раз
-
+        const data = await response.json();
         if (!response.ok) {
             console.warn("❌ Ошибка обновления токена:", data.message);
-
             if (data.message.includes("Refresh-токен истек") || data.message.includes("Недействителен")) {
                 console.error("⏳ Refresh-токен окончательно истек. Требуется повторный вход!");
-                logout(); // ✅ Выход из аккаунта, если refreshToken истёк
+                logout(); // ✅ Выход из аккаунта
             }
-            
             return null;
         }
 
         console.log("✅ Новый accessToken получен:", data.accessToken);
-
-        // ✅ Сохраняем новый accessToken
-        localStorage.setItem("accessToken", data.accessToken);
-
+        localStorage.setItem("accessToken", data.accessToken); // ✅ Сохраняем токен
         return data.accessToken;
     } catch (error) {
         console.error("❌ Ошибка при обновлении токена:", error);
