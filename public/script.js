@@ -1,6 +1,6 @@
 let productMap = {};// Будет заполнен динамически
 let cart = JSON.parse(localStorage.getItem('cart')) || {};
-document.addEventListener("DOMContentLoaded", function () {
+(() => {
     const userAgent = navigator.userAgent.toLowerCase();
     const currentURL = window.location.href;
 
@@ -24,7 +24,8 @@ document.addEventListener("DOMContentLoaded", function () {
     } else {
         console.log("🔴 Условие редиректа не выполнено.");
     }
-});
+})();
+
 (async () => {
     console.log("🔄 Мгновенная проверка и обновление токена...");
 
