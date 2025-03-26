@@ -240,12 +240,14 @@ header nav {
 #cartModal h3, #cartModal button {
     margin-bottom: 10px;
 }
-.reviews-container {
-    background: #fff;
+.review-container {
+    width: 50%;
+    margin: 0 auto;
+    text-align: center;
     padding: 20px;
+    background: #fff;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    width: 400px;
 }
 
 h2 {
@@ -262,13 +264,16 @@ label {
 }
 
 select, textarea {
-    width: 100%;
-    padding: 8px;
-    margin-top: 5px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+     width: 100%;
+    min-height: 50px;
+    max-height: 300px;
+    resize: none;
+    overflow-y: hidden;
+    transition: height 0.2s ease-in-out;
 }
-
+textarea:focus, textarea:not(:placeholder-shown) {
+    height: auto;
+}
 button {
     margin-top: 15px;
     padding: 10px;
