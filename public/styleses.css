@@ -45,8 +45,9 @@ header nav {
     justify-content: center;
     width: 100%;
     background-color: #fff;
-    padding: 0;
+    padding: 1px 0;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    position: fixed;
     top: 0;
     z-index: 1000;
 }
