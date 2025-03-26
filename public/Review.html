@@ -1,0 +1,33 @@
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Отзывы</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="review-container">
+        <h2>Оставьте свой отзыв</h2>
+        <form id="reviewForm">
+            <label for="rating">Рейтинг:</label>
+            <select id="rating" name="rating" required>
+                <option value="5">5 ★★★★★</option>
+                <option value="4">4 ★★★★☆</option>
+                <option value="3">3 ★★★☆☆</option>
+                <option value="2">2 ★★☆☆☆</option>
+                <option value="1">1 ★☆☆☆☆</option>
+            </select>
+            
+            <label for="comment">Комментарий:</label>
+            <textarea id="comment" name="comment" required></textarea>
+            
+            <button type="submit">Отправить</button>
+        </form>
+        
+        <h2>Отзывы</h2>
+        <div id="reviews"></div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
