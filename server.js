@@ -189,30 +189,38 @@ app.get('/user-orders/:userId', protect, async (req, res) => {
         res.status(500).json({ message: "Ошибка при получении заказов" });
     }
 });
-app.post('/reviews', (req, res) => {
-    const reviews = readReviews();
+app.post('/reviews', protect, async (req, res) => {
+    try {
+        if (!req.user || !req.user.id) {
+            return res.status(401).json({ message: "Не авторизован" });
+        }
 
-    // Берём ник пользователя из сессии (или другого источника)
-    const username = req.session.username || "Аноним";  // Если нет в сессии, подставляем "Аноним"
+        const user = await User.findById(req.user.id).select("username");
+        if (!user) {
+            return res.status(404).json({ message: "Пользователь не найден" });
+        }
 
-    let displayName = req.body.name.trim();  // Имя пользователя из поля формы
+        let displayName = req.body.name ? req.body.name.trim() : "";
+        if (!displayName) {
+            displayName = user.username; // Используем ник из базы, если поле пустое
+        }
 
-    // Если имя не введено, подставляем ник
-    if (!displayName) {
-        displayName = username;
+        const newReview = {
+            name: displayName,
+            rating: req.body.rating,
+            comment: req.body.comment,
+            date: new Date().toISOString()
+        };
+
+        const reviews = readReviews();
+        reviews.push(newReview);
+        saveReviews(reviews);
+
+        res.status(201).json({ success: true, review: newReview });
+    } catch (error) {
+        console.error("Ошибка при сохранении отзыва:", error);
+        res.status(500).json({ message: "Ошибка сервера", error: error.message });
     }
-
-    const newReview = {
-        name: displayName,
-        rating: req.body.rating,
-        comment: req.body.comment,
-        date: new Date().toISOString()
-    };
-
-    reviews.push(newReview);
-    saveReviews(reviews);
-
-    res.json({ success: true, review: newReview });
 });
 
 
