@@ -48,12 +48,13 @@ header nav {
 .navbar {
     display: flex;
     justify-content: space-between;
+    align-items: center;
+    flex-direction: row; /* Гарантируем горизонтальное расположение */
     width: 100%;
     height: 50px;
     list-style: none;
     gap: 25px;
 }
-
 
 .navbar-left, .navbar-right {
     display: flex;
@@ -68,6 +69,12 @@ header nav {
 }
 
 .navbar li a {
+    padding: 10px 15px;
+    font-size: clamp(14px, 1.5vw, 18px);
+}
+.navbar li a {
+    color: black !important; /* Принудительно делаем цвет одинаковым */
+    text-decoration: none;
     padding: 10px 15px;
     font-size: clamp(14px, 1.5vw, 18px);
 }
