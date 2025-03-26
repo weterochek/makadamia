@@ -181,8 +181,10 @@ document.addEventListener("DOMContentLoaded", async function () {
             return;
         }
 
-        let nameInput = document.getElementById("reviewName");
-        let name = nameInput ? nameInput.value.trim() : "";  // Берем имя из поля
+        let nameInput = document.getElementById("review-name").value.trim();
+        let username = localStorage.getItem("username"); // Берем ник пользователя из localStorage
+
+        const name = nameInput !== "" ? nameInput : username ? username : "Аноним";
 
         const rating = document.getElementById("starRating").value;  // Берем рейтинг
         const comment = document.getElementById("reviewComment").value.trim();  // Берем комментарий
