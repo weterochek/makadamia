@@ -7,6 +7,25 @@ body {
     align-items: center;
     height: 100vh;
 }
+#reviewComment {
+    width: 100%;
+    resize: none; /* Отключаем изменение размера */
+    overflow-y: hidden; /* Убираем вертикальный скролл */
+    min-height: 40px;
+    max-height: 200px; /* Ограничиваем максимальную высоту */
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+#reviewName {
+    width: 100%;
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    margin-bottom: 10px;
+}
+
 header nav {
     display: flex;
     align-items: center;
