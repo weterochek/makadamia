@@ -219,7 +219,10 @@ hr {
     max-height: 60px;
     width: auto;
 }
-
+.navbar li a {
+    padding: 10px 15px; /* Универсальные отступы */
+    font-size: clamp(14px, 1.5vw, 18px); /* Шрифт масштабируется от мобильных до больших экранов */
+}
 .navbar li a {
     display: block;
     padding: 10px 20px;
