@@ -16,7 +16,7 @@ const Product = require("./models/Products");
 const Review = require('./models/Review');
 const { protect } = require('./middleware/authMiddleware'); // Если нужна авторизация
 const router = express.Router();
-
+console.log("protect middleware:", protect);
 
 // Настройка CORS
 const allowedOrigins = [
