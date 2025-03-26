@@ -39,19 +39,28 @@
         </nav>
     </header>
 <main>
-    <div id="reviewContainer">
-    <h2>Оставьте отзыв</h2>
-    
-    <label for="reviewName">Имя:</label>
-    <input type="text" id="reviewName" placeholder="Введите ваше имя (необязательно)">
+    <div class="review-container">
+    <h2>Отзывы</h2>
+    <p>Оставьте свой отзыв</p>
+
+    <label for="starRating">Рейтинг:</label>
+    <select id="starRating">
+        <option value="5">5 ★★★★★</option>
+        <option value="4">4 ★★★★☆</option>
+        <option value="3">3 ★★★☆☆</option>
+        <option value="2">2 ★★☆☆☆</option>
+        <option value="1">1 ★☆☆☆☆</option>
+    </select>
+
+    <label for="reviewName">Имя (необязательно):</label>
+    <input type="text" id="reviewName" placeholder="Ваше имя (или оставьте пустым)">
 
     <label for="reviewComment">Комментарий:</label>
-    <textarea id="reviewComment" rows="2" placeholder="Введите комментарий..."></textarea>
+    <textarea id="reviewComment" rows="1" placeholder="Введите ваш отзыв..."></textarea>
 
     <button id="submitReview">Отправить</button>
 
-    <h2>Все отзывы</h2>
-    
+    <h3>Фильтр отзывов:</h3>
     <label for="filterStars">Фильтр по звёздам:</label>
     <select id="filterStars">
         <option value="all">Все</option>
@@ -62,7 +71,7 @@
         <option value="1">1 ★</option>
     </select>
 
-    <label for="filterDate">Фильтр по времени:</label>
+    <label for="filterDate">Фильтр по дате:</label>
     <select id="filterDate">
         <option value="newest">Сначала новые</option>
         <option value="oldest">Сначала старые</option>
@@ -70,6 +79,7 @@
 
     <div id="reviews"></div>
 </div>
+
 </main>
     <script src="script.js"></script>
 </body>
