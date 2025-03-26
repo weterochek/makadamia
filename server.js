@@ -214,31 +214,33 @@ function generateTokens(user, site) {
 
 
 // Получить отзывы для продукта
-router.get('/api/reviews/:productId', async (req, res) => {
+// Получить все отзывы
+router.get("/api/reviews", async (req, res) => {
     try {
-        const reviews = await Review.find({ product: req.params.productId }).populate('user', 'name');
+        const reviews = await Review.find();
         res.json(reviews);
     } catch (error) {
-        res.status(500).json({ message: 'Ошибка сервера' });
+        res.status(500).json({ message: "Ошибка сервера" });
     }
 });
 
 // Добавить отзыв
-router.post('/api/reviews', protect, async (req, res) => {
+router.post("/api/reviews", protect, async (req, res) => {
     try {
-        const { product, rating, comment } = req.body;
+        const { rating, comment, username } = req.body;
         const review = new Review({
             user: req.user._id,
-            product,
+            username, // Добавляем имя пользователя
             rating,
             comment
         });
         await review.save();
-        res.status(201).json({ message: 'Отзыв добавлен' });
+        res.status(201).json({ message: "Отзыв добавлен" });
     } catch (error) {
-        res.status(500).json({ message: 'Ошибка при добавлении отзыва' });
+        res.status(500).json({ message: "Ошибка при добавлении отзыва" });
     }
 });
+
 
 module.exports = router;
 
