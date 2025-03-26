@@ -181,17 +181,24 @@ document.getElementById("submitReview").addEventListener("click", async function
         return;
     }
 
-    let nameInput = document.getElementById("reviewName").value.trim();
+    // Проверяем существование элементов перед доступом к их значению
+    const nameInputField = document.getElementById("reviewName");
+    let nameInput = nameInputField ? nameInputField.value.trim() : "";
 
-    // Получаем ник пользователя из сохранённых данных
+    // Получаем ник пользователя из localStorage, если он авторизован
     let userData = JSON.parse(localStorage.getItem("userData")); 
     let username = userData && userData.username ? userData.username : "Аноним";
 
-    // Если пользователь не ввёл имя, используем ник из аккаунта
+    // Если пользователь не ввёл имя, используем его ник из ЛК
     let name = nameInput !== "" ? nameInput : username;
 
-    const rating = document.getElementById("starRating").value;
-    const comment = document.getElementById("reviewComment").value.trim();
+    // Проверяем, существует ли поле рейтинга
+    const ratingField = document.getElementById("starRating");
+    const rating = ratingField ? parseInt(ratingField.value, 10) : 5; // Преобразуем в число
+
+    // Проверяем, существует ли поле комментария
+    const commentField = document.getElementById("reviewComment");
+    const comment = commentField ? commentField.value.trim() : "";
 
     if (!comment) {
         alert("Введите комментарий!");
@@ -218,6 +225,7 @@ document.getElementById("submitReview").addEventListener("click", async function
         console.error("Ошибка при отправке запроса:", error);
     }
 });
+
 
     // Автоматическое увеличение высоты поля комментария
     document.getElementById("reviewComment").addEventListener("input", function () {
