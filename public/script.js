@@ -171,7 +171,98 @@ function showCookieBanner() {
         banner.remove();
     });
 }
+document.addEventListener("DOMContentLoaded", async function () {
+    loadReviews();
 
+    document.getElementById("submitReview").addEventListener("click", async function () {
+        const token = localStorage.getItem("accessToken");  // Проверяем токен
+        if (!token) {
+            alert("Вы должны быть авторизованы, чтобы оставить отзыв.");
+            return;
+        }
+
+        let nameInput = document.getElementById("reviewName");
+        let name = nameInput ? nameInput.value.trim() : "";  // Берем имя из поля
+
+        const rating = document.getElementById("starRating").value;  // Берем рейтинг
+        const comment = document.getElementById("reviewComment").value.trim();  // Берем комментарий
+
+        if (!comment) {
+            alert("Введите комментарий!");  // Проверка на пустой комментарий
+            return;
+        }
+
+        const response = await fetch("/reviews", {
+            method: "POST",
+            headers: { 
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({ name, rating, comment })
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            loadReviews();  // Перезагружаем отзывы
+        }
+    });
+
+    // Автоматическое увеличение высоты поля комментария
+    document.getElementById("reviewComment").addEventListener("input", function () {
+        this.style.height = "auto";
+        this.style.height = this.scrollHeight + "px";
+    });
+
+    // Обработчики фильтров
+    document.getElementById("filterStars").addEventListener("change", loadReviews);
+    document.getElementById("filterDate").addEventListener("change", loadReviews);
+});
+
+// Функция загрузки отзывов
+async function loadReviews() {
+    try {
+        const response = await fetch("/reviews");
+        let reviews = await response.json();
+
+        // Проверка на корректность данных
+        if (!Array.isArray(reviews)) {
+            console.error("Ошибка: сервер вернул не массив отзывов", reviews);
+            return;
+        }
+
+        // Получаем фильтры
+        const filterStars = document.getElementById("filterStars").value;
+        const filterDate = document.getElementById("filterDate").value;
+
+        // Фильтрация по звёздам
+        if (filterStars && filterStars !== "all") {
+            reviews = reviews.filter(r => r.rating == filterStars);
+        }
+
+        // Сортировка по дате
+        if (filterDate === "newest") {
+            reviews.sort((a, b) => new Date(b.date) - new Date(a.date));
+        } else {
+            reviews.sort((a, b) => new Date(a.date) - new Date(b.date));
+        }
+
+        const reviewContainer = document.getElementById("reviews");
+        reviewContainer.innerHTML = "";  // Очищаем блок перед загрузкой новых отзывов
+
+        // Добавляем каждый отзыв в контейнер
+        reviews.forEach(review => {
+            const reviewElement = document.createElement("div");
+            reviewElement.classList.add("review");
+            reviewElement.innerHTML = `
+                <strong>${review.name}</strong> (${review.rating} ★): ${review.comment}
+                <br><small>${new Date(review.date).toLocaleString()}</small>
+            `;
+            reviewContainer.appendChild(reviewElement);
+        });
+    } catch (error) {
+        console.error("Ошибка загрузки отзывов:", error);
+    }
+}
 
 document.addEventListener("DOMContentLoaded", function () {
     if (localStorage.getItem("cookiesAccepted") === "true") {
