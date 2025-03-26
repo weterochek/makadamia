@@ -623,36 +623,59 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 })
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
     const form = document.getElementById("reviewForm");
     const reviewsContainer = document.getElementById("reviews");
-    const productId = "PRODUCT_ID_HERE"; // Подставь нужный ID продукта
+    let username = "Аноним"; // Значение по умолчанию
 
-    // Функция загрузки отзывов
+    // Получаем имя пользователя из аккаунта
+    async function getUsername() {
+        const token = localStorage.getItem("accessToken");
+        if (!token) return;
+
+        try {
+            const response = await fetch("/account", {
+                method: "GET",
+                headers: { "Authorization": `Bearer ${token}` },
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                username = data.name || "Аноним"; // Если имени нет, ставим "Аноним"
+            }
+        } catch (error) {
+            console.error("Ошибка получения имени:", error);
+        }
+    }
+
+    await getUsername(); // Загружаем имя при загрузке страницы
+
+    // Функция загрузки всех отзывов
     async function loadReviews() {
-        const response = await fetch(`/api/reviews/${productId}`);
+        const response = await fetch("/api/reviews");
         const reviews = await response.json();
         reviewsContainer.innerHTML = "";
         reviews.forEach(review => {
             const div = document.createElement("div");
             div.classList.add("review");
-            div.innerHTML = `<strong>${review.user.name}</strong> (${review.rating} ★): <p>${review.comment}</p>`;
+            div.innerHTML = `<strong>${review.user?.name || "Аноним"}</strong> (${review.rating} ★): <p>${review.comment}</p>`;
             reviewsContainer.appendChild(div);
         });
     }
 
-    // Отправка отзыва
+    // Обработчик отправки отзыва
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
         const rating = document.getElementById("rating").value;
         const comment = document.getElementById("comment").value;
-        
+
         const response = await fetch("/api/reviews", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("accessToken")}`,
             },
-            body: JSON.stringify({ product: productId, rating, comment })
+            body: JSON.stringify({ rating, comment, username }) // Отправляем имя
         });
 
         if (response.ok) {
@@ -663,6 +686,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    // Загружаем отзывы при загрузке страницы
     loadReviews();
 });
 
