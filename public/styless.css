@@ -199,6 +199,8 @@ hr {
 .navbar {
     display: flex;
     justify-content: space-between;
+    align-items: center;
+    flex-direction: row; /* Гарантируем горизонтальное расположение */
     width: 100%;
     height: 50px;
     list-style: none;
@@ -219,8 +221,11 @@ hr {
 }
 
 .navbar li a {
-    padding: 10px 15px;
-    font-size: clamp(14px, 1.5vw, 18px);
+    display: block;
+    padding: 10px 20px;
+    color: black;
+    text-decoration: none;
+    white-space: nowrap; /* Предотвращаем перенос текста */
 }
 /* Стили для выпадающего окна корзины */
 .cart-container {
@@ -334,11 +339,6 @@ hr {
 }
 
 @media (max-width: 768px) {
-    .navbar {
-        flex-direction: column;
-        align-items: center;
-        gap: 10px;
-    }
 
     .navbar-logo {
         max-height: 50px; /* Уменьшение логотипа */
