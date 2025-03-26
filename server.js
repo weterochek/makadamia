@@ -13,7 +13,9 @@ const authMiddleware = require('./middleware/authMiddleware');
 const Order = require('./models/Order');
 const User = require('./models/User');
 const Product = require("./models/Products");  
-
+const Review = require('./models/Review');
+const { protect } = require('./middleware/authMiddleware'); // Если нужна авторизация
+const router = express.Router();
 
 
 // Настройка CORS
@@ -209,6 +211,35 @@ function generateTokens(user, site) {
     return { accessToken, refreshToken };
 }
 
+
+// Получить отзывы для продукта
+router.get('/api/reviews/:productId', async (req, res) => {
+    try {
+        const reviews = await Review.find({ product: req.params.productId }).populate('user', 'name');
+        res.json(reviews);
+    } catch (error) {
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
+});
+
+// Добавить отзыв
+router.post('/api/reviews', protect, async (req, res) => {
+    try {
+        const { product, rating, comment } = req.body;
+        const review = new Review({
+            user: req.user._id,
+            product,
+            rating,
+            comment
+        });
+        await review.save();
+        res.status(201).json({ message: 'Отзыв добавлен' });
+    } catch (error) {
+        res.status(500).json({ message: 'Ошибка при добавлении отзыва' });
+    }
+});
+
+module.exports = router;
 
 
 
