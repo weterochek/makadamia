@@ -1,12 +1,16 @@
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Отзывы</title>
-    <link rel="stylesheet" href="styleses.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="review-container">
+    <div class="reviews-container">
+        <h2>Отзывы</h2>
+        <div id="reviews"></div> <!-- Здесь будут загружаться отзывы -->
+
         <h2>Оставьте свой отзыв</h2>
         <form id="reviewForm">
             <label for="rating">Рейтинг:</label>
@@ -17,17 +21,14 @@
                 <option value="2">2 ★★☆☆☆</option>
                 <option value="1">1 ★☆☆☆☆</option>
             </select>
-            
+
             <label for="comment">Комментарий:</label>
             <textarea id="comment" name="comment" required></textarea>
-            
+
             <button type="submit">Отправить</button>
         </form>
-        
-        <h2>Отзывы</h2>
-        <div id="reviews"></div>
     </div>
-    
+
     <script src="script.js"></script>
 </body>
 </html>
