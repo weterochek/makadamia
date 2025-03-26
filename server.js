@@ -196,6 +196,8 @@ app.post('/reviews', protect, async (req, res) => {
         }
 
         const user = await User.findById(req.user.id).select("username");
+        console.log("🔍 Найденный пользователь:", user); // Проверяем, что сервер действительно нашел пользователя
+
         if (!user) {
             return res.status(404).json({ message: "Пользователь не найден" });
         }
@@ -218,10 +220,11 @@ app.post('/reviews', protect, async (req, res) => {
 
         res.status(201).json({ success: true, review: newReview });
     } catch (error) {
-        console.error("Ошибка при сохранении отзыва:", error);
+        console.error("❌ Ошибка при сохранении отзыва:", error);
         res.status(500).json({ message: "Ошибка сервера", error: error.message });
     }
 });
+
 
 
 // Функция чтения отзывов из файла
