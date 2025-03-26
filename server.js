@@ -14,9 +14,9 @@ const Order = require('./models/Order');
 const User = require('./models/User');
 const Product = require("./models/Products");  
 const Review = require('./models/Review');
-const { protect } = require('./middleware/authMiddleware');
-const router = express.Router(); // Добавляем эту строку
-console.log("protect middleware:", protect);
+const { protect } = require('./middleware/authMiddleware'); // Если нужна авторизация
+const router = express.Router();
+
 
 // Настройка CORS
 const allowedOrigins = [
@@ -48,8 +48,6 @@ app.use(cors(corsOptions));
 app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use('/api', orderRoutes);
-app.use('/api/reviews', router);
-app.use('/api/reviews', require('./routes/reviewRoutes')); 
 // Подключение к MongoDB
 const JWT_SECRET = process.env.JWT_SECRET || "ai3ohPh3Aiy9eeThoh8caaM9voh5Aezaenai0Fae2Pahsh2Iexu7Qu/";
 const mongoURI = process.env.MONGO_URI || "mongodb://11_ifelephant:ee590bdf579c7404d12fd8cf0990314242d56e62@axs-h.h.filess.io:27018/11_ifelephant";
@@ -215,33 +213,31 @@ function generateTokens(user, site) {
 
 
 // Получить отзывы для продукта
-// Получить все отзывы
-router.get("/api/reviews", async (req, res) => {
+router.get('/api/reviews/:productId', async (req, res) => {
     try {
-        const reviews = await Review.find();
+        const reviews = await Review.find({ product: req.params.productId }).populate('user', 'name');
         res.json(reviews);
     } catch (error) {
-        res.status(500).json({ message: "Ошибка сервера" });
+        res.status(500).json({ message: 'Ошибка сервера' });
     }
 });
 
 // Добавить отзыв
-router.post("/api/reviews", protect, async (req, res) => {
+router.post('/api/reviews', protect, async (req, res) => {
     try {
-        const { rating, comment, username } = req.body;
+        const { product, rating, comment } = req.body;
         const review = new Review({
             user: req.user._id,
-            username, // Добавляем имя пользователя
+            product,
             rating,
             comment
         });
         await review.save();
-        res.status(201).json({ message: "Отзыв добавлен" });
+        res.status(201).json({ message: 'Отзыв добавлен' });
     } catch (error) {
-        res.status(500).json({ message: "Ошибка при добавлении отзыва" });
+        res.status(500).json({ message: 'Ошибка при добавлении отзыва' });
     }
 });
-
 
 module.exports = router;
 
