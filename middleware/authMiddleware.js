@@ -1,6 +1,13 @@
 const jwt = require("jsonwebtoken");
  const JWT_SECRET = process.env.JWT_SECRET || "ai3ohPh3Aiy9eeThoh8caaM9voh5Aezaenai0Fae2Pahsh2Iexu7Qu/";
- 
+ const protect = (req, res, next) => {
+    if (!req.user) {
+        return res.status(401).json({ message: "Не авторизован" });
+    }
+    next();
+};
+
+module.exports = { protect };
  module.exports = (req, res, next) => {
      const authHeader = req.headers.authorization;
      if (!authHeader) {
