@@ -189,35 +189,32 @@ app.get('/user-orders/:userId', protect, async (req, res) => {
         res.status(500).json({ message: "Ошибка при получении заказов" });
     }
 });
-app.post('/reviews', async (req, res) => {
-    try {
-        const reviews = readReviews();
-        const user = await User.findById(req.user?.id).exec(); // .exec() для работы с MongoDB
-        const username = user ? user.username : "Аноним";
+app.post('/reviews', (req, res) => {
+    const reviews = readReviews();
 
-        let displayName = req.body.name ? req.body.name.trim() : "";
-        if (displayName) {
-            displayName = `${displayName} (${username})`;
-        } else {
-            displayName = username;
-        }
+    // Берём ник пользователя из сессии (или другого источника)
+    const username = req.session.username || "Аноним";  // Если нет в сессии, подставляем "Аноним"
 
-        const newReview = {
-            name: displayName,
-            rating: req.body.rating,
-            comment: req.body.comment,
-            date: new Date().toISOString()
-        };
+    let displayName = req.body.name.trim();  // Имя пользователя из поля формы
 
-        reviews.push(newReview);
-        saveReviews(reviews);
-
-        res.status(201).json({ success: true, review: newReview });
-    } catch (error) {
-        console.error("Ошибка при сохранении отзыва:", error);
-        res.status(500).json({ success: false, message: "Ошибка сервера" });
+    // Если имя не введено, подставляем ник
+    if (!displayName) {
+        displayName = username;
     }
+
+    const newReview = {
+        name: displayName,
+        rating: req.body.rating,
+        comment: req.body.comment,
+        date: new Date().toISOString()
+    };
+
+    reviews.push(newReview);
+    saveReviews(reviews);
+
+    res.json({ success: true, review: newReview });
 });
+
 
 // Функция чтения отзывов из файла
 function readReviews() {
