@@ -8,7 +8,7 @@ const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 const app = express();
 const orderRoutes = require("./routes/orderRoutes");
-const authMiddleware = require('./middleware/authMiddleware');
+const { protect } = require('./middleware/authMiddleware');
 const Order = require('./models/Order');
 const User = require('./models/User');
 const Product = require("./models/Products");  
@@ -84,7 +84,7 @@ app.use((req, res, next) => {
 
 const Cart = require("./models/Cart"); // Подключаем модель
 
-app.post('/cart/add', authMiddleware, async (req, res) => {
+app.post('/cart/add', protect, async (req, res) => {
   try {
     if (!req.user || !req.user.id) {
       return res.status(401).json({ message: 'Авторизуйтесь, чтобы добавить товар в корзину' });
@@ -152,7 +152,7 @@ app.get('/orders', async (req, res) => {
         res.status(500).json({ message: "Ошибка получения заказов" });
     }
 });
-app.post("/api/order", authMiddleware, async (req, res) => {
+app.post("/api/order", protect, async (req, res) => {
     try {
         const { items, address, additionalInfo, createdAt } = req.body;
 
@@ -179,7 +179,7 @@ app.post("/api/order", authMiddleware, async (req, res) => {
 
 
 // Получение заказов пользователя
-app.get('/user-orders/:userId', authMiddleware, async (req, res) => {
+app.get('/user-orders/:userId', protect, async (req, res) => {
     try {
         const orders = await Order.find({ userId: req.params.userId }).populate("items.productId", "name price");
         res.json(orders);
