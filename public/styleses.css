@@ -7,16 +7,29 @@ body {
     align-items: center;
     height: 100vh;
 }
+#reviewContainer {
+    max-width: 600px;
+    margin: 20px auto;
+    text-align: center;
+}
+#filterStars, #filterDate {
+    width: 100%;
+    padding: 8px;
+    margin: 5px 0;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
 #reviewComment {
     width: 100%;
-    resize: none; /* Отключаем изменение размера */
-    overflow-y: hidden; /* Убираем вертикальный скролл */
+    resize: none;
+    overflow-y: hidden;
     min-height: 40px;
-    max-height: 200px; /* Ограничиваем максимальную высоту */
+    max-height: 200px;
     padding: 10px;
     border-radius: 5px;
     border: 1px solid #ccc;
 }
+
 
 #reviewName {
     width: 100%;
