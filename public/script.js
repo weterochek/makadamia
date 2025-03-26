@@ -174,26 +174,31 @@ function showCookieBanner() {
 document.addEventListener("DOMContentLoaded", async function () {
     loadReviews();
 
-    document.getElementById("submitReview").addEventListener("click", async function () {
-        const token = localStorage.getItem("accessToken");  // Проверяем токен
-        if (!token) {
-            alert("Вы должны быть авторизованы, чтобы оставить отзыв.");
-            return;
-        }
+document.getElementById("submitReview").addEventListener("click", async function () {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+        alert("Вы должны быть авторизованы, чтобы оставить отзыв.");
+        return;
+    }
 
-        let nameInput = document.getElementById("review-name").value.trim();
-        let username = localStorage.getItem("username"); // Берем ник пользователя из localStorage
+    let nameInput = document.getElementById("reviewName").value.trim();
 
-        const name = nameInput !== "" ? nameInput : username ? username : "Аноним";
+    // Получаем ник пользователя из сохранённых данных
+    let userData = JSON.parse(localStorage.getItem("userData")); 
+    let username = userData && userData.username ? userData.username : "Аноним";
 
-        const rating = document.getElementById("starRating").value;  // Берем рейтинг
-        const comment = document.getElementById("reviewComment").value.trim();  // Берем комментарий
+    // Если пользователь не ввёл имя, используем ник из аккаунта
+    let name = nameInput !== "" ? nameInput : username;
 
-        if (!comment) {
-            alert("Введите комментарий!");  // Проверка на пустой комментарий
-            return;
-        }
+    const rating = document.getElementById("starRating").value;
+    const comment = document.getElementById("reviewComment").value.trim();
 
+    if (!comment) {
+        alert("Введите комментарий!");
+        return;
+    }
+
+    try {
         const response = await fetch("/reviews", {
             method: "POST",
             headers: { 
@@ -205,9 +210,14 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         const result = await response.json();
         if (result.success) {
-            loadReviews();  // Перезагружаем отзывы
+            loadReviews(); // Перезагружаем список отзывов
+        } else {
+            console.error("Ошибка при отправке отзыва:", result);
         }
-    });
+    } catch (error) {
+        console.error("Ошибка при отправке запроса:", error);
+    }
+});
 
     // Автоматическое увеличение высоты поля комментария
     document.getElementById("reviewComment").addEventListener("input", function () {
