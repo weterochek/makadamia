@@ -12,7 +12,8 @@ const { protect } = require('./middleware/authMiddleware');
 const Order = require('./models/Order');
 const User = require('./models/User');
 const Product = require("./models/Products");  
-
+const fs = require('fs');
+const reviewsFile = 'reviews.json';
 
 
 // Настройка CORS
@@ -218,7 +219,27 @@ app.post('/reviews', async (req, res) => {
     }
 });
 
+// Функция чтения отзывов из файла
+function readReviews() {
+    if (!fs.existsSync(reviewsFile)) {
+        return [];
+    }
+    try {
+        return JSON.parse(fs.readFileSync(reviewsFile, 'utf8'));
+    } catch (error) {
+        console.error("Ошибка чтения отзывов:", error);
+        return [];
+    }
+}
 
+// Функция сохранения отзывов в файл
+function saveReviews(reviews) {
+    try {
+        fs.writeFileSync(reviewsFile, JSON.stringify(reviews, null, 2), 'utf8');
+    } catch (error) {
+        console.error("Ошибка сохранения отзывов:", error);
+    }
+}
 app.get('/reviews', (req, res) => {
     res.json(readReviews());
 });
