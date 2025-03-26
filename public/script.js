@@ -624,93 +624,86 @@ document.addEventListener("DOMContentLoaded", () => {
 })
 
 document.addEventListener("DOMContentLoaded", function () {
-    loadReviews();
+    const reviewComment = document.getElementById("reviewComment");
+    const reviewName = document.getElementById("reviewName");
+    const reviewContainer = document.getElementById("reviews");
+    const filterStars = document.getElementById("filterStars");
+    const filterDate = document.getElementById("filterDate");
 
-    document.getElementById("submitReview").addEventListener("click", async function () {
-        let nameInput = document.getElementById("reviewName");
-        let name = nameInput ? nameInput.value.trim() : "";
+    let reviews = [];
 
-        const rating = document.getElementById("starRating").value;
-        const comment = document.getElementById("reviewComment").value.trim();
+    // Автоматическое увеличение высоты textarea
+    reviewComment.addEventListener("input", function () {
+        this.style.height = "auto";
+        this.style.height = (this.scrollHeight) + "px";
+    });
 
-        if (!comment) {
+    // Добавление отзыва
+    document.getElementById("submitReview").addEventListener("click", function () {
+        let name = reviewName.value.trim();
+        if (name === "") {
+            name = getUserName(); // Получаем имя из личного кабинета
+        }
+        const comment = reviewComment.value.trim();
+        const stars = Math.floor(Math.random() * 5) + 1; // Заглушка рейтинга
+
+        if (comment === "") {
             alert("Введите комментарий!");
             return;
         }
 
-        const response = await fetch("/reviews", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name, rating, comment })
-        });
+        const review = {
+            name,
+            comment,
+            stars,
+            date: new Date()
+        };
 
-        const result = await response.json();
-        if (result.success) {
-            loadReviews();
-        }
+        reviews.push(review);
+        displayReviews();
+
+        // Очистка полей
+        reviewComment.value = "";
+        reviewComment.style.height = "40px";
     });
 
-    document.getElementById("reviewComment").addEventListener("input", function () {
-        this.style.height = "auto";
-        this.style.height = this.scrollHeight + "px";
-    });
+    // Фильтрация отзывов
+    filterStars.addEventListener("change", displayReviews);
+    filterDate.addEventListener("change", displayReviews);
 
-    document.getElementById("filterStars").addEventListener("change", loadReviews);
-    document.getElementById("filterDate").addEventListener("change", loadReviews);
-});
-
-async function loadReviews() {
-    try {
-        const response = await fetch("/reviews");
-        if (!response.ok) {
-            throw new Error(`Ошибка HTTP: ${response.status}`);
-        }
-
-        let reviews = await response.json();
-
-        if (!Array.isArray(reviews)) {
-            console.error("❌ Ошибка: сервер вернул не массив отзывов", reviews);
-            return;
-        }
-
-        const filterStars = document.getElementById("filterStars")?.value;
-        const filterDate = document.getElementById("filterDate")?.value;
-
-        // Фильтрация по звёздам
-        if (filterStars && filterStars !== "all") {
-            reviews = reviews.filter(r => r.rating == filterStars);
-        }
-
-        // Сортировка по дате
-        if (filterDate === "newest") {
-            reviews.sort((a, b) => new Date(b.date) - new Date(a.date));
-        } else {
-            reviews.sort((a, b) => new Date(a.date) - new Date(b.date));
-        }
-
-        const reviewContainer = document.getElementById("reviews");
+    function displayReviews() {
         reviewContainer.innerHTML = "";
+        let filteredReviews = [...reviews];
 
-        reviews.forEach(review => {
+        // Фильтр по звёздам
+        const selectedStars = filterStars.value;
+        if (selectedStars !== "all") {
+            filteredReviews = filteredReviews.filter(r => r.stars == selectedStars);
+        }
+
+        // Фильтр по дате
+        if (filterDate.value === "newest") {
+            filteredReviews.sort((a, b) => b.date - a.date);
+        } else {
+            filteredReviews.sort((a, b) => a.date - b.date);
+        }
+
+        filteredReviews.forEach(review => {
             const reviewElement = document.createElement("div");
-            reviewElement.classList.add("review");
             reviewElement.innerHTML = `
-                <strong>${review.name}</strong> (${review.rating} ★): ${review.comment}
-                <br><small>${new Date(review.date).toLocaleString()}</small>
+                <strong>${review.name}</strong> (${review.stars} ★): ${review.comment}
+                <br><small>${review.date.toLocaleString()}</small>
+                <hr>
             `;
             reviewContainer.appendChild(reviewElement);
         });
-    } catch (error) {
-        console.error("❌ Ошибка загрузки отзывов:", error);
     }
-}
 
-
-// Пересортировка отзывов при смене фильтра
-document.getElementById("filterStars").addEventListener("change", loadReviews);
-document.getElementById("filterDate").addEventListener("change", loadReviews);
-
-
+    // Функция получения имени пользователя (заглушка)
+    function getUserName() {
+        return "Пользователь"; // Здесь можно вставить логику получения имени из личного кабинета
+    }
+});
 
 // Обновление отображения корзины после очистки
 function updateCartDisplay() {
