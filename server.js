@@ -14,8 +14,7 @@ const Order = require('./models/Order');
 const User = require('./models/User');
 const Product = require("./models/Products");  
 const Review = require('./models/Review');
-const authMiddleware = require('./middleware/authMiddleware');
-const protect = authMiddleware.protect;
+const { protect } = require('./middleware/authMiddleware');
 console.log("protect middleware:", protect);
 
 // Настройка CORS
