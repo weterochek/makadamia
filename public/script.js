@@ -663,13 +663,15 @@ async function loadReviews() {
     const response = await fetch("/reviews");
     let reviews = await response.json();
 
-    const filterStars = document.getElementById("filterStars").value;
-    const filterDate = document.getElementById("filterDate").value;
+    const filterStars = document.getElementById("filterStars")?.value;
+    const filterDate = document.getElementById("filterDate")?.value;
 
-    if (filterStars !== "all") {
-        reviews = reviews.filter(r => r.rating === filterStars);
+    // Фильтрация по звёздам
+    if (filterStars && filterStars !== "all") {
+        reviews = reviews.filter(r => r.rating == filterStars);
     }
 
+    // Сортировка по дате
     if (filterDate === "newest") {
         reviews.sort((a, b) => new Date(b.date) - new Date(a.date));
     } else {
@@ -689,6 +691,11 @@ async function loadReviews() {
         reviewContainer.appendChild(reviewElement);
     });
 }
+
+// Пересортировка отзывов при смене фильтра
+document.getElementById("filterStars").addEventListener("change", loadReviews);
+document.getElementById("filterDate").addEventListener("change", loadReviews);
+
 
 
 // Обновление отображения корзины после очистки
