@@ -623,6 +623,48 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 })
 
+document.addEventListener("DOMContentLoaded", () => {
+    const form = document.getElementById("reviewForm");
+    const reviewsContainer = document.getElementById("reviews");
+    const productId = "PRODUCT_ID_HERE"; // Подставь нужный ID продукта
+
+    // Функция загрузки отзывов
+    async function loadReviews() {
+        const response = await fetch(`/api/reviews/${productId}`);
+        const reviews = await response.json();
+        reviewsContainer.innerHTML = "";
+        reviews.forEach(review => {
+            const div = document.createElement("div");
+            div.classList.add("review");
+            div.innerHTML = `<strong>${review.user.name}</strong> (${review.rating} ★): <p>${review.comment}</p>`;
+            reviewsContainer.appendChild(div);
+        });
+    }
+
+    // Отправка отзыва
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const rating = document.getElementById("rating").value;
+        const comment = document.getElementById("comment").value;
+        
+        const response = await fetch("/api/reviews", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ product: productId, rating, comment })
+        });
+
+        if (response.ok) {
+            form.reset();
+            loadReviews(); // Обновить список отзывов
+        } else {
+            alert("Ошибка при отправке отзыва");
+        }
+    });
+
+    loadReviews();
+});
 
 // Обновление отображения корзины после очистки
 function updateCartDisplay() {
