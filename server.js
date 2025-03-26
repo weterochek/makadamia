@@ -366,10 +366,10 @@ app.post('/-token', (req, res) => {
 });
 
 // Приватный маршрут
-app.get('/private-route', authMiddleware, (req, res) => {
+app.get('/private-route', protect, (req, res) => {
   res.json({ message: `Добро пожаловать, пользователь ${req.user.id}` });
 });
-app.get('/account', authMiddleware, async (req, res) => {
+app.get('/account', protect, async (req, res) => {
     try {
         if (!req.user || !req.user.id) {
             return res.status(401).json({ message: "Не авторизован" });
@@ -391,7 +391,7 @@ app.get('/account', authMiddleware, async (req, res) => {
         res.status(500).json({ message: "Ошибка сервера", error: error.message });
     }
 });
-app.put('/account', authMiddleware, async (req, res) => {
+app.put('/account', protect, async (req, res) => {
     const { name, city, username, password } = req.body; // Получаем данные из запроса
 
     try {
