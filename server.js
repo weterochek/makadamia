@@ -188,6 +188,33 @@ app.get('/user-orders/:userId', protect, async (req, res) => {
         res.status(500).json({ message: "Ошибка при получении заказов" });
     }
 });
+app.post('/reviews', (req, res) => {
+    const reviews = readReviews(); 
+    const username = req.session.username || "Аноним"; 
+
+    let displayName = req.body.name.trim();
+    if (displayName) {
+        displayName = `${displayName} (${username})`;
+    } else {
+        displayName = username;
+    }
+
+    const newReview = {
+        name: displayName,
+        rating: req.body.rating,
+        comment: req.body.comment,
+        date: new Date().toISOString()
+    };
+
+    reviews.push(newReview);
+    saveReviews(reviews);
+
+    res.json({ success: true, review: newReview });
+});
+
+app.get('/reviews', (req, res) => {
+    res.json(readReviews());
+});
 
 
 function generateTokens(user, site) {
