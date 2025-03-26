@@ -623,71 +623,86 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 })
 
-document.addEventListener("DOMContentLoaded", async () => {
-    const form = document.getElementById("reviewForm");
-    const reviewsContainer = document.getElementById("reviews");
-    let username = "Аноним"; // Значение по умолчанию
+document.addEventListener("DOMContentLoaded", function () {
+    const reviewComment = document.getElementById("reviewComment");
+    const reviewName = document.getElementById("reviewName");
+    const reviewContainer = document.getElementById("reviews");
+    const filterStars = document.getElementById("filterStars");
+    const filterDate = document.getElementById("filterDate");
 
-    // Получаем имя пользователя из аккаунта
-    async function getUsername() {
-        const token = localStorage.getItem("accessToken");
-        if (!token) return;
+    let reviews = [];
 
-        try {
-            const response = await fetch("/account", {
-                method: "GET",
-                headers: { "Authorization": `Bearer ${token}` },
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                username = data.name || "Аноним"; // Если имени нет, ставим "Аноним"
-            }
-        } catch (error) {
-            console.error("Ошибка получения имени:", error);
-        }
-    }
-
-    await getUsername(); // Загружаем имя при загрузке страницы
-
-    // Функция загрузки всех отзывов
-    async function loadReviews() {
-        const response = await fetch("/api/reviews");
-        const reviews = await response.json();
-        reviewsContainer.innerHTML = "";
-        reviews.forEach(review => {
-            const div = document.createElement("div");
-            div.classList.add("review");
-            div.innerHTML = `<strong>${review.user?.name || "Аноним"}</strong> (${review.rating} ★): <p>${review.comment}</p>`;
-            reviewsContainer.appendChild(div);
-        });
-    }
-
-    // Обработчик отправки отзыва
-    form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const rating = document.getElementById("rating").value;
-        const comment = document.getElementById("comment").value;
-
-        const response = await fetch("/api/reviews", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${localStorage.getItem("accessToken")}`,
-            },
-            body: JSON.stringify({ rating, comment, username }) // Отправляем имя
-        });
-
-        if (response.ok) {
-            form.reset();
-            loadReviews(); // Обновить список отзывов
-        } else {
-            alert("Ошибка при отправке отзыва");
-        }
+    // Автоматическое увеличение высоты textarea
+    reviewComment.addEventListener("input", function () {
+        this.style.height = "auto";
+        this.style.height = (this.scrollHeight) + "px";
     });
 
-    // Загружаем отзывы при загрузке страницы
-    loadReviews();
+    // Добавление отзыва
+    document.getElementById("submitReview").addEventListener("click", function () {
+        let name = reviewName.value.trim();
+        if (name === "") {
+            name = getUserName(); // Получаем имя из личного кабинета
+        }
+        const comment = reviewComment.value.trim();
+        const stars = Math.floor(Math.random() * 5) + 1; // Заглушка рейтинга
+
+        if (comment === "") {
+            alert("Введите комментарий!");
+            return;
+        }
+
+        const review = {
+            name,
+            comment,
+            stars,
+            date: new Date()
+        };
+
+        reviews.push(review);
+        displayReviews();
+
+        // Очистка полей
+        reviewComment.value = "";
+        reviewComment.style.height = "40px";
+    });
+
+    // Фильтрация отзывов
+    filterStars.addEventListener("change", displayReviews);
+    filterDate.addEventListener("change", displayReviews);
+
+    function displayReviews() {
+        reviewContainer.innerHTML = "";
+        let filteredReviews = [...reviews];
+
+        // Фильтр по звёздам
+        const selectedStars = filterStars.value;
+        if (selectedStars !== "all") {
+            filteredReviews = filteredReviews.filter(r => r.stars == selectedStars);
+        }
+
+        // Фильтр по дате
+        if (filterDate.value === "newest") {
+            filteredReviews.sort((a, b) => b.date - a.date);
+        } else {
+            filteredReviews.sort((a, b) => a.date - b.date);
+        }
+
+        filteredReviews.forEach(review => {
+            const reviewElement = document.createElement("div");
+            reviewElement.innerHTML = `
+                <strong>${review.name}</strong> (${review.stars} ★): ${review.comment}
+                <br><small>${review.date.toLocaleString()}</small>
+                <hr>
+            `;
+            reviewContainer.appendChild(reviewElement);
+        });
+    }
+
+    // Функция получения имени пользователя (заглушка)
+    function getUserName() {
+        return "Пользователь"; // Здесь можно вставить логику получения имени из личного кабинета
+    }
 });
 
 // Обновление отображения корзины после очистки
