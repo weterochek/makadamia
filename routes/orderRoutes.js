@@ -2,10 +2,10 @@ const express = require("express");
 const router = express.Router();
 const Order = require("../models/Order");
 const Product = require("../models/Products");
-const { protect } = require("../middleware/authMiddleware");
+const { protect } = require("../middleware/authMiddleware"); // ✅ Исправлено
 
 // Создание заказа
-router.post("/order", authMiddleware, async (req, res) => {
+router.post("/order", protect, async (req, res) => {  // ✅ Используем protect
     try {
         const { items, address, additionalInfo } = req.body;
         if (!items || items.length === 0) {
@@ -48,58 +48,39 @@ router.post("/order", authMiddleware, async (req, res) => {
 });
 
 // Получение всех заказов
-router.get("/orders", authMiddleware, async (req, res) => {
+router.get("/orders", protect, async (req, res) => { // ✅ Исправлено
     try {
-        const userId = req.user.id;  // Получаем userId из токена
+        const userId = req.user.id;
 
         const orders = await Order.find({ userId })
-            .populate("items.productId", "name price")  // Загружаем имя и цену продукта
-            .exec();  // Выполняем запрос
+            .populate("items.productId", "name price")
+            .exec();
 
-        res.status(200).json(orders);  // Возвращаем заказы
+        res.status(200).json(orders);
     } catch (error) {
         console.error("Ошибка при загрузке заказов:", error);
         res.status(500).json({ message: "Ошибка сервера при загрузке заказов" });
     }
 });
 
-
-
 // Получение заказов текущего пользователя
-router.get("/user-orders", authMiddleware, async (req, res) => {
+router.get("/user-orders", protect, async (req, res) => { // ✅ Исправлено
     try {
-        const userId = req.user.id; // Получаем userId из токена (authMiddleware)
-        console.log("Запрос на заказы пользователя:", userId);  // Логирование
+        const userId = req.user.id;
+        console.log("Запрос на заказы пользователя:", userId);
 
         const orders = await Order.find({ userId }).populate("items.productId", "name price");
-        console.log("Найдено заказов:", orders.length);  // Логирование
+        console.log("Найдено заказов:", orders.length);
 
-        res.status(200).json(orders);  // Отправляем заказы
+        res.status(200).json(orders);
     } catch (error) {
-        console.error("Ошибка при загрузке заказов:", error);  // Логирование ошибки
+        console.error("Ошибка при загрузке заказов:", error);
         res.status(500).json({ error: "Ошибка при загрузке заказов пользователя" });
     }
 });
 
-
-// Получение всех заказов (например, для админов)
-// Все заказы для админки или orders.html
-router.get("/all-orders", async (req, res) => {
-    try {
-        const orders = await Order.find()
-            .populate("userId", "username")  // Чтобы видеть, кто заказал
-            .populate("items.productId", "name price");
-
-        res.status(200).json(orders);
-    } catch (error) {
-        console.error("Ошибка при загрузке всех заказов:", error);
-        res.status(500).json({ message: "Ошибка сервера при загрузке всех заказов" });
-    }
-});
-
-
 // Обновление статуса заказа
-router.put("/order/:id", authMiddleware, async (req, res) => {
+router.put("/order/:id", protect, async (req, res) => { // ✅ Исправлено
     try {
         const { status } = req.body;
         await Order.findByIdAndUpdate(req.params.id, { status });
