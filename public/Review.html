@@ -39,29 +39,37 @@
         </nav>
     </header>
 <main>
-    <div class="reviews-container">
-        <h2>Отзывы</h2>
-        <div id="reviews"></div> <!-- Здесь будут загружаться отзывы -->
+    <div id="reviewContainer">
+    <h2>Оставьте отзыв</h2>
+    
+    <label for="reviewName">Имя:</label>
+    <input type="text" id="reviewName" placeholder="Введите ваше имя (необязательно)">
 
-        <h2>Оставьте свой отзыв</h2>
-        <form id="reviewForm">
-            <label for="rating">Рейтинг:</label>
-            <select id="rating" name="rating" required>
-                <option value="5">5 ★★★★★</option>
-                <option value="4">4 ★★★★☆</option>
-                <option value="3">3 ★★★☆☆</option>
-                <option value="2">2 ★★☆☆☆</option>
-                <option value="1">1 ★☆☆☆☆</option>
-            </select>
-	    <label for="reviewName">Имя:</label>
-            <input type="text" id="reviewName" placeholder="Введите ваше имя (необязательно)">
+    <label for="reviewComment">Комментарий:</label>
+    <textarea id="reviewComment" rows="2" placeholder="Введите комментарий..."></textarea>
 
-            <label for="comment">Комментарий:</label>
-            <textarea id="comment" name="comment" required></textarea>
+    <button id="submitReview">Отправить</button>
 
-            <button type="submit">Отправить</button>
-        </form>
-    </div>
+    <h2>Все отзывы</h2>
+    
+    <label for="filterStars">Фильтр по звёздам:</label>
+    <select id="filterStars">
+        <option value="all">Все</option>
+        <option value="5">5 ★</option>
+        <option value="4">4 ★</option>
+        <option value="3">3 ★</option>
+        <option value="2">2 ★</option>
+        <option value="1">1 ★</option>
+    </select>
+
+    <label for="filterDate">Фильтр по времени:</label>
+    <select id="filterDate">
+        <option value="newest">Сначала новые</option>
+        <option value="oldest">Сначала старые</option>
+    </select>
+
+    <div id="reviews"></div>
+</div>
 </main>
     <script src="script.js"></script>
 </body>
