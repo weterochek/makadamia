@@ -9,7 +9,7 @@ body {
     height: 100vh;
 }
 
-.review-container {
+.reviews-container {
     background: #fff;
     padding: 20px;
     border-radius: 10px;
@@ -55,4 +55,12 @@ button:hover {
 
 #reviews {
     margin-top: 20px;
+}
+
+.review {
+    background: #f9f9f9;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    border-left: 5px solid #28a745;
 }
