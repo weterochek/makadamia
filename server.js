@@ -6,16 +6,13 @@ const cors = require("cors");
 const path = require("path");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
-const Joi = require("joi");
 const app = express();
 const orderRoutes = require("./routes/orderRoutes");
 const authMiddleware = require('./middleware/authMiddleware');
 const Order = require('./models/Order');
 const User = require('./models/User');
 const Product = require("./models/Products");  
-const Review = require('./models/Review');
-const { protect } = require('./middleware/authMiddleware'); // Если нужна авторизация
-const router = express.Router();
+
 
 
 // Настройка CORS
@@ -212,35 +209,6 @@ function generateTokens(user, site) {
 }
 
 
-// Получить отзывы для продукта
-router.get('/api/reviews/:productId', async (req, res) => {
-    try {
-        const reviews = await Review.find({ product: req.params.productId }).populate('user', 'name');
-        res.json(reviews);
-    } catch (error) {
-        res.status(500).json({ message: 'Ошибка сервера' });
-    }
-});
-
-// Добавить отзыв
-router.post('/api/reviews', protect, async (req, res) => {
-    try {
-        const { product, rating, comment } = req.body;
-        const review = new Review({
-            user: req.user._id,
-            product,
-            rating,
-            comment
-        });
-        await review.save();
-        res.status(201).json({ message: 'Отзыв добавлен' });
-    } catch (error) {
-        res.status(500).json({ message: 'Ошибка при добавлении отзыва' });
-    }
-});
-
-module.exports = router;
-
 
 
 // Регистрация пользователя
@@ -286,14 +254,15 @@ app.post('/login', async (req, res) => {
     }
 
     const { accessToken, refreshToken } = generateTokens(user);
+res.setHeader("Access-Control-Allow-Credentials", "true"); // ✅ Добавляем поддержку credentials
 
-    res.cookie("refreshTokenDesktop", refreshToken, { 
-        httpOnly: true,
-        secure: true,
-        sameSite: "None",
-        path: "/",
-        maxAge: 30 * 24 * 60 * 60 * 1000  // Устанавливаем refreshToken на 30 дней
-    });
+res.cookie("refreshTokenDesktop", refreshToken, { 
+    httpOnly: true,
+    secure: true,
+    sameSite: "None",
+    path: "/",
+    expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 дней
+});
 
     res.json({ accessToken, userId: user._id });
 });
@@ -338,14 +307,15 @@ app.post('/refresh', async (req, res) => {
             }
 
             const { accessToken, refreshToken: newRefreshToken } = generateTokens(user);
+            res.setHeader("Access-Control-Allow-Credentials", "true"); // ✅ Добавляем поддержку credentials
 
-            res.cookie("refreshTokenDesktop", newRefreshToken, {
-                httpOnly: true,
-                secure: true,
-                sameSite: "None",
-                path: "/",
-                maxAge: 30 * 24 * 60 * 60 * 1000  // 30 дней
-            });
+res.cookie("refreshTokenDesktop", newRefreshToken, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "None",
+    path: "/",
+    expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 дней
+});
 
             console.log("✅ Refresh-токен обновлён успешно");
 
@@ -411,6 +381,7 @@ app.get('/account', authMiddleware, async (req, res) => {
             return res.status(404).json({ message: "Пользователь не найден" });
         }
               // 🚀 Отключаем кеширование
+        res.setHeader("Access-Control-Allow-Credentials", "true"); // ✅ Добавили заголовок
         res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
         res.setHeader("Pragma", "no-cache");
         res.setHeader("Expires", "0");
