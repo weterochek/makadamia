@@ -19,12 +19,13 @@ router.post("/", protect, async (req, res) => {
     const { rating, comment, username } = req.body;
     const user = req.user; // Авторизованный пользователь
 
+    // Проверяем, если имя не указано, используем username пользователя
     let displayName = username ? `${username} (${user.username})` : user.username;
 
     try {
         const review = new Review({
             user: user._id,
-            username: displayName,
+            username: displayName, // сохраняем username + имя
             rating,
             comment,
         });
