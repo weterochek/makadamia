@@ -181,7 +181,7 @@ document.getElementById("submitReview").addEventListener("click", async function
         return;
     }
 
-    // Проверяем существование элементов перед доступом к их значению
+    // Получаем имя или используем ник из localStorage, если оно пустое
     const nameInputField = document.getElementById("reviewName");
     let nameInput = nameInputField ? nameInputField.value.trim() : "";
 
@@ -192,11 +192,9 @@ document.getElementById("submitReview").addEventListener("click", async function
     // Если пользователь не ввёл имя, используем его ник из ЛК
     let name = nameInput !== "" ? nameInput : username;
 
-    // Проверяем, существует ли поле рейтинга
     const ratingField = document.getElementById("starRating");
     const rating = ratingField ? parseInt(ratingField.value, 10) : 5; // Преобразуем в число
 
-    // Проверяем, существует ли поле комментария
     const commentField = document.getElementById("reviewComment");
     const comment = commentField ? commentField.value.trim() : "";
 
@@ -225,6 +223,7 @@ document.getElementById("submitReview").addEventListener("click", async function
         console.error("Ошибка при отправке запроса:", error);
     }
 });
+
 
 
     // Автоматическое увеличение высоты поля комментария
