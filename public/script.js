@@ -181,15 +181,15 @@ document.getElementById("submitReview").addEventListener("click", async function
         return;
     }
 
-    // Получаем имя или используем ник из localStorage, если оно пустое
+    // Получаем имя от пользователя, если оно указано в поле
     const nameInputField = document.getElementById("reviewName");
     let nameInput = nameInputField ? nameInputField.value.trim() : "";
 
     // Получаем ник пользователя из localStorage, если он авторизован
-    let userData = JSON.parse(localStorage.getItem("userData")); 
+    let userData = JSON.parse(localStorage.getItem("userData"));
     let username = userData && userData.username ? userData.username : "Аноним";
 
-    // Если пользователь не ввёл имя, используем его ник из ЛК
+    // Если имя не указано, то используем ник
     let name = nameInput !== "" ? nameInput : username;
 
     const ratingField = document.getElementById("starRating");
@@ -223,6 +223,7 @@ document.getElementById("submitReview").addEventListener("click", async function
         console.error("Ошибка при отправке запроса:", error);
     }
 });
+
 
 
 
