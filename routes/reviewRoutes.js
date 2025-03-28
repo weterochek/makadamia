@@ -16,18 +16,23 @@ router.get("/", async (req, res) => {
 
 // Добавить отзыв (только авторизованные пользователи)
 router.post("/", protect, async (req, res) => {
+    const { rating, comment, username } = req.body;
+    const user = req.user; // Авторизованный пользователь
+
+    let displayName = username ? `${username} (${user.username})` : user.username;
+
     try {
-        const { rating, comment, username } = req.body;
         const review = new Review({
-            user: req.user._id,
-            username,
+            user: user._id,
+            username: displayName,
             rating,
-            comment
+            comment,
         });
+
         await review.save();
-        res.status(201).json({ message: "Отзыв добавлен" });
+        res.json({ message: "Отзыв добавлен!", review });
     } catch (error) {
-        res.status(500).json({ message: "Ошибка при добавлении отзыва" });
+        res.status(500).json({ message: "Ошибка при сохранении отзыва" });
     }
 });
 
