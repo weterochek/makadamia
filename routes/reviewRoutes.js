@@ -19,7 +19,7 @@ router.post("/", protect, async (req, res) => {
     const { rating, comment, username } = req.body;
     const user = req.user; // Авторизованный пользователь
 
-    // Проверяем, если имя не указано, используем username пользователя
+    // Если имя указано в поле отзыва, то комбинируем его с ником
     let displayName = username ? `${username} (${user.username})` : user.username;
 
     try {
