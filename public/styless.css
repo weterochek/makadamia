@@ -9,6 +9,9 @@ body {
     line-height: 1.6;
     color: #333;
     background-color: #fdfdfd;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Обеспечивает растягивание body на всю высоту экрана */
 }
   #toggleHistoryBtn {
   display: block;
@@ -314,12 +317,14 @@ hr {
     min-width: 30px; /* Задаем минимальную ширину для количества */
     text-align: center; /* Центрируем текст количества */
 }  
+
 /* Footer */
 footer {
     background-color: #333;  /* Цвет фона подвала */
     color: #fff;             /* Цвет текста */
     text-align: center;
     padding: 1rem;
+    width: 100%;
 }
 
 .footer-links {
