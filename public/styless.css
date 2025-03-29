@@ -13,6 +13,9 @@ body {
     flex-direction: column;
     min-height: 100vh; /* Обеспечивает растягивание body на всю высоту экрана */
 }
+main {
+    flex-grow: 1; /* Контент будет занимать оставшуюся часть экрана */
+}
   #toggleHistoryBtn {
   display: block;
   margin: 20px auto; /* Центрирование */
