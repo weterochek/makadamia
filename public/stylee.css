@@ -363,6 +363,32 @@ footer {
 footer p {
     margin: 0.5rem 0;
 }
+.footer-links {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+}
+
+.footer-link {
+    text-decoration: none;
+    color: #000;
+    font-weight: bold;
+    padding: 10px;
+}
+
+.footer-info-block {
+    display: none;
+    margin-top: 10px;
+}
+
+.footer-link:hover + .footer-info .footer-info-block {
+    display: block;
+}
+
+/* Дополнительные стили для визуализации */
+.footer-info {
+    padding-top: 20px;
+}
 
 /* Адаптивные стили */
 @media (max-width: 768px) {
