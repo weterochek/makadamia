@@ -45,7 +45,7 @@ header nav {
     justify-content: center;
     width: 100%;
     background-color: #fff;
-    padding: 1px 0;
+    padding: 20px 0;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     position: fixed;
     top: 0;
@@ -377,7 +377,7 @@ button:hover {
 /* --- Адаптация навигации под Full HD и 2K разрешения --- */
 @media (min-width: 1920px) {
     header nav {
-        padding: 20px 30px;
+        padding: 25px 40px;
     }
 
     .navbar {
@@ -392,7 +392,7 @@ button:hover {
 
 @media (min-width: 2560px) {
     header nav {
-        padding: 25px 40px;
+        padding: 20px 40px;
     }
 
     .navbar {
