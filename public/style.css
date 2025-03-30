@@ -478,7 +478,7 @@ footer {
 
 .footer-item {
     width: 30%; /* Настроить ширину блоков */
-    padding: 10px;
+    front-size: 1rem;
 }
 
 .footer-item h3 {
