@@ -12,12 +12,14 @@
             <ul class="navbar">
                 <div class="navbar-left">
                 <li><a href="index.html" class="nav-item">Главная</a></li>
-                <li><a href="Review.html" class="nav-item">Отзывы</a></li>
+                <li><a href="#menu" class="nav-item">Меню</a></li>
+                <li><a href="#about" class="nav-item">О нас</a></li>
             </div>
             <div class="navbar-center">
                 <a href="index.html"><img src="images/logo.png" alt="Logo" class="navbar-logo"></a>
               </div>
               <div class="navbar-right">
+                <li><a href="#contacts" class="nav-item">Контакты</a></li>
                 <li class="cart-container">
                     <a href="#1" class="nav-item" id="cartButton">Корзина</a>
                     <div id="cartDropdown" class="cart-dropdown">
@@ -60,24 +62,32 @@
             <button type="submit" id="submitReview">Отправить</button>
         </form>
 
-        <h3>Фильтр отзывов:</h3>
-        <label for="filterStars">Фильтр по звёздам:</label>
-        <select id="filterStars">
-            <option value="all">Все</option>
-            <option value="5">5 ★</option>
-            <option value="4">4 ★</option>
-            <option value="3">3 ★</option>
-            <option value="2">2 ★</option>
-            <option value="1">1 ★</option>
-        </select>
-
-        <label for="filterDate">Фильтр по дате:</label>
-        <select id="filterDate">
-            <option value="newest">Сначала новые</option>
-            <option value="oldest">Сначала старые</option>
-        </select>
+        <div class="review-filters">
+            <div>
+                <label for="filterStars">Фильтр по звёздам:</label>
+                <select id="filterStars">
+                    <option value="all">Все</option>
+                    <option value="5">5 ★</option>
+                    <option value="4">4 ★</option>
+                    <option value="3">3 ★</option>
+                    <option value="2">2 ★</option>
+                    <option value="1">1 ★</option>
+                </select>
+            </div>
+            <div>
+                <label for="filterDate">Фильтр по дате:</label>
+                <select id="filterDate">
+                    <option value="newest">Сначала новые</option>
+                    <option value="oldest">Сначала старые</option>
+                </select>
+            </div>
+        </div>
         
         <div id="reviewContainer"></div>
+        
+        <div class="pagination" id="pagination">
+            <!-- Кнопки пагинации будут добавлены через JavaScript -->
+        </div>
     </div>
 
     <footer>
