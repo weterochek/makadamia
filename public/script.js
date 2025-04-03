@@ -332,10 +332,14 @@ async function submitReview(event) {
             console.error('Error parsing userData:', e);
         }
         
+        // Получаем токен авторизации
+        const token = localStorage.getItem("accessToken");
+        
         const response = await fetch('/reviews', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': token ? `Bearer ${token}` : ''
             },
             body: JSON.stringify({
                 rating: parseInt(rating),
@@ -596,6 +600,12 @@ function initializeAddToCartButtons() {
 
 
 function displayOrder(order, container) {
+    // Проверяем, существует ли контейнер
+    if (!container) {
+        console.error("Контейнер для отображения заказа не найден");
+        return;
+    }
+    
     const itemsList = order.items.map(item => {
         if (item.productId && item.productId.name) {
             return `<li>${item.productId.name} — ${item.quantity} шт. (${item.price} ₽)</li>`;
@@ -779,6 +789,12 @@ document.addEventListener("DOMContentLoaded", () => {
 .then(res => res.json())
 .then(orders => {
     const container = document.getElementById("ordersContainer");
+    
+    // Проверяем, существует ли контейнер
+    if (!container) {
+        console.log("Контейнер для заказов не найден на этой странице");
+        return;
+    }
 
     if (orders.length === 0) {
         container.innerHTML = "<p>У вас пока нет заказов.</p>";
@@ -794,6 +810,12 @@ document.addEventListener("DOMContentLoaded", () => {
     // Логика кнопки истории
     const toggleBtn = document.getElementById('toggleHistoryBtn');
     const ordersHistory = document.getElementById('ordersHistory');
+    
+    // Проверяем, существуют ли элементы для истории заказов
+    if (!toggleBtn || !ordersHistory) {
+        console.log("Элементы для истории заказов не найдены");
+        return;
+    }
 
     toggleBtn.addEventListener('click', () => {
         if (ordersHistory.style.display === 'none') {
@@ -1452,6 +1474,12 @@ async function loadOrders() {
 
 // Отображение заказов на странице
 function displayOrder(order, container) {
+    // Проверяем, существует ли контейнер
+    if (!container) {
+        console.error("Контейнер для отображения заказа не найден");
+        return;
+    }
+    
     const itemsList = order.items.map(item => {
         if (item.productId && item.productId.name) {
             return `<li>${item.productId.name} — ${item.quantity} шт. (${item.price} ₽)</li>`;
