@@ -50,10 +50,24 @@ router.post("/order", protect, async (req, res) => {  // ✅ Используе�
 // Получение всех заказов
 router.get("/orders", protect, async (req, res) => { // ✅ Исправлено
     try {
-        const userId = req.user.id;
-
-        const orders = await Order.find({ userId })
+        const orders = await Order.find()
             .populate("items.productId", "name price")
+            .populate("userId", "username") // Добавляем информацию о пользователе
+            .exec();
+
+        res.status(200).json(orders);
+    } catch (error) {
+        console.error("Ошибка при загрузке заказов:", error);
+        res.status(500).json({ message: "Ошибка сервера при загрузке заказов" });
+    }
+});
+
+// Получение всех заказов
+router.get("/all-orders", protect, async (req, res) => {
+    try {
+        const orders = await Order.find()
+            .populate("items.productId", "name price")
+            .populate("userId", "username")
             .exec();
 
         res.status(200).json(orders);
