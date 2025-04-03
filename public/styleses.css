@@ -714,3 +714,37 @@ button:hover {
         font-size: 1.3rem;
     }
 }
+
+/* Стили для пагинации */
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.pagination button {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    background-color: #fff;
+    color: #333;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.pagination button:hover {
+    background-color: #f4f4f4;
+}
+
+.pagination button.active {
+    background-color: #28a745;
+    color: white;
+    border-color: #28a745;
+}
+
+.pagination button:disabled {
+    background-color: #f4f4f4;
+    color: #999;
+    cursor: not-allowed;
+}
