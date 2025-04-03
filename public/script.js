@@ -267,7 +267,22 @@ async function loadReviews() {
         const reviewContainer = document.getElementById('reviewContainer');
         reviewContainer.innerHTML = '';
         
-        reviews.forEach(review => {
+        // Применяем фильтры
+        let filteredReviews = [...reviews];
+        
+        const filterStars = document.getElementById('filterStars').value;
+        if (filterStars && filterStars !== 'all') {
+            filteredReviews = filteredReviews.filter(review => review.rating == filterStars);
+        }
+        
+        const filterDate = document.getElementById('filterDate').value;
+        if (filterDate === 'newest') {
+            filteredReviews.sort((a, b) => new Date(b.date) - new Date(a.date));
+        } else if (filterDate === 'oldest') {
+            filteredReviews.sort((a, b) => new Date(a.date) - new Date(b.date));
+        }
+        
+        filteredReviews.forEach(review => {
             const reviewElement = document.createElement('div');
             reviewElement.className = 'review';
             
@@ -276,14 +291,8 @@ async function loadReviews() {
                 : review.username || 'Аноним';
             
             reviewElement.innerHTML = `
-                <div class="review-header">
-                    <span class="review-author">${nameDisplay}</span>
-                    <span class="review-date">${new Date(review.date).toLocaleDateString()}</span>
-                </div>
-                <div class="review-rating">
-                    ${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}
-                </div>
-                <div class="review-text">${review.comment}</div>
+                <strong>${nameDisplay}</strong> (${review.rating} ★): ${review.comment}
+                <br><small>${new Date(review.date).toLocaleString()}</small>
             `;
             
             reviewContainer.appendChild(reviewElement);
@@ -298,10 +307,9 @@ async function loadReviews() {
 async function submitReview(event) {
     event.preventDefault();
     
-    const form = event.target;
-    const rating = form.querySelector('input[name="rating"]:checked')?.value;
-    const displayName = form.querySelector('#displayName').value.trim();
-    const comment = form.querySelector('#comment').value.trim();
+    const rating = document.getElementById('starRating').value;
+    const displayName = document.getElementById('displayName').value.trim();
+    const comment = document.getElementById('comment').value.trim();
     
     if (!rating) {
         alert('Пожалуйста, выберите оценку');
@@ -341,8 +349,14 @@ async function submitReview(event) {
             throw new Error('Failed to submit review');
         }
         
-        form.reset();
+        // Очищаем форму
+        document.getElementById('starRating').value = '5';
+        document.getElementById('displayName').value = '';
+        document.getElementById('comment').value = '';
+        
+        // Перезагружаем отзывы
         await loadReviews();
+        
         alert('Спасибо за ваш отзыв!');
     } catch (error) {
         console.error('Error submitting review:', error);
