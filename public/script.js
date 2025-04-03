@@ -212,21 +212,96 @@ async function loadReviews() {
             filteredReviews.sort((a, b) => new Date(a.date) - new Date(b.date));
         }
         
-        filteredReviews.forEach(review => {
-            const reviewElement = document.createElement('div');
-            reviewElement.className = 'review';
+        // Если нет отзывов, показываем сообщение
+        if (filteredReviews.length === 0) {
+            reviewContainer.innerHTML = '<p class="no-reviews">Пока нет отзывов. Будьте первым!</p>';
+            document.getElementById('pagination').style.display = 'none';
+            return;
+        }
+        
+        // Настройки пагинации
+        const reviewsPerPage = 5; // Количество отзывов на странице
+        const totalPages = Math.ceil(filteredReviews.length / reviewsPerPage);
+        let currentPage = 1;
+        
+        // Функция для отображения отзывов на текущей странице
+        function displayReviewsForPage(page) {
+            reviewContainer.innerHTML = '';
+            const startIndex = (page - 1) * reviewsPerPage;
+            const endIndex = Math.min(startIndex + reviewsPerPage, filteredReviews.length);
             
-            const nameDisplay = review.displayName 
-                ? `${review.displayName} (${review.username})` 
-                : review.username || 'Аноним';
+            for (let i = startIndex; i < endIndex; i++) {
+                const review = filteredReviews[i];
+                const reviewElement = document.createElement('div');
+                reviewElement.className = 'review';
+                
+                const nameDisplay = review.displayName 
+                    ? `${review.displayName} (${review.username})` 
+                    : review.username || 'Аноним';
+                
+                // Создаем звезды для рейтинга
+                const stars = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
+                
+                reviewElement.innerHTML = `
+                    <strong>${nameDisplay}</strong>
+                    <div class="rating">${stars}</div>
+                    <p>${review.comment}</p>
+                    <small>${new Date(review.date).toLocaleString()}</small>
+                `;
+                
+                reviewContainer.appendChild(reviewElement);
+            }
+        }
+        
+        // Функция для создания кнопок пагинации
+        function createPaginationButtons() {
+            const paginationContainer = document.getElementById('pagination');
+            paginationContainer.innerHTML = '';
             
-            reviewElement.innerHTML = `
-                <strong>${nameDisplay}</strong> (${review.rating} ★): ${review.comment}
-                <br><small>${new Date(review.date).toLocaleString()}</small>
-            `;
+            // Кнопка "Предыдущая страница"
+            const prevButton = document.createElement('button');
+            prevButton.textContent = '←';
+            prevButton.disabled = currentPage === 1;
+            prevButton.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    displayReviewsForPage(currentPage);
+                    createPaginationButtons();
+                }
+            });
+            paginationContainer.appendChild(prevButton);
             
-            reviewContainer.appendChild(reviewElement);
-        });
+            // Кнопки с номерами страниц
+            for (let i = 1; i <= totalPages; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = i;
+                pageButton.classList.toggle('active', i === currentPage);
+                pageButton.addEventListener('click', () => {
+                    currentPage = i;
+                    displayReviewsForPage(currentPage);
+                    createPaginationButtons();
+                });
+                paginationContainer.appendChild(pageButton);
+            }
+            
+            // Кнопка "Следующая страница"
+            const nextButton = document.createElement('button');
+            nextButton.textContent = '→';
+            nextButton.disabled = currentPage === totalPages;
+            nextButton.addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    displayReviewsForPage(currentPage);
+                    createPaginationButtons();
+                }
+            });
+            paginationContainer.appendChild(nextButton);
+        }
+        
+        // Отображаем первую страницу и создаем кнопки пагинации
+        displayReviewsForPage(currentPage);
+        createPaginationButtons();
+        
     } catch (error) {
         console.error('Error loading reviews:', error);
         const reviewContainer = document.getElementById('reviewContainer');
