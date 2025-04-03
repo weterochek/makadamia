@@ -39,48 +39,64 @@
         </nav>
     </header>
 
-    <div class="review-container">
-    <h2>Отзывы</h2>
-    <p>Оставьте свой отзыв</p>
+    <main>
+        <div class="review-form-container">
+            <h2>Оставить отзыв</h2>
+            <form id="reviewForm">
+                <div class="rating-container">
+                    <label>Оценка:</label>
+                    <div class="star-rating">
+                        <input type="radio" name="rating" value="5" id="star5">
+                        <label for="star5">★</label>
+                        <input type="radio" name="rating" value="4" id="star4">
+                        <label for="star4">★</label>
+                        <input type="radio" name="rating" value="3" id="star3">
+                        <label for="star3">★</label>
+                        <input type="radio" name="rating" value="2" id="star2">
+                        <label for="star2">★</label>
+                        <input type="radio" name="rating" value="1" id="star1">
+                        <label for="star1">★</label>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="displayName">Ваше имя (необязательно):</label>
+                    <input type="text" id="displayName" name="displayName">
+                </div>
 
-    <label for="starRating">Рейтинг:</label>
-    <select id="starRating">
-        <option value="5">5 ★★★★★</option>
-        <option value="4">4 ★★★★☆</option>
-        <option value="3">3 ★★★☆☆</option>
-        <option value="2">2 ★★☆☆☆</option>
-        <option value="1">1 ★☆☆☆☆</option>
-    </select>
+                <div class="form-group">
+                    <label for="comment">Ваш отзыв:</label>
+                    <textarea id="comment" name="comment" required></textarea>
+                </div>
 
-    <label for="reviewName">Имя (необязательно):</label>
-    <input type="text" id="reviewName" placeholder="Ваше имя (или оставьте пустым)">
+                <button type="submit" class="submit-button">Отправить отзыв</button>
+            </form>
+        </div>
 
-    <label for="reviewComment">Комментарий:</label>
-    <textarea id="reviewComment" rows="1" placeholder="Введите ваш отзыв..."></textarea>
+        <div class="reviews-container">
+            <h2>Отзывы наших гостей</h2>
+            <div id="reviewContainer"></div>
+        </div>
+    </main>
 
-    <button id="submitReview">Отправить</button>
-
-    <h3>Фильтр отзывов:</h3>
-    <label for="filterStars">Фильтр по звёздам:</label>
-    <select id="filterStars">
-        <option value="all">Все</option>
-        <option value="5">5 ★</option>
-        <option value="4">4 ★</option>
-        <option value="3">3 ★</option>
-        <option value="2">2 ★</option>
-        <option value="1">1 ★</option>
-    </select>
-
-
-	<label for="filterDate">Фильтр по дате:</label>
-    <select id="filterDate">
-        <option value="newest">Сначала новые</option>
-        <option value="oldest">Сначала старые</option>
-    </select>
-    <div id="reviews">
-    </div>
-</div>
+    <footer>
+        <div class="footer-content">
+            <div class="contact-info">
+                <h3>Контакты</h3>
+                <p>Телефон: +7 (XXX) XXX-XX-XX</p>
+                <p>Email: info@makadamia.ru</p>
+                <p>Адрес: г. Москва, ул. Примерная, д. 1</p>
+            </div>
+            <div class="privacy-policy">
+                <a href="privacy.html">Политика конфиденциальности</a>
+            </div>
+        </div>
+    </footer>
 
     <script src="script.js"></script>
+    <script>
+        document.getElementById('reviewForm').addEventListener('submit', submitReview);
+        document.addEventListener('DOMContentLoaded', loadReviews);
+    </script>
 </body>
 </html>
