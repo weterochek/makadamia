@@ -6,6 +6,7 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    padding-top: 80px; /* Добавляем отступ для фиксированной навигации */
 }
 #reviewContainer {
     max-width: 600px;
