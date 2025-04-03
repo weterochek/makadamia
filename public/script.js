@@ -265,40 +265,43 @@ async function loadReviews() {
         const reviews = await response.json();
         
         const reviewContainer = document.getElementById('reviewContainer');
-        if (!reviewContainer) return;
-
         reviewContainer.innerHTML = '';
         
         reviews.forEach(review => {
-            const nameDisplay = review.displayName && review.displayName.trim() !== '' 
-                ? `${review.displayName}(${review.username})` 
-                : review.username || 'Аноним';
-
             const reviewElement = document.createElement('div');
             reviewElement.className = 'review';
+            
+            const nameDisplay = review.displayName 
+                ? `${review.displayName} (${review.username})` 
+                : review.username || 'Аноним';
+            
             reviewElement.innerHTML = `
                 <div class="review-header">
                     <span class="review-author">${nameDisplay}</span>
-                    <span class="review-date">${new Date(review.date).toLocaleString()}</span>
+                    <span class="review-date">${new Date(review.date).toLocaleDateString()}</span>
                 </div>
                 <div class="review-rating">
                     ${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}
                 </div>
                 <div class="review-text">${review.comment}</div>
             `;
+            
             reviewContainer.appendChild(reviewElement);
         });
     } catch (error) {
         console.error('Error loading reviews:', error);
+        const reviewContainer = document.getElementById('reviewContainer');
+        reviewContainer.innerHTML = '<p class="error">Ошибка при загрузке отзывов. Пожалуйста, попробуйте позже.</p>';
     }
 }
 
 async function submitReview(event) {
     event.preventDefault();
     
-    const rating = document.querySelector('input[name="rating"]:checked')?.value;
-    const comment = document.getElementById('comment').value.trim();
-    const displayName = document.getElementById('displayName').value.trim();
+    const form = event.target;
+    const rating = form.querySelector('input[name="rating"]:checked')?.value;
+    const displayName = form.querySelector('#displayName').value.trim();
+    const comment = form.querySelector('#comment').value.trim();
     
     if (!rating) {
         alert('Пожалуйста, выберите оценку');
@@ -306,52 +309,40 @@ async function submitReview(event) {
     }
     
     if (!comment) {
-        alert('Пожалуйста, введите комментарий');
+        alert('Пожалуйста, введите текст отзыва');
         return;
     }
-
+    
     try {
-        const userData = localStorage.getItem('userData');
-        let username = 'Аноним';
-        
-        if (userData) {
-            try {
-                const parsedUserData = JSON.parse(userData);
-                username = parsedUserData.username || 'Аноним';
-            } catch (e) {
-                console.error('Error parsing user data:', e);
+        let username = "Аноним";
+        try {
+            const userData = JSON.parse(localStorage.getItem("userData"));
+            if (userData && userData.username) {
+                username = userData.username;
             }
+        } catch (e) {
+            console.error('Error parsing userData:', e);
         }
-
+        
         const response = await fetch('/reviews', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 rating: parseInt(rating),
                 comment,
-                displayName: displayName || null,
-                username
+                username,
+                displayName: displayName || null
             })
         });
-
+        
         if (!response.ok) {
             throw new Error('Failed to submit review');
         }
-
-        const result = await response.json();
-        console.log('Review submitted successfully:', result);
         
-        // Clear form
-        document.querySelector('input[name="rating"]:checked').checked = false;
-        document.getElementById('comment').value = '';
-        document.getElementById('displayName').value = '';
-        
-        // Reload reviews
+        form.reset();
         await loadReviews();
-        
         alert('Спасибо за ваш отзыв!');
     } catch (error) {
         console.error('Error submitting review:', error);
