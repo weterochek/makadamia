@@ -316,7 +316,8 @@ async function submitReview(event) {
         return;
     }
     
-    if (!comment) {
+    // Проверяем, есть ли уже комментарий
+    if (!comment && !document.getElementById('comment').value) {
         alert('Пожалуйста, введите текст отзыва');
         return;
     }
