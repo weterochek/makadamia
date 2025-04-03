@@ -3,9 +3,9 @@ body {
     background-color: #f4f4f4;
     margin: 0;
     padding: 0;
+    min-height: 100vh;
     display: flex;
-    align-items: center;
-    height: 100vh;
+    flex-direction: column;
 }
 #reviewContainer {
     max-width: 600px;
@@ -678,4 +678,46 @@ button:hover {
         padding: 2.5rem;
         font-size: 1.3rem;
     }
+}
+
+/* Стили для футера */
+footer {
+    background-color: #333;
+    color: white;
+    padding: 20px 0;
+    margin-top: auto;
+    width: 100%;
+}
+
+.footer-links {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.footer-item {
+    margin: 10px;
+    text-align: center;
+}
+
+.footer-item h3 {
+    margin-bottom: 10px;
+    font-size: 18px;
+}
+
+.footer-item p {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+.footer-item a {
+    color: white;
+    text-decoration: none;
+}
+
+.footer-item a:hover {
+    text-decoration: underline;
 }
