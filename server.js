@@ -191,39 +191,33 @@ app.get('/user-orders/:userId', protect, async (req, res) => {
 });
 app.post('/reviews', protect, async (req, res) => {
     try {
-        if (!req.user || !req.user.id) {
-            return res.status(401).json({ message: "Не авторизован" });
-        }
-
-        const user = await User.findById(req.user.id).select("username");
-        console.log("🔍 Найденный пользователь:", user); // Проверяем, что сервер действительно нашел пользователя
-
+        const { rating, comment, displayName } = req.body;
+        const user = await User.findById(req.user.id);
+        
         if (!user) {
-            return res.status(404).json({ message: "Пользователь не найден" });
+            return res.status(404).json({ message: 'Пользователь не найден' });
         }
 
-        let displayName = req.body.name ? req.body.name.trim() : "";
-        if (!displayName) {
-            displayName = user.username; // Используем ник из базы, если поле пустое
-        }
-
+        const reviews = readReviews();
         const newReview = {
-            name: displayName,
-            rating: req.body.rating,
-            comment: req.body.comment,
+            id: Date.now().toString(),
+            rating,
+            comment,
+            username: user.username,
+            displayName: displayName || null,
             date: new Date().toISOString()
         };
 
-        const reviews = readReviews();
         reviews.push(newReview);
         saveReviews(reviews);
 
-        res.status(201).json({ success: true, review: newReview });
+        res.status(201).json(newReview);
     } catch (error) {
-        console.error("❌ Ошибка при сохранении отзыва:", error);
-        res.status(500).json({ message: "Ошибка сервера", error: error.message });
+        console.error('Ошибка при сохранении отзыва:', error);
+        res.status(500).json({ message: 'Ошибка при сохранении отзыва' });
     }
 });
+
 
 
 
