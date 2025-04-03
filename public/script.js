@@ -195,6 +195,20 @@ document.getElementById("submitReview").addEventListener("click", async function
     const nameInputField = document.getElementById("reviewName");
     const displayName = nameInputField ? nameInputField.value.trim() : "";
 
+    // Получаем username из localStorage с проверкой
+    let username = "Аноним";
+    try {
+        const userData = localStorage.getItem("userData");
+        if (userData) {
+            const parsedData = JSON.parse(userData);
+            if (parsedData && parsedData.username) {
+                username = parsedData.username;
+            }
+        }
+    } catch (e) {
+        console.error("Ошибка при получении данных пользователя:", e);
+    }
+
     try {
         const response = await fetch("/reviews", {
             method: "POST",
@@ -206,7 +220,7 @@ document.getElementById("submitReview").addEventListener("click", async function
                 rating, 
                 comment, 
                 displayName,
-                username: JSON.parse(localStorage.getItem("userData")).username 
+                username: username
             })
         });
 
@@ -273,9 +287,16 @@ async function loadReviews() {
             reviewElement.classList.add("review");
             
             // Формируем строку с именем в формате "Имя(ник)" или просто "ник"
-            let nameDisplay = review.username || "Аноним";
+            let nameDisplay = "Аноним";
+            
+            // Проверяем наличие username
+            if (review.username) {
+                nameDisplay = review.username;
+            }
+            
+            // Если есть displayName, добавляем его в формате "Имя(ник)"
             if (review.displayName && review.displayName.trim() !== "") {
-                nameDisplay = `${review.displayName}(${review.username})`;
+                nameDisplay = `${review.displayName}(${review.username || "Аноним"})`;
             }
 
             reviewElement.innerHTML = `
