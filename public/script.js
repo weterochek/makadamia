@@ -181,58 +181,41 @@ document.getElementById("submitReview").addEventListener("click", async function
         return;
     }
 
-    // Получаем имя от пользователя, если оно указано в поле
-    const nameInputField = document.getElementById("reviewName");
-    let nameInput = nameInputField ? nameInputField.value.trim() : "";
-
-    // Получаем ник пользователя из localStorage, если он авторизован
-    let userData = JSON.parse(localStorage.getItem("userData"));
-    let username = userData && userData.username ? userData.username : "Аноним";
-
-    // Если имя не указано, то используем ник
-    let name = nameInput !== "" ? nameInput : username;
-
     const ratingField = document.getElementById("starRating");
-    const rating = ratingField ? parseInt(ratingField.value, 10) : 5; // Преобразуем в число
+    const rating = ratingField ? parseInt(ratingField.value, 10) : 5;
 
     const commentField = document.getElementById("reviewComment");
     const comment = commentField ? commentField.value.trim() : "";
 
-    if (!comment) {
-        alert("Введите комментарий!");
-        return;
-    }
+    const nameInputField = document.getElementById("reviewName");
+    const displayName = nameInputField ? nameInputField.value.trim() : "";
 
     try {
         const response = await fetch("/reviews", {
             method: "POST",
-            headers: { 
+            headers: {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${token}`
             },
-            body: JSON.stringify({ name, rating, comment })
+            body: JSON.stringify({ rating, comment, displayName })
         });
 
-        const result = await response.json();
-        if (result.success) {
-            // Очищаем поля формы
-            if (nameInputField) nameInputField.value = "";
-            if (commentField) commentField.value = "";
-            if (ratingField) ratingField.value = "5";
-            
-            // Перезагружаем список отзывов
-            loadReviews();
-            alert("Отзыв успешно добавлен!");
-        } else {
-            throw new Error(result.message || "Ошибка при отправке отзыва");
+        if (!response.ok) {
+            throw new Error("Ошибка при отправке отзыва");
         }
+
+        // Очищаем поля формы
+        if (commentField) commentField.value = "";
+        if (nameInputField) nameInputField.value = "";
+        if (ratingField) ratingField.value = "5";
+
+        // Перезагружаем отзывы
+        await loadReviews();
     } catch (error) {
         console.error("Ошибка при отправке отзыва:", error);
-        alert("Не удалось отправить отзыв. Пожалуйста, попробуйте позже.");
+        alert("Произошла ошибка при отправке отзыва");
     }
 });
-
-
 
 
     // Автоматическое увеличение высоты поля комментария
