@@ -14,6 +14,7 @@ const User = require('./models/User');
 const Product = require("./models/Products");  
 const fs = require('fs');
 const reviewsFile = 'reviews.json';
+const Review = require('./models/Review');
 
 
 // Настройка CORS
@@ -189,6 +190,16 @@ app.get('/user-orders/:userId', protect, async (req, res) => {
         res.status(500).json({ message: "Ошибка при получении заказов" });
     }
 });
+app.get('/reviews', async (req, res) => {
+    try {
+        const reviews = await Review.find().sort({ date: -1 });
+        res.json(reviews);
+    } catch (error) {
+        console.error('Ошибка при получении отзывов:', error);
+        res.status(500).json({ message: 'Ошибка при получении отзывов' });
+    }
+});
+
 app.post('/reviews', protect, async (req, res) => {
     try {
         const { rating, comment, displayName } = req.body;
@@ -198,26 +209,34 @@ app.post('/reviews', protect, async (req, res) => {
             return res.status(404).json({ message: 'Пользователь не найден' });
         }
 
-        const reviews = readReviews();
-        const newReview = {
-            id: Date.now().toString(),
+        const review = new Review({
             rating,
             comment,
             username: user.username,
             displayName: displayName || null,
-            date: new Date().toISOString()
-        };
+            userId: user._id
+        });
 
-        reviews.push(newReview);
+        await review.save();
+
+        // Также сохраняем в файл для обратной совместимости
+        const reviews = readReviews();
+        reviews.push({
+            id: review._id.toString(),
+            rating: review.rating,
+            comment: review.comment,
+            username: review.username,
+            displayName: review.displayName,
+            date: review.date
+        });
         saveReviews(reviews);
 
-        res.status(201).json(newReview);
+        res.status(201).json(review);
     } catch (error) {
         console.error('Ошибка при сохранении отзыва:', error);
         res.status(500).json({ message: 'Ошибка при сохранении отзыва' });
     }
 });
-
 
 
 
@@ -242,10 +261,6 @@ function saveReviews(reviews) {
         console.error("Ошибка сохранения отзывов:", error);
     }
 }
-app.get('/reviews', (req, res) => {
-    res.json(readReviews());
-});
-
 
 function generateTokens(user, site) {
     const issuedAt = Math.floor(Date.now() / 1000);
