@@ -187,6 +187,11 @@ document.getElementById("submitReview").addEventListener("click", async function
     const commentField = document.getElementById("reviewComment");
     const comment = commentField ? commentField.value.trim() : "";
 
+    if (!comment) {
+        alert("Пожалуйста, введите комментарий");
+        return;
+    }
+
     const nameInputField = document.getElementById("reviewName");
     const displayName = nameInputField ? nameInputField.value.trim() : "";
 
@@ -197,7 +202,12 @@ document.getElementById("submitReview").addEventListener("click", async function
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${token}`
             },
-            body: JSON.stringify({ rating, comment, displayName })
+            body: JSON.stringify({ 
+                rating, 
+                comment, 
+                displayName,
+                username: JSON.parse(localStorage.getItem("userData")).username 
+            })
         });
 
         if (!response.ok) {
@@ -218,6 +228,8 @@ document.getElementById("submitReview").addEventListener("click", async function
 });
 
 
+
+
     // Автоматическое увеличение высоты поля комментария
     document.getElementById("reviewComment").addEventListener("input", function () {
         this.style.height = "auto";
@@ -235,22 +247,18 @@ async function loadReviews() {
         const response = await fetch("/reviews");
         let reviews = await response.json();
 
-        // Проверка на корректность данных
         if (!Array.isArray(reviews)) {
             console.error("Ошибка: сервер вернул не массив отзывов", reviews);
             return;
         }
 
-        // Получаем фильтры
         const filterStars = document.getElementById("filterStars").value;
         const filterDate = document.getElementById("filterDate").value;
 
-        // Фильтрация по звёздам
         if (filterStars && filterStars !== "all") {
             reviews = reviews.filter(r => r.rating == filterStars);
         }
 
-        // Сортировка по дате
         if (filterDate === "newest") {
             reviews.sort((a, b) => new Date(b.date) - new Date(a.date));
         } else {
@@ -258,14 +266,20 @@ async function loadReviews() {
         }
 
         const reviewContainer = document.getElementById("reviews");
-        reviewContainer.innerHTML = "";  // Очищаем блок перед загрузкой новых отзывов
+        reviewContainer.innerHTML = "";
 
-        // Добавляем каждый отзыв в контейнер
         reviews.forEach(review => {
             const reviewElement = document.createElement("div");
             reviewElement.classList.add("review");
+            
+            // Формируем строку с именем в формате "Имя(ник)" или просто "ник"
+            let nameDisplay = review.username || "Аноним";
+            if (review.displayName && review.displayName.trim() !== "") {
+                nameDisplay = `${review.displayName}(${review.username})`;
+            }
+
             reviewElement.innerHTML = `
-                <strong>${review.name}</strong> (${review.rating} ★): ${review.comment}
+                <strong>${nameDisplay}</strong> (${review.rating} ★): ${review.comment}
                 <br><small>${new Date(review.date).toLocaleString()}</small>
             `;
             reviewContainer.appendChild(reviewElement);
@@ -1387,5 +1401,37 @@ function displayOrder(order, container) {
     orderHTML += `<ul>${itemsList}</ul></div><hr>`;
 
     container.innerHTML += orderHTML;
+}
+
+async function handleLogin(event) {
+    event.preventDefault();
+    const username = document.getElementById("loginUsername").value;
+    const password = document.getElementById("loginPassword").value;
+
+    try {
+        const response = await fetch("/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ username, password })
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+            localStorage.setItem("accessToken", data.accessToken);
+            localStorage.setItem("userId", data.userId);
+            // Сохраняем данные пользователя
+            localStorage.setItem("userData", JSON.stringify({ username: username }));
+            
+            updateAuthUI();
+            window.location.href = "index.html";
+        } else {
+            alert(data.message || "Ошибка входа");
+        }
+    } catch (error) {
+        console.error("Ошибка при входе:", error);
+        alert("Произошла ошибка при входе");
+    }
 }
 
