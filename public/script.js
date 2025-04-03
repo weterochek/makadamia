@@ -215,12 +215,20 @@ document.getElementById("submitReview").addEventListener("click", async function
 
         const result = await response.json();
         if (result.success) {
-            loadReviews(); // Перезагружаем список отзывов
+            // Очищаем поля формы
+            if (nameInputField) nameInputField.value = "";
+            if (commentField) commentField.value = "";
+            if (ratingField) ratingField.value = "5";
+            
+            // Перезагружаем список отзывов
+            loadReviews();
+            alert("Отзыв успешно добавлен!");
         } else {
-            console.error("Ошибка при отправке отзыва:", result);
+            throw new Error(result.message || "Ошибка при отправке отзыва");
         }
     } catch (error) {
-        console.error("Ошибка при отправке запроса:", error);
+        console.error("Ошибка при отправке отзыва:", error);
+        alert("Не удалось отправить отзыв. Пожалуйста, попробуйте позже.");
     }
 });
 
