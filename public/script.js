@@ -258,55 +258,104 @@ document.getElementById("submitReview").addEventListener("click", async function
 // Функция загрузки отзывов
 async function loadReviews() {
     try {
-        const response = await fetch("/reviews");
-        let reviews = await response.json();
-
-        if (!Array.isArray(reviews)) {
-            console.error("Ошибка: сервер вернул не массив отзывов", reviews);
-            return;
+        const response = await fetch('/reviews');
+        if (!response.ok) {
+            throw new Error('Failed to load reviews');
         }
+        const reviews = await response.json();
+        
+        const reviewContainer = document.getElementById('reviewContainer');
+        if (!reviewContainer) return;
 
-        const filterStars = document.getElementById("filterStars").value;
-        const filterDate = document.getElementById("filterDate").value;
-
-        if (filterStars && filterStars !== "all") {
-            reviews = reviews.filter(r => r.rating == filterStars);
-        }
-
-        if (filterDate === "newest") {
-            reviews.sort((a, b) => new Date(b.date) - new Date(a.date));
-        } else {
-            reviews.sort((a, b) => new Date(a.date) - new Date(b.date));
-        }
-
-        const reviewContainer = document.getElementById("reviews");
-        reviewContainer.innerHTML = "";
-
+        reviewContainer.innerHTML = '';
+        
         reviews.forEach(review => {
-            const reviewElement = document.createElement("div");
-            reviewElement.classList.add("review");
-            
-            // Формируем строку с именем в формате "Имя(ник)" или просто "ник"
-            let nameDisplay = "Аноним";
-            
-            // Проверяем наличие username
-            if (review.username) {
-                nameDisplay = review.username;
-            }
-            
-            // Если есть displayName, добавляем его в формате "Имя(ник)"
-            if (review.displayName && review.displayName.trim() !== "") {
-                nameDisplay = `${review.displayName}(${review.username || "Аноним"})`;
-            }
+            const nameDisplay = review.displayName && review.displayName.trim() !== '' 
+                ? `${review.displayName}(${review.username})` 
+                : review.username || 'Аноним';
 
+            const reviewElement = document.createElement('div');
+            reviewElement.className = 'review';
             reviewElement.innerHTML = `
-                <strong>${nameDisplay}</strong> (${review.rating} ★): ${review.comment}
-                <br><small>${new Date(review.date).toLocaleString()}</small>
+                <div class="review-header">
+                    <span class="review-author">${nameDisplay}</span>
+                    <span class="review-date">${new Date(review.date).toLocaleString()}</span>
+                </div>
+                <div class="review-rating">
+                    ${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}
+                </div>
+                <div class="review-text">${review.comment}</div>
             `;
             reviewContainer.appendChild(reviewElement);
         });
     } catch (error) {
-        console.error("Ошибка загрузки отзывов:", error);
+        console.error('Error loading reviews:', error);
+    }
+}
+
+async function submitReview(event) {
+    event.preventDefault();
+    
+    const rating = document.querySelector('input[name="rating"]:checked')?.value;
+    const comment = document.getElementById('comment').value.trim();
+    const displayName = document.getElementById('displayName').value.trim();
+    
+    if (!rating) {
+        alert('Пожалуйста, выберите оценку');
+        return;
+    }
+    
+    if (!comment) {
+        alert('Пожалуйста, введите комментарий');
+        return;
+    }
+
+    try {
+        const userData = localStorage.getItem('userData');
+        let username = 'Аноним';
+        
+        if (userData) {
+            try {
+                const parsedUserData = JSON.parse(userData);
+                username = parsedUserData.username || 'Аноним';
+            } catch (e) {
+                console.error('Error parsing user data:', e);
+            }
+        }
+
+        const response = await fetch('/reviews', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+            },
+            body: JSON.stringify({
+                rating: parseInt(rating),
+                comment,
+                displayName: displayName || null,
+                username
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to submit review');
+        }
+
+        const result = await response.json();
+        console.log('Review submitted successfully:', result);
+        
+        // Clear form
+        document.querySelector('input[name="rating"]:checked').checked = false;
+        document.getElementById('comment').value = '';
+        document.getElementById('displayName').value = '';
+        
+        // Reload reviews
+        await loadReviews();
+        
+        alert('Спасибо за ваш отзыв!');
+    } catch (error) {
+        console.error('Error submitting review:', error);
+        alert('Произошла ошибка при отправке отзыва. Пожалуйста, попробуйте позже.');
     }
 }
 
