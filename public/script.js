@@ -174,78 +174,8 @@ function showCookieBanner() {
 document.addEventListener("DOMContentLoaded", async function () {
     loadReviews();
 
-document.getElementById("submitReview").addEventListener("click", async function () {
-    const token = localStorage.getItem("accessToken");
-    if (!token) {
-        alert("Вы должны быть авторизованы, чтобы оставить отзыв.");
-        return;
-    }
-
-    const ratingField = document.getElementById("starRating");
-    const rating = ratingField ? parseInt(ratingField.value, 10) : 5;
-
-    const commentField = document.getElementById("reviewComment");
-    const comment = commentField ? commentField.value.trim() : "";
-
-    if (!comment) {
-        alert("Пожалуйста, введите комментарий");
-        return;
-    }
-
-    const nameInputField = document.getElementById("reviewName");
-    const displayName = nameInputField ? nameInputField.value.trim() : "";
-
-    // Получаем username из localStorage с проверкой
-    let username = "Аноним";
-    try {
-        const userData = localStorage.getItem("userData");
-        if (userData) {
-            const parsedData = JSON.parse(userData);
-            if (parsedData && parsedData.username) {
-                username = parsedData.username;
-            }
-        }
-    } catch (e) {
-        console.error("Ошибка при получении данных пользователя:", e);
-    }
-
-    try {
-        const response = await fetch("/reviews", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
-            },
-            body: JSON.stringify({ 
-                rating, 
-                comment, 
-                displayName,
-                username: username
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error("Ошибка при отправке отзыва");
-        }
-
-        // Очищаем поля формы
-        if (commentField) commentField.value = "";
-        if (nameInputField) nameInputField.value = "";
-        if (ratingField) ratingField.value = "5";
-
-        // Перезагружаем отзывы
-        await loadReviews();
-    } catch (error) {
-        console.error("Ошибка при отправке отзыва:", error);
-        alert("Произошла ошибка при отправке отзыва");
-    }
-});
-
-
-
-
     // Автоматическое увеличение высоты поля комментария
-    document.getElementById("reviewComment").addEventListener("input", function () {
+    document.getElementById("comment").addEventListener("input", function () {
         this.style.height = "auto";
         this.style.height = this.scrollHeight + "px";
     });
@@ -317,7 +247,7 @@ async function submitReview(event) {
     }
     
     // Проверяем, есть ли уже комментарий
-    if (!comment && !document.getElementById('comment').value) {
+    if (!comment) {
         alert('Пожалуйста, введите текст отзыва');
         return;
     }
