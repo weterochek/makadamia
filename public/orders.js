@@ -6,7 +6,7 @@ async function loadUserOrders() {
     }
 
     try {
-        const response = await fetch('/api/orders', {
+        const response = await fetch('/api/all-orders', {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,  // Токен передается в заголовке
