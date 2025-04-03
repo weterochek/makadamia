@@ -4,15 +4,28 @@
     padding: 0;
     box-sizing: border-box;
 }
+
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
 body {
     font-family: Arial, sans-serif;
     line-height: 1.6;
     color: #333;
     background-color: #fdfdfd;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
-html {
-    scroll-behavior: smooth;
+
+main {
+    flex: 1 0 auto;
+    padding-top: 80px; /* Отступ для фиксированного header */
 }
+
 #cookie-banner {
     position: fixed;
     bottom: 20px;
@@ -464,33 +477,33 @@ header nav {
 
 /* Footer */
 footer {
-    background-color: #333;  /* Цвет фона подвала */
-    color: #fff;             /* Цвет текста */
-    text-align: center;
-    padding: 1rem;
+    flex-shrink: 0;
+    background-color: #333;
+    color: white;
+    padding: 20px;
+    margin-top: auto;
 }
 
 .footer-links {
     display: flex;
-    justify-content: space-around;
-    margin-bottom: 20px;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
 }
 
 .footer-item {
-    width: 30%; /* Настроить ширину блоков */
-    front-size: 1rem;
+    text-align: center;
 }
 
 .footer-item h3 {
-    font-size: 18px;
     margin-bottom: 10px;
     color: #fff;
 }
 
 .footer-item p {
-    font-size: 14px;
-    color: #ddd;
-    line-height: 1.5;
+    margin: 5px 0;
+    color: #ccc;
 }
 
 .footer-item p a {
