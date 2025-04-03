@@ -222,11 +222,17 @@ header nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-direction: row; /* Гарантируем горизонтальное расположение */
+    flex-direction: row;
     width: 100%;
-    height: 30px;
+    height: 60px;
     list-style: none;
     gap: 25px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: #fff;
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .navbar-left, .navbar-right {
@@ -246,26 +252,26 @@ header nav {
     font-size: clamp(14px, 1.5vw, 18px);
 }
 .navbar li a {
-    color: black !important; /* Принудительно делаем цвет одинаковым */
+    color: black !important;
     text-decoration: none;
     padding: 10px 15px;
     font-size: clamp(14px, 1.5vw, 18px);
 }
 /* Стили для выпадающего окна корзины */
 .cart-container {
-    position: relative; /* Для корректного позиционирования всплывающего окна */
+    position: relative;
 }
 
 .cart-dropdown {
     position: absolute;
-    top: 100%; /* Отображение прямо под кнопкой */
-    left: 50%; /* Центрирование относительно кнопки */
+    top: 100%;
+    left: 50%;
     transform: translateX(-50%);
     background-color: #fff;
     padding: 15px;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
     width: 350px;
-    display: none; /* Скрыто изначально */
+    display: none;
     border-radius: 8px;
     z-index: 1000;
 }
@@ -322,25 +328,25 @@ header nav {
 .cart-item .item-info {
     flex-grow: 1;
     padding-right: 10px;
-    text-align: left; /* Выравнивание текста по левому краю */
+    text-align: left;
 }
 
 .cart-item .cart-buttons {
     display: flex;
     align-items: center;
     gap: 5px;
-    width: 100px; /* Задаем фиксированную ширину для кнопок */
+    width: 100px;
 }
 
 .cart-item .quantity {
     padding: 0 5px;
-    min-width: 30px; /* Задаем минимальную ширину для количества */
-    text-align: center; /* Центрируем текст количества */
+    min-width: 30px;
+    text-align: center;
 }
 
 /* Стили для выпадающего окна */
 .cabinet-dropdown {
-    position: fixed; /* Фиксированное положение */
+    position: fixed;
     background-color: white;
     border: 1px solid #ccc;
     padding: 15px;
@@ -350,11 +356,11 @@ header nav {
     border-radius: 8px;
 }
 .cabinet-dropdown h2 {
-    padding: 8px; /* Отступы внутри заголовка */
+    padding: 8px;
 }
 
 .cabinet-dropdown span {
-    margin-left: auto; /* Сдвиг крестика вправо */
+    margin-left: auto;
 }
 
 .cabinet-dropdown h2, .cabinet-dropdown h3, .cabinet-dropdown p {
@@ -375,7 +381,7 @@ header nav {
     padding: 10px 20px;
     color: black;
     text-decoration: none;
-    white-space: nowrap; /* Предотвращаем перенос текста */
+    white-space: nowrap;
 }
 
 #cartModal h3, #cartModal button {
@@ -465,7 +471,7 @@ button:hover {
 
 @media screen and (max-width: 480px) {
     .dishes-grid {
-        grid-template-columns: repeat(2, 1fr); /* Два столбца */
+        grid-template-columns: repeat(2, 1fr);
         gap: 8px;
         padding: 8px;
     }
@@ -492,7 +498,7 @@ button:hover {
     }
 
     .navbar-logo {
-        max-height: 50px; /* Уменьшение логотипа */
+        max-height: 50px;
     }
 }
 
@@ -549,7 +555,7 @@ button:hover {
 /* --- Существующие адаптивные стили --- */
 @media (max-width: 1200px) {
     .dishes-grid {
-        grid-template-columns: repeat(2, 1fr); /* 2 карточки в ряд */
+        grid-template-columns: repeat(2, 1fr);
     }
 
     .hero {
@@ -629,7 +635,7 @@ button:hover {
     }
 
     .dishes-grid {
-        grid-template-columns: repeat(4, 1fr); /* 4 карточки в ряд */
+        grid-template-columns: repeat(4, 1fr);
         gap: 2rem;
     }
 
@@ -658,7 +664,7 @@ button:hover {
     }
 
     .dishes-grid {
-        grid-template-columns: repeat(5, 1fr); /* 5 карточек в ряд */
+        grid-template-columns: repeat(5, 1fr);
         gap: 2.5rem;
     }
 
@@ -683,11 +689,37 @@ button:hover {
 /* Стили для контейнера отзывов */
 .review-container {
     max-width: 800px;
-    margin: 0 auto;
+    margin: 100px auto 40px;
     padding: 20px;
     background-color: #fff;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    position: relative;
+    z-index: 1;
+}
+
+/* Стили для подвала */
+footer {
+    width: 100%;
+    background-color: #333;
+    color: white;
+    padding: 20px 0;
+    margin-top: 40px;
+    position: relative;
+    z-index: 1;
+}
+
+.footer-links {
+    display: flex;
+    justify-content: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.footer-item {
+    text-align: center;
+    margin: 0 20px;
 }
 
 /* Стили для формы отзыва */
