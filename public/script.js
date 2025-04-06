@@ -216,9 +216,9 @@ async function loadReviews() {
         if (filteredReviews.length === 0) {
             reviewContainer.innerHTML = '<p class="no-reviews">Пока нет отзывов. Будьте первым!</p>';
             document.getElementById('pagination').style.display = 'none';
-            return;
-        }
-        
+        return;
+    }
+
         // Настройки пагинации
         const reviewsPerPage = 5; // Количество отзывов на странице
         const totalPages = Math.ceil(filteredReviews.length / reviewsPerPage);
@@ -710,10 +710,14 @@ function checkForEmptyCart(productName) {
 // Увеличение количества товара
 function incrementItem(productId, price) {
     if (cart[productId]) {
+        if (cart[productId].quantity >= 100) {
+            alert('Максимальное количество одного товара - 100 штук');
+            return;
+        }
         cart[productId].quantity += 1;
         saveCart();
-        updateControls(productId);  // Обновляем кнопки и количество
-        updateCartDisplay();  // Обновляем отображение корзины
+        updateControls(productId);
+        updateCartDisplay();
     }
 }
 
