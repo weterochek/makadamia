@@ -834,13 +834,23 @@ document.addEventListener("DOMContentLoaded", async function () {
     const ordersHistory = document.getElementById('ordersHistory');
 
         if (toggleBtn && ordersHistory) {
-    toggleBtn.addEventListener('click', () => {
+    toggleBtn.addEventListener('click', async () => {
                 const isHidden = ordersHistory.style.display === 'none';
-                ordersHistory.style.display = isHidden ? 'block' : 'none';
-                toggleBtn.textContent = isHidden ? 'Скрыть историю заказов' : 'Показать историю заказов';
                 
                 if (isHidden) {
-                    loadOrders(); // Загружаем заказы при открытии истории
+                    // Проверяем и обновляем токен перед загрузкой заказов
+                    const token = localStorage.getItem("accessToken");
+                    if (!token || isTokenExpired(token)) {
+                        console.log("Токен отсутствует или истек, пробуем обновить");
+                        await refreshAccessToken();
+                    }
+                    
+                    ordersHistory.style.display = 'block';
+                    toggleBtn.textContent = 'Скрыть историю заказов';
+                    await loadOrders(); // Загружаем заказы после проверки токена
+                } else {
+                    ordersHistory.style.display = 'none';
+                    toggleBtn.textContent = 'Показать историю заказов';
                 }
             });
         }
@@ -1460,12 +1470,12 @@ document.addEventListener("DOMContentLoaded", function () {
 async function loadOrders() {
     const token = localStorage.getItem("accessToken");
     if (!token) {
-        alert("Вы не авторизованы!");
+        console.log("Токен отсутствует");
         return;
     }
 
     try {
-        const response = await fetch("https://makadamia.onrender.com/orders", {
+        const response = await fetch("https://makadamia.onrender.com/api/user-orders", {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,
@@ -1474,15 +1484,14 @@ async function loadOrders() {
         });
 
         if (!response.ok) {
-            throw new Error("Ошибка при загрузке заказов");
+            throw new Error(`Ошибка HTTP: ${response.status}`);
         }
 
         const orders = await response.json();
-        displayOrders(orders); // Вызываем функцию для отображения заказов
+        displayUserOrders(orders); // Используем правильное имя функции
 
     } catch (error) {
         console.error("Ошибка при загрузке заказов:", error);
-        alert("Ошибка при загрузке заказов");
     }
 }
 
