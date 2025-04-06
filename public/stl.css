@@ -46,8 +46,34 @@ main {
 }
 
 #cartItems {
-    display: table;
     width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: white;
+    max-height: 500px;
+    overflow-y: auto;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Стилизация скроллбара */
+#cartItems::-webkit-scrollbar {
+    width: 8px;
+}
+
+#cartItems::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+#cartItems::-webkit-scrollbar-thumb {
+    background: #4CAF50;
+    border-radius: 4px;
+}
+
+#cartItems::-webkit-scrollbar-thumb:hover {
+    background: #45a049;
 }
 
 .cart-item {
@@ -56,6 +82,7 @@ main {
     align-items: center;
     padding: 20px 25px;
     border-bottom: 1px solid #ddd;
+    background: white;
 }
 
 .item-info {
@@ -65,8 +92,8 @@ main {
 }
 
 .item-name {
-    font-size: 20px;
-    min-width: 200px;
+    font-size: 22px;
+    min-width: 240px;
 }
 
 .item-price {
@@ -113,19 +140,24 @@ main {
 }
 
 #totalAmount {
+    position: sticky;
+    bottom: 0;
+    background: white;
     font-size: 25px;
     font-weight: bold;
     color: #4CAF50;
     padding: 25px;
+    border-top: 1px solid #ddd;
+    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Раздел информации о клиенте */
 #customerDetails {
     background: white;
     border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     padding: 20px;
-    box-sizing: border-box;
+    margin-top: 20px;
 }
 
 #customerDetails h2 {
@@ -203,5 +235,33 @@ textarea::placeholder {
 
     form button {
         font-size: 0.9rem;
+    }
+
+    #cartItems {
+        max-height: 400px;
+    }
+
+    .item-info {
+        gap: 20px;
+    }
+
+    .item-name {
+        font-size: 18px;
+        min-width: 150px;
+    }
+
+    .item-price {
+        font-size: 18px;
+        min-width: 80px;
+    }
+
+    .quantity-controls button {
+        width: 35px;
+        height: 35px;
+        font-size: 20px;
+    }
+
+    .quantity-display {
+        font-size: 20px;
     }
 }
