@@ -781,7 +781,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async function () {
     const token = localStorage.getItem("accessToken");
     const userId = localStorage.getItem("userId");
 
@@ -790,61 +790,67 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    fetch(`https://makadamia.onrender.com/api/user-orders`, { 
-    method: "GET",
-    headers: {
-        "Authorization": `Bearer ${token}`
-    }
-})
-.then(res => res.json())
-.then(orders => {
-    const container = document.getElementById("ordersContainer");
-    
-    // Проверяем, существует ли контейнер
-    if (!container) {
-        console.log("Контейнер для заказов не найден на этой странице");
-        return;
-    }
+    // Загружаем заказы при загрузке страницы
+    try {
+        const response = await fetch("https://makadamia.onrender.com/api/user-orders", {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            }
+        });
 
-    if (orders.length === 0) {
-        container.innerHTML = "<p>У вас пока нет заказов.</p>";
-        return;
-    }
-
-    // Сортируем от новых к старым
-    orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
-    // Показываем самый последний заказ
-    displayOrder(orders[0], container);
-
-    // Логика кнопки истории
-    const toggleBtn = document.getElementById('toggleHistoryBtn');
-    const ordersHistory = document.getElementById('ordersHistory');
-    
-    // Проверяем, существуют ли элементы для истории заказов
-    if (!toggleBtn || !ordersHistory) {
-        console.log("Элементы для истории заказов не найдены");
-        return;
-    }
-
-    toggleBtn.addEventListener('click', () => {
-        if (ordersHistory.style.display === 'none') {
-            ordersHistory.style.display = 'block';
-            toggleBtn.textContent = 'Скрыть историю заказов';
-            ordersHistory.innerHTML = '';
-            orders.forEach(order => displayOrder(order, ordersHistory));
-        } else {
-            ordersHistory.style.display = 'none';
-            toggleBtn.textContent = 'Показать историю заказов';
-            ordersHistory.innerHTML = '';
-            displayOrder(orders[0], ordersHistory); // Показываем снова последний
+        if (!response.ok) {
+            throw new Error("Ошибка при загрузке заказов");
         }
-    });
-})
-.catch(err => {
-    console.error("Ошибка загрузки заказов:", err);
+
+        const orders = await response.json();
+        
+        // Находим контейнер для заказов
+        const container = document.getElementById("ordersContainer");
+        const noOrdersMessage = document.getElementById("noOrdersMessage");
+        
+        if (!container) {
+            console.log("Контейнер для заказов не найден на этой странице");
+            return;
+        }
+
+        if (orders.length === 0) {
+            if (noOrdersMessage) noOrdersMessage.style.display = 'block';
+            return;
+        }
+
+        if (noOrdersMessage) noOrdersMessage.style.display = 'none';
+
+        // Сортируем заказы от новых к старым
+        orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+        // Показываем последний заказ
+        container.innerHTML = ''; // Очищаем контейнер
+        displayOrder(orders[0], container);
+
+        // Обработчик кнопки переключения истории
+        const toggleBtn = document.getElementById('toggleHistoryBtn');
+        const ordersHistory = document.getElementById('ordersHistory');
+        
+        if (toggleBtn && ordersHistory) {
+            toggleBtn.addEventListener('click', () => {
+                const isHidden = ordersHistory.style.display === 'none';
+                ordersHistory.style.display = isHidden ? 'block' : 'none';
+                toggleBtn.textContent = isHidden ? 'Скрыть историю заказов' : 'Показать историю заказов';
+                
+                if (isHidden) {
+                    // Показываем все заказы
+                    ordersHistory.innerHTML = '';
+                    orders.forEach(order => displayOrder(order, ordersHistory));
+                }
+            });
+        }
+
+    } catch (error) {
+        console.error("Ошибка при загрузке заказов:", error);
+    }
 });
-})
 
 document.addEventListener("DOMContentLoaded", function () {
     const reviewComment = document.getElementById("reviewComment");
