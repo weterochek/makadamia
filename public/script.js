@@ -309,25 +309,36 @@ async function loadReviews() {
     }
 }
 
+let isSubmittingReview = false;
+
 async function submitReview(event) {
     event.preventDefault();
     
-    const rating = document.getElementById('starRating').value;
-    const displayName = document.getElementById('displayName').value.trim();
-    const comment = document.getElementById('comment').value.trim();
-    
-    if (!rating) {
-        alert('Пожалуйста, выберите оценку');
+    // Если отзыв уже отправляется, игнорируем повторное нажатие
+    if (isSubmittingReview) {
         return;
     }
     
-    // Проверяем, есть ли уже комментарий
-    if (!comment) {
-        alert('Пожалуйста, введите текст отзыва');
-        return;
-    }
+    const submitButton = document.getElementById('submitReview');
+    const originalButtonText = submitButton.textContent;
     
     try {
+        isSubmittingReview = true;
+        submitButton.disabled = true;
+        submitButton.textContent = 'Отправляем...';
+        
+        const rating = document.getElementById('starRating').value;
+        const displayName = document.getElementById('displayName').value.trim();
+        const comment = document.getElementById('comment').value.trim();
+        
+        if (!rating) {
+            throw new Error('Пожалуйста, выберите оценку');
+        }
+        
+        if (!comment) {
+            throw new Error('Пожалуйста, введите текст отзыва');
+        }
+        
         let username = "Аноним";
         try {
             const userData = JSON.parse(localStorage.getItem("userData"));
@@ -338,7 +349,6 @@ async function submitReview(event) {
             console.error('Error parsing userData:', e);
         }
         
-        // Получаем токен авторизации
         const token = localStorage.getItem("accessToken");
         
         const response = await fetch('/reviews', {
@@ -356,7 +366,7 @@ async function submitReview(event) {
         });
         
         if (!response.ok) {
-            throw new Error('Failed to submit review');
+            throw new Error('Ошибка при отправке отзыва');
         }
         
         // Очищаем форму
@@ -368,11 +378,30 @@ async function submitReview(event) {
         await loadReviews();
         
         alert('Спасибо за ваш отзыв!');
+        
     } catch (error) {
-        console.error('Error submitting review:', error);
-        alert('Произошла ошибка при отправке отзыва. Пожалуйста, попробуйте позже.');
+        console.error('Ошибка при отправке отзыва:', error);
+        alert(error.message || 'Произошла ошибка при отправке отзыва. Пожалуйста, попробуйте позже.');
+    } finally {
+        // Возвращаем кнопку в исходное состояние
+        isSubmittingReview = false;
+        submitButton.disabled = false;
+        submitButton.textContent = originalButtonText;
     }
 }
+
+// Добавляем стили для отключенной кнопки отправки отзыва
+document.addEventListener('DOMContentLoaded', function() {
+    const style = document.createElement('style');
+    style.textContent = `
+        #submitReview:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+    `;
+    document.head.appendChild(style);
+});
 
 document.addEventListener("DOMContentLoaded", function () {
     if (localStorage.getItem("cookiesAccepted") === "true") {
