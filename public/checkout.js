@@ -30,7 +30,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <div class="quantity-controls">
                     <button class="decrease-quantity" data-id="${productId}">-</button>
                     <span class="quantity-display">${item.quantity}</span>
-                    <button class="increase-quantity" data-id="${productId}">+</button>
+                    <button class="increase-quantity" data-id="${productId}" ${item.quantity >= 100 ? 'disabled' : ''}>+</button>
                 </div>
             `;
             cartItemsContainer.appendChild(itemElement);
@@ -45,13 +45,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const target = event.target;
         const productId = target.getAttribute('data-id');
 
-        if (target.classList.contains('increase-quantity')) {
-            if (cart[productId].quantity < 100) {
-                cart[productId].quantity++;
-            } else {
-                alert('Максимальное количество товара - 100 единиц');
-                return;
-            }
+        if (target.classList.contains('increase-quantity') && !target.disabled) {
+            cart[productId].quantity++;
         } else if (target.classList.contains('decrease-quantity')) {
             cart[productId].quantity--;
             if (cart[productId].quantity === 0) {
