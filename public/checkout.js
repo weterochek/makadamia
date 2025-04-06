@@ -23,14 +23,14 @@ document.addEventListener("DOMContentLoaded", () => {
             const itemElement = document.createElement('div');
             itemElement.className = 'cart-item';
             itemElement.innerHTML = `
-                <span>${item.name}</span>
-                <span>${item.price} ₽</span>
-                <span>
-                    <button class="decrease-quantity" data-id="${productId}">-</button>
-                    ${item.quantity}
+                <span class="item-info">${item.name}</span>
+                <span class="item-price">${item.price} ₽</span>
+                <div class="quantity-controls">
                     <button class="increase-quantity" data-id="${productId}">+</button>
-                </span>
-                <span>${item.price * item.quantity} ₽</span>
+                    <span class="quantity-display">${item.quantity}</span>
+                    <button class="decrease-quantity" data-id="${productId}">-</button>
+                </div>
+                <span class="item-total">${item.price * item.quantity} ₽</span>
             `;
             cartItemsContainer.appendChild(itemElement);
             totalAmount += item.price * item.quantity;
@@ -45,7 +45,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const productId = target.getAttribute('data-id');
 
         if (target.classList.contains('increase-quantity')) {
-            cart[productId].quantity++;
+            if (cart[productId].quantity < 100) { // Добавляем ограничение в 100 единиц
+                cart[productId].quantity++;
+            } else {
+                alert('Максимальное количество товара - 100 единиц');
+                return;
+            }
         } else if (target.classList.contains('decrease-quantity')) {
             cart[productId].quantity--;
             if (cart[productId].quantity === 0) {
