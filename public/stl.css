@@ -51,7 +51,11 @@ main {
 }
 
 .cart-item {
-    display: table-row;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #ddd;
 }
 
 .cart-item .item-info, 
@@ -138,29 +142,37 @@ form button:hover {
     background-color: #bbb;
 }
 /* Стили для товаров на странице оформления */
-.cart-item {
+.cart-item .quantity-controls {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     align-items: center;
-    padding: 10px 0;
-    border-bottom: 1px solid #ddd;
+    gap: 5px;
 }
 
-.cart-item .item-info {
-    flex-grow: 1;
-    font-size: 1.1rem;
-}
-
-.cart-item .cart-buttons {
+.cart-item button {
+    width: 30px;
+    height: 30px;
+    border: 1px solid #4CAF50;
+    background-color: white;
+    color: #4CAF50;
+    border-radius: 4px;
+    cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 10px;
+    justify-content: center;
+    font-size: 18px;
 }
 
-.cart-item .quantity {
-    font-size: 1rem;
+.cart-item button:hover {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.cart-item .quantity-display {
     font-weight: bold;
+    padding: 5px 0;
 }
+
 textarea::placeholder {
     color: gray;
     font-style: italic;
