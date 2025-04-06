@@ -281,6 +281,17 @@ footer {
 .footer-item {
     text-align: center;
 }
+.footer-item h3 {
+    font-size: 10px;
+    margin-bottom: 10px;
+    color: #fff;
+}
+
+.footer-item p {
+    font-size: 10px;
+    color: #ddd;
+    line-height: 1.5;
+}
 
 .footer-item h3 {
     margin: 10px 0;
