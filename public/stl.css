@@ -54,20 +54,60 @@ main {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 0;
+    padding: 10px 20px;
     border-bottom: 1px solid #ddd;
 }
 
-.cart-item .item-info, 
-.cart-item .cart-buttons, 
-.cart-item .quantity {
-    display: table-cell;
-    padding: 10px;
+.item-info {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.item-name {
+    font-size: 16px;
+    min-width: 150px;
+}
+
+.item-price {
+    font-size: 16px;
+    min-width: 80px;
+}
+
+.quantity-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.quantity-controls button {
+    width: 25px;
+    height: 25px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.quantity-controls button:hover {
+    background-color: #45a049;
+}
+
+.quantity-display {
+    font-size: 16px;
+    min-width: 20px;
     text-align: center;
 }
 
-.cart-item .cart-buttons {
-    white-space: nowrap; /* Не позволяет кнопкам переноситься */
+.item-total {
+    font-weight: bold;
+    color: #4CAF50;
 }
 
 #totalAmount {
@@ -140,37 +180,6 @@ form button:hover {
 
 #backToShopping:hover {
     background-color: #bbb;
-}
-/* Стили для товаров на странице оформления */
-.cart-item .quantity-controls {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 5px;
-}
-
-.cart-item button {
-    width: 30px;
-    height: 30px;
-    border: 1px solid #4CAF50;
-    background-color: white;
-    color: #4CAF50;
-    border-radius: 4px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-}
-
-.cart-item button:hover {
-    background-color: #4CAF50;
-    color: white;
-}
-
-.cart-item .quantity-display {
-    font-weight: bold;
-    padding: 5px 0;
 }
 
 textarea::placeholder {
