@@ -433,16 +433,30 @@ function displayUserOrders(orders) {
     const ordersContainer = document.getElementById('ordersContainer');
     const noOrdersMessage = document.getElementById('noOrdersMessage');
 
-    if (orders.length === 0) {
-        noOrdersMessage.style.display = 'block';
-        ordersContainer.style.display = 'none';
-    } else {
-        noOrdersMessage.style.display = 'none';
-        ordersContainer.style.display = 'block';
+    if (!ordersContainer) {
+        console.error("Контейнер для заказов не найден");
+        return;
     }
 
+    // Очищаем контейнер перед добавлением заказов
     ordersContainer.innerHTML = '';
 
+    if (!orders || orders.length === 0) {
+        if (noOrdersMessage) {
+            noOrdersMessage.style.display = 'block';
+        }
+        ordersContainer.innerHTML = '<div class="no-orders">У вас еще нет заказов.</div>';
+        return;
+    }
+
+    if (noOrdersMessage) {
+        noOrdersMessage.style.display = 'none';
+    }
+
+    // Сортируем заказы от новых к старым
+    orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    // Отображаем все заказы
     orders.forEach(order => {
         const itemsList = order.items.map(item => {
             if (item.productId && item.productId.name) {
@@ -452,20 +466,17 @@ function displayUserOrders(orders) {
             }
         }).join('');
 
-        let orderHTML = `
+        const orderHTML = `
             <div class="order">
                 <h3>Заказ №${order._id.slice(0, 8)}</h3>
                 <p>Адрес: ${order.address}</p>
                 <p>Дата оформления: ${new Date(order.createdAt).toLocaleDateString()} ${new Date(order.createdAt).toLocaleTimeString()}</p>
                 <p>Время доставки: ${order.deliveryTime || 'Не указано'}</p>
                 <p>Общая сумма: ${order.totalAmount} ₽</p>
+                ${order.additionalInfo ? `<p>Дополнительная информация: ${order.additionalInfo}</p>` : ''}
+                <ul>${itemsList}</ul>
+            </div>
         `;
-
-        if (order.additionalInfo) {
-            orderHTML += `<p>Дополнительная информация: ${order.additionalInfo}</p>`;
-        }
-
-        orderHTML += `<ul>${itemsList}</ul></div><hr>`;
 
         ordersContainer.innerHTML += orderHTML;
     });
@@ -841,13 +852,19 @@ document.addEventListener("DOMContentLoaded", async function () {
                     // Проверяем и обновляем токен перед загрузкой заказов
                     const token = localStorage.getItem("accessToken");
                     if (!token || isTokenExpired(token)) {
-                        console.log("Токен отсутствует или истек, пробуем обновить");
+                        console.log("Обновляем токен...");
                         await refreshAccessToken();
                     }
                     
                     ordersHistory.style.display = 'block';
                     toggleBtn.textContent = 'Скрыть историю заказов';
-                    await loadOrders(); // Загружаем заказы после проверки токена
+                    
+                    try {
+                        await loadOrders();
+                    } catch (error) {
+                        console.error("Ошибка при загрузке заказов:", error);
+                        ordersHistory.innerHTML = '<div class="no-orders">Ошибка при загрузке заказов. Попробуйте позже.</div>';
+                    }
                 } else {
                     ordersHistory.style.display = 'none';
                     toggleBtn.textContent = 'Показать историю заказов';
