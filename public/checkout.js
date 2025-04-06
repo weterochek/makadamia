@@ -1,4 +1,5 @@
 let cart = {};
+let isSubmitting = false;
 
 function getToken() {
     return localStorage.getItem("accessToken");
@@ -92,23 +93,35 @@ document.addEventListener("DOMContentLoaded", () => {
         checkoutForm.addEventListener('submit', async function (e) {
             e.preventDefault();
 
-            const token = getToken();
-            if (!token) {
-                alert("Вы не авторизованы!");
+            // Если форма уже отправляется, игнорируем повторное нажатие
+            if (isSubmitting) {
                 return;
             }
 
-            // Формируем данные заказа
-const orderData = {
-    address: document.getElementById("customerAddress").value,
-    additionalInfo: document.getElementById("additionalInfo").value,
-    deliveryTime: document.getElementById("deliveryTime").value, // добавляем!
-    items: Object.keys(cart).map(productId => ({
-        productId: productId,
-        quantity: cart[productId].quantity
-    }))
-};
             try {
+                isSubmitting = true;
+                const submitButton = e.target.querySelector('button[type="submit"]');
+                const originalButtonText = submitButton.textContent;
+                submitButton.disabled = true;
+                submitButton.textContent = 'Оформляем заказ...';
+                
+                const token = getToken();
+                if (!token) {
+                    alert("Вы не авторизованы!");
+                    return;
+                }
+
+                // Формируем данные заказа
+                const orderData = {
+                    address: document.getElementById("customerAddress").value,
+                    additionalInfo: document.getElementById("additionalInfo").value,
+                    deliveryTime: document.getElementById("deliveryTime").value,
+                    items: Object.keys(cart).map(productId => ({
+                        productId: productId,
+                        quantity: cart[productId].quantity
+                    }))
+                };
+
                 const response = await fetch("https://makadamia.onrender.com/api/order", {
                     method: "POST",
                     headers: {
@@ -135,6 +148,12 @@ const orderData = {
             } catch (error) {
                 console.error("Ошибка при оформлении заказа:", error);
                 alert("Ошибка при оформлении заказа.");
+            } finally {
+                // Возвращаем кнопку в исходное состояние в случае ошибки
+                isSubmitting = false;
+                const submitButton = e.target.querySelector('button[type="submit"]');
+                submitButton.disabled = false;
+                submitButton.textContent = originalButtonText;
             }
         });
     }
@@ -150,3 +169,14 @@ const orderData = {
     renderCartItems();
     loadUserData();
 });
+
+// Добавляем стили для отключенной кнопки
+const style = document.createElement('style');
+style.textContent = `
+    button[type="submit"]:disabled {
+        background-color: #cccccc;
+        cursor: not-allowed;
+        opacity: 0.7;
+    }
+`;
+document.head.appendChild(style);
