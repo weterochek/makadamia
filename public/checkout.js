@@ -23,14 +23,15 @@ document.addEventListener("DOMContentLoaded", () => {
             const itemElement = document.createElement('div');
             itemElement.className = 'cart-item';
             itemElement.innerHTML = `
-                <span class="item-info">${item.name}</span>
-                <span class="item-price">${item.price} ₽</span>
-                <div class="quantity-controls">
-                    <button class="increase-quantity" data-id="${productId}">+</button>
-                    <span class="quantity-display">${item.quantity}</span>
-                    <button class="decrease-quantity" data-id="${productId}">-</button>
+                <div class="item-info">
+                    <span class="item-name">${item.name}</span>
+                    <span class="item-price">${item.price} ₽</span>
                 </div>
-                <span class="item-total">${item.price * item.quantity} ₽</span>
+                <div class="quantity-controls">
+                    <button class="decrease-quantity" data-id="${productId}">-</button>
+                    <span class="quantity-display">${item.quantity}</span>
+                    <button class="increase-quantity" data-id="${productId}">+</button>
+                </div>
             `;
             cartItemsContainer.appendChild(itemElement);
             totalAmount += item.price * item.quantity;
@@ -45,7 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const productId = target.getAttribute('data-id');
 
         if (target.classList.contains('increase-quantity')) {
-            if (cart[productId].quantity < 100) { // Добавляем ограничение в 100 единиц
+            if (cart[productId].quantity < 100) {
                 cart[productId].quantity++;
             } else {
                 alert('Максимальное количество товара - 100 единиц');
