@@ -793,8 +793,8 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Загружаем заказы при загрузке страницы
     try {
         const response = await fetch("https://makadamia.onrender.com/api/user-orders", {
-            method: "GET",
-            headers: {
+    method: "GET",
+    headers: {
                 "Authorization": `Bearer ${token}`,
                 "Content-Type": "application/json"
             }
@@ -807,7 +807,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         const orders = await response.json();
         
         // Находим контейнер для заказов
-        const container = document.getElementById("ordersContainer");
+    const container = document.getElementById("ordersContainer");
         const noOrdersMessage = document.getElementById("noOrdersMessage");
         
         if (!container) {
@@ -815,34 +815,32 @@ document.addEventListener("DOMContentLoaded", async function () {
             return;
         }
 
-        if (orders.length === 0) {
+    if (orders.length === 0) {
             if (noOrdersMessage) noOrdersMessage.style.display = 'block';
-            return;
-        }
+        return;
+    }
 
         if (noOrdersMessage) noOrdersMessage.style.display = 'none';
 
         // Сортируем заказы от новых к старым
-        orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
         // Показываем последний заказ
         container.innerHTML = ''; // Очищаем контейнер
-        displayOrder(orders[0], container);
+    displayOrder(orders[0], container);
 
         // Обработчик кнопки переключения истории
-        const toggleBtn = document.getElementById('toggleHistoryBtn');
-        const ordersHistory = document.getElementById('ordersHistory');
-        
+    const toggleBtn = document.getElementById('toggleHistoryBtn');
+    const ordersHistory = document.getElementById('ordersHistory');
+
         if (toggleBtn && ordersHistory) {
-            toggleBtn.addEventListener('click', () => {
+    toggleBtn.addEventListener('click', () => {
                 const isHidden = ordersHistory.style.display === 'none';
                 ordersHistory.style.display = isHidden ? 'block' : 'none';
                 toggleBtn.textContent = isHidden ? 'Скрыть историю заказов' : 'Показать историю заказов';
                 
                 if (isHidden) {
-                    // Показываем все заказы
-                    ordersHistory.innerHTML = '';
-                    orders.forEach(order => displayOrder(order, ordersHistory));
+                    loadOrders(); // Загружаем заказы при открытии истории
                 }
             });
         }
