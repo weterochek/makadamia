@@ -121,10 +121,21 @@ main {
     align-items: center;
     justify-content: center;
     padding: 0;
+    transition: all 0.3s ease;
 }
 
 .quantity-controls button:hover {
     background-color: #45a049;
+}
+
+.quantity-controls button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.quantity-controls button:disabled:hover {
+    background-color: #cccccc;
 }
 
 .quantity-display {
