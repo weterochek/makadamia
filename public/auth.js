@@ -32,13 +32,23 @@ registerForm.addEventListener("submit", async (e) => {
             body: JSON.stringify({ username, password }),
         });
 
-        const data = await response.json();
+        let data = null;
+        const contentType = response.headers.get("content-type");
+
+        if (contentType && contentType.includes("application/json")) {
+            data = await response.json();
+        } else {
+            const text = await response.text(); // читаем как обычный текст
+            throw new Error(`Некорректный JSON ответ от сервера: ${text}`);
+        }
+
         if (response.ok) {
             alert("Регистрация прошла успешно!");
             showLogin();
         } else {
-            alert(data.message || "Ошибка регистрации.");
+            alert(data?.message || "Ошибка регистрации.");
         }
+
     } catch (error) {
         console.error("Ошибка регистрации:", error);
         alert("Произошла ошибка.");
