@@ -15,7 +15,7 @@ const Product = require("./models/Products");
 const fs = require('fs');
 const reviewsFile = 'reviews.json';
 const Review = require('./models/Review');
-
+const Joi = require("joi");
 
 // Настройка CORS
 const allowedOrigins = [
