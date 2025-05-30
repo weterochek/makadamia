@@ -26,7 +26,7 @@ registerForm.addEventListener("submit", async (e) => {
     const password = document.getElementById("registerPassword").value;
 
     try {
-        const response = await fetch("https://makadamia.onrender.com/register", {
+        const response = await fetch("https://makadamia-e0hb.onrender.com/register", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username, password }),
@@ -92,7 +92,7 @@ loginForm.addEventListener("submit", async (e) => {
 
 // === Выход ===
 function logout() {
-    fetch("https://makadamia.onrender.com/logout", { method: "POST", credentials: "include" })
+    fetch("https://makadamia-e0hb.onrender.com/logout", { method: "POST", credentials: "include" })
         .then(() => {
             localStorage.removeItem("accessToken");
             localStorage.removeItem("username");
