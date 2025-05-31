@@ -16,7 +16,6 @@ html {
 
 
 /* Header */
-/* Header */
 header nav {
     display: flex;
     align-items: center;
@@ -257,9 +256,9 @@ header nav {
 
 /* Стиль кнопок "+" и "-" */
 .quantity-control {
-    background-color: #f8f9fa;
+    background-color: #9c9c9c;
     border: 1px solid #ddd;
-    color: #333;
+    color: white;
     padding: 5px 10px;
     font-size: 16px;
     cursor: pointer;
