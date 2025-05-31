@@ -290,33 +290,25 @@ async function loadReviews() {
         if (!response.ok) {
             throw new Error('Failed to load reviews');
         }
-        
+
         const reviews = await response.json();
-        
+
+        // Сохраняем в глобальную переменную
+        allReviews = reviews;
+
+        // Обновляем рейтинг и количество
+        updateReviewSummary();
+
+        // Применяем фильтры (звезды и дата)
+        applyFilters();
+    } catch (error) {
+        console.error('Ошибка при загрузке отзывов:', error);
         const reviewContainer = document.getElementById('reviewContainer');
-        reviewContainer.innerHTML = '';
-        
-        // Применяем фильтры
-        let filteredReviews = [...reviews];
-        
-        const filterStars = document.getElementById('filterStars').value;
-        if (filterStars && filterStars !== 'all') {
-            filteredReviews = filteredReviews.filter(review => review.rating == filterStars);
+        if (reviewContainer) {
+            reviewContainer.innerHTML = '<div class="error-message">Произошла ошибка при загрузке отзывов. Пожалуйста, попробуйте позже.</div>';
         }
-        
-        const filterDate = document.getElementById('filterDate').value;
-        if (filterDate === 'newest') {
-            filteredReviews.sort((a, b) => new Date(b.date) - new Date(a.date));
-        } else if (filterDate === 'oldest') {
-            filteredReviews.sort((a, b) => new Date(a.date) - new Date(b.date));
-        }
-        
-        // Если нет отзывов, показываем сообщение
-        if (filteredReviews.length === 0) {
-            reviewContainer.innerHTML = '<p class="no-reviews">Пока нет отзывов. Будьте первым!</p>';
-            document.getElementById('pagination').style.display = 'none';
-        return;
     }
+}
 
         // Настройки пагинации
         const reviewsPerPage = 5; // Количество отзывов на странице
