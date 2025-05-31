@@ -1037,36 +1037,9 @@ document.addEventListener("DOMContentLoaded", async function () {
     });
 
     // Фильтрация отзывов
-    filterStars.addEventListener("change", displayReviews);
-    filterDate.addEventListener("change", displayReviews);
+filterStars.addEventListener("change", applyFilters);
+filterDate.addEventListener("change", applyFilters);
 
-    function displayReviews() {
-        reviewContainer.innerHTML = "";
-        let filteredReviews = [...reviews];
-
-        // Фильтр по звёздам
-        const selectedStars = filterStars.value;
-        if (selectedStars !== "all") {
-            filteredReviews = filteredReviews.filter(r => r.stars == selectedStars);
-        }
-
-        // Фильтр по дате
-        if (filterDate.value === "newest") {
-            filteredReviews.sort((a, b) => b.date - a.date);
-        } else {
-            filteredReviews.sort((a, b) => a.date - b.date);
-        }
-
-        filteredReviews.forEach(review => {
-            const reviewElement = document.createElement("div");
-            reviewElement.innerHTML = `
-                <strong>${review.name}</strong> (${review.stars} ★): ${review.comment}
-                <br><small>${review.date.toLocaleString()}</small>
-                <hr>
-            `;
-            reviewContainer.appendChild(reviewElement);
-        });
-    }
 
     // Функция получения имени пользователя (заглушка)
     function getUserName() {
