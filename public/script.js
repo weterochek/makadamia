@@ -1298,30 +1298,38 @@ document.addEventListener("DOMContentLoaded", () => {
     const token = localStorage.getItem("accessToken");
 
     if (!token) {
-        console.warn("❌ Нет токена, не запрашиваем /account");
+        console.warn("❌ Нет токена");
+        document.getElementById('usernameDisplay').innerText = "Гость";
         return;
     }
 
     fetch("https://makadamia-e0hb.onrender.com/account", {
-        method: "GET", // ✅ Добавляем явное указание метода
-        headers: { 
-            "Authorization": `Bearer ${token}` // ✅ Передаем токен
+        method: "GET",
+        credentials: "include",
+        headers: {
+            Authorization: Bearer ${token}
         }
     })
     .then(res => {
-        if (!res.ok) {
-            throw new Error(`Ошибка HTTP: ${res.status}`);
-        }
+        if (!res.ok) throw new Error(Ошибка HTTP: ${res.status});
         return res.json();
     })
     .then(data => {
+        console.log("✅ Ответ сервера:", data);
+
+        const usernameEl = document.getElementById("usernameDisplay");
         const nameInput = document.getElementById("nameInput");
         const cityInput = document.getElementById("cityInput");
 
-        if (nameInput) nameInput.value = data.name || "";
+        if (usernameEl) usernameEl.innerText = data.username  "Ошибка";
+        if (nameInput) nameInput.value = data.name  "";
         if (cityInput) cityInput.value = data.city || "";
     })
-    .catch(error => console.error("❌ Ошибка загрузки профиля:", error));
+    .catch(err => {
+        console.error("❌ Ошибка загрузки аккаунта:", err);
+        const usernameEl = document.getElementById("usernameDisplay");
+        if (usernameEl) usernameEl.innerText = "Ошибка загрузки";
+    });
 });
 async function updateAccountField(data) {
     const token = localStorage.getItem("accessToken");
