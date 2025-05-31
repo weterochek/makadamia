@@ -293,14 +293,9 @@ async function loadReviews() {
 
         const reviews = await response.json();
 
-        // Сохраняем в глобальную переменную
-        allReviews = reviews;
-
-        // Обновляем рейтинг и количество
-        updateReviewSummary();
-
-        // Применяем фильтры (звезды и дата)
-        applyFilters();
+        allReviews = reviews; // 🔧 вот эта строка нужна!
+        updateReviewSummary(); // ✅ теперь покажет среднюю оценку и кол-во
+        applyFilters(); // отрисуем отфильтрованные отзывы
     } catch (error) {
         console.error('Ошибка при загрузке отзывов:', error);
         const reviewContainer = document.getElementById('reviewContainer');
