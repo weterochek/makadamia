@@ -110,7 +110,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     alert("Вы не авторизованы!");
                     return;
                 }
-
+const phoneInput = document.getElementById("customerPhone");
+if (!phoneInput || !phoneInput.value.trim()) {
+  alert("Пожалуйста, введите номер телефона.");
+  return;
+}
                 // Формируем данные заказа
 const orderData = {
   name: document.getElementById("customerName").value,
