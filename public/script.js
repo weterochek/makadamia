@@ -197,19 +197,19 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     await loadReviews();
 });
- const starsFilter = document.getElementById("filterStars");
-const dateFilter = document.getElementById("filterDate");
+try {
+    const starsFilter = document.getElementById("filterStars");
+    const dateFilter = document.getElementById("filterDate");
 
-if (starsFilter && dateFilter) {
-    starsFilter.addEventListener("change", applyFilters);
-    dateFilter.addEventListener("change", applyFilters);
-}
-     catch (error) {
-        console.error('Ошибка при загрузке отзывов:', error);
-        const reviewContainer = document.getElementById('reviewContainer');
-        if (reviewContainer) {
-            reviewContainer.innerHTML = '<div class="error-message">Произошла ошибка при загрузке отзывов. Пожалуйста, попробуйте позже.</div>';
-        }
+    if (starsFilter && dateFilter) {
+        starsFilter.addEventListener("change", applyFilters);
+        dateFilter.addEventListener("change", applyFilters);
+    }
+} catch (error) {
+    console.error('Ошибка при загрузке отзывов:', error);
+    const reviewContainer = document.getElementById('reviewContainer');
+    if (reviewContainer) {
+        reviewContainer.innerHTML = '<div class="error-message">Произошла ошибка при загрузке отзывов. Пожалуйста, попробуйте позже.</div>';
     }
 }
 function updateReviewSummary() {
@@ -281,7 +281,7 @@ function displayFilteredReviews(reviews) {
         this.style.height = this.scrollHeight + "px";
     });
 
-});
+
 
 // Функция загрузки отзывов
 async function loadReviews() {
@@ -1072,7 +1072,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     function getUserName() {
         return "Пользователь"; // Здесь можно вставить логику получения имени из личного кабинета
     }
-});
 
 // Обновление отображения корзины после очистки
 function updateCartDisplay() {
