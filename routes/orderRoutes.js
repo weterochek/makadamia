@@ -32,6 +32,7 @@ router.post("/order", protect, async (req, res) => {  // ✅ Используе�
             userId: req.user.id,
             name: req.user.username,
             address,
+            phone: req.body.phone,
             deliveryTime: req.body.deliveryTime, // Добавляем время доставки
             additionalInfo,
             items: populatedItems,
