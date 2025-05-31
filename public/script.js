@@ -1307,11 +1307,11 @@ document.addEventListener("DOMContentLoaded", () => {
         method: "GET",
         credentials: "include",
         headers: {
-            Authorization: Bearer ${token}
+            Authorization: `Bearer ${token}`
         }
     })
     .then(res => {
-        if (!res.ok) throw new Error(Ошибка HTTP: ${res.status});
+        if (!res.ok) throw new Error(`Ошибка HTTP: ${res.status}`);
         return res.json();
     })
     .then(data => {
