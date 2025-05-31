@@ -1321,8 +1321,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const nameInput = document.getElementById("nameInput");
         const cityInput = document.getElementById("cityInput");
 
-        if (usernameEl) usernameEl.innerText = data.username  "Ошибка";
-        if (nameInput) nameInput.value = data.name  "";
+        if (usernameEl) usernameEl.innerText = data.username || "Ошибка";
+        if (nameInput) nameInput.value = data.name || "";
         if (cityInput) cityInput.value = data.city || "";
     })
     .catch(err => {
