@@ -20,7 +20,7 @@ main {
   display: block;
   margin: 20px auto; /* Центрирование */
   padding: 10px 20px;
-  background-color: #333;
+  background-color: #9c9c9c;
   color: white;
   border: none;
   border-radius: 8px;
@@ -29,7 +29,7 @@ main {
 }
 
 #toggleHistoryBtn:hover {
-  background-color: #555;
+  background-color: #9c9c9c;
 }
 
     .order {
@@ -139,6 +139,60 @@ hr {
   .account-container h1 {
     font-size: 24px;
     text-align: center;
+}
+.account-container h2 {
+  font-size: 26px;
+  margin-bottom: 20px;
+  text-align: center;
+  color: #333;
+}
+
+.account-container p {
+  font-size: 16px;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.account-container label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.account-container input[type="text"] {
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 15px;
+  min-width: 150px;
+}
+
+.account-container button {
+  background-color: #9c9c9c;
+  color: #fff;
+  border: none;
+  padding: 7px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+}
+
+.account-container button:hover {
+  background-color: #9c9c9c;
+}
+
+/* Кнопка Выйти */
+.account-container p:last-child button {
+  background-color: #e53935;
+}
+
+.account-container p:last-child button:hover {
+  background-color: #d32f2f;
 }
   
   .account-info {
