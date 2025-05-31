@@ -1,4 +1,5 @@
 let productMap = {};// Будет заполнен динамически
+let allReviews = [];
 let cart = JSON.parse(localStorage.getItem('cart')) || {};
 (() => {
     const userAgent = navigator.userAgent.toLowerCase();
@@ -172,26 +173,29 @@ function showCookieBanner() {
     });
 }
 document.addEventListener("DOMContentLoaded", async function () {
-    loadReviews();
-    document.addEventListener("DOMContentLoaded", () => {
-  const stars = document.querySelectorAll('#ratingStars i');
-  const ratingInput = document.getElementById('starRating');
+    const stars = document.querySelectorAll('#ratingStars i');
+    const ratingInput = document.getElementById('starRating');
 
-  stars.forEach((star, index) => {
-    star.addEventListener('click', () => {
-      const rating = parseInt(star.getAttribute('data-value'));
-      ratingInput.value = rating;
+    stars.forEach((star) => {
+        star.addEventListener('click', () => {
+            const rating = parseInt(star.getAttribute('data-value'));
+            ratingInput.value = rating;
 
-      // Обновляем визуал
-      stars.forEach((s, i) => {
-        if (i < rating) {
-          s.classList.add('selected');
-        } else {
-          s.classList.remove('selected');
-        }
-      });
+            stars.forEach((s, i) => {
+                s.classList.toggle('selected', i < rating);
+            });
+        });
     });
-  });
+
+    const starsFilter = document.getElementById("filterStars");
+    const dateFilter = document.getElementById("filterDate");
+
+    if (starsFilter && dateFilter) {
+        starsFilter.addEventListener("change", applyFilters);
+        dateFilter.addEventListener("change", applyFilters);
+    }
+
+    await loadReviews();
 });
  const starsFilter = document.getElementById("filterStars");
 const dateFilter = document.getElementById("filterDate");
@@ -277,9 +281,6 @@ function displayFilteredReviews(reviews) {
         this.style.height = this.scrollHeight + "px";
     });
 
-    // Обработчики фильтров
-    document.getElementById("filterStars").addEventListener("change", loadReviews);
-    document.getElementById("filterDate").addEventListener("change", loadReviews);
 });
 
 // Функция загрузки отзывов
@@ -289,6 +290,7 @@ async function loadReviews() {
         if (!response.ok) {
             throw new Error('Failed to load reviews');
         }
+        
         const reviews = await response.json();
         
         const reviewContainer = document.getElementById('reviewContainer');
@@ -1004,21 +1006,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         console.error("Ошибка при загрузке заказов:", error);
     }
 });
-
-document.addEventListener("DOMContentLoaded", function () {
-    const reviewComment = document.getElementById("reviewComment");
-    const reviewName = document.getElementById("reviewName");
-    const reviewContainer = document.getElementById("reviews");
-    const filterStars = document.getElementById("filterStars");
-    const filterDate = document.getElementById("filterDate");
-
-    let reviews = [];
-
-    // Автоматическое увеличение высоты textarea
-    reviewComment.addEventListener("input", function () {
-        this.style.height = "auto";
-        this.style.height = (this.scrollHeight) + "px";
-    });
 
     // Добавление отзыва
     document.getElementById("submitReview").addEventListener("click", function () {
