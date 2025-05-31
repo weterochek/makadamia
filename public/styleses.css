@@ -542,7 +542,7 @@ button {
     margin-top: 15px;
     padding: 10px;
     border: none;
-    background: #28a745;
+    background: #9c9c9c;
     color: white;
     font-size: 16px;
     border-radius: 5px;
@@ -550,7 +550,7 @@ button {
 }
 
 button:hover {
-    background: #218838;
+    background: #9c9c9c;
 }
 
 #reviews {
@@ -567,7 +567,7 @@ button:hover {
     padding: 10px;
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    border-left: 5px solid #28a745;
+    border-left: 5px solid #9c9c9c;
 }
 /* Медиазапросы */
 @media screen and (max-width: 768px) {
@@ -814,9 +814,9 @@ button:hover {
 }
 
 .pagination button.active {
-    background-color: #28a745;
+    background-color: #9c9c9c;
     color: white;
-    border-color: #28a745;
+    border-color: #9c9c9c;
 }
 
 .pagination button:disabled {
