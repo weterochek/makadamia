@@ -204,7 +204,7 @@ if (starsFilter && dateFilter) {
     starsFilter.addEventListener("change", applyFilters);
     dateFilter.addEventListener("change", applyFilters);
 }
-    } catch (error) {
+     catch (error) {
         console.error('Ошибка при загрузке отзывов:', error);
         const reviewContainer = document.getElementById('reviewContainer');
         if (reviewContainer) {
