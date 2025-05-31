@@ -116,6 +116,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     address: document.getElementById("customerAddress").value,
                     additionalInfo: document.getElementById("additionalInfo").value,
                     deliveryTime: document.getElementById("deliveryTime").value,
+                    phone: phoneInput.value.trim(),
                     items: Object.keys(cart).map(productId => ({
                         productId: productId,
                         quantity: cart[productId].quantity
