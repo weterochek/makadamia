@@ -938,7 +938,7 @@ document.addEventListener("DOMContentLoaded", function () {
             name = getUserName(); // Получаем имя из личного кабинета
         }
         const comment = reviewComment.value.trim();
-        const stars = Math.floor(Math.random() * 5) + 1; // Заглушка рейтинга
+        const stars = parseInt(document.getElementById('starRating').value) || 0;
 
         if (comment === "") {
             alert("Введите комментарий!");
