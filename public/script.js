@@ -228,15 +228,15 @@ function updateReviewSummary() {
 }
 
 function applyFilters() {
-    const starValue = document.getElementById("filterStars").value;
-    const dateValue = document.getElementById("filterDate").value;
+    const starEl = document.getElementById("filterStars");
+    const dateEl = document.getElementById("filterDate");
 
     const starValue = starEl ? starEl.value : null;
     const dateValue = dateEl ? dateEl.value : null;
 
     let filtered = [...allReviews];
 
-    if (starValue !== "all") {
+    if (starValue && starValue !== "all") {
         filtered = filtered.filter(r => Number(r.rating) === Number(starValue));
     }
 
@@ -253,7 +253,6 @@ function applyFilters() {
     displayReviewsForPage(currentPage, reviewsPerPage, filtered);
     createPaginationButtons(currentPage, totalPages, reviewsPerPage, filtered);
 }
-
 function displayFilteredReviews(reviews) {
     const container = document.getElementById("reviewContainer");
     container.innerHTML = '';
