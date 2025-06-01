@@ -925,7 +925,9 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // Добавление отзыва
-    document.getElementById("submitReview").addEventListener("click", function () {
+    const submitBtn = document.getElementById("submitReview");
+if (submitBtn) {
+  submitBtn.addEventListener("click", () => {
         let name = reviewName.value.trim();
         if (name === "") {
             name = getUserName(); // Получаем имя из личного кабинета
@@ -952,7 +954,7 @@ document.addEventListener("DOMContentLoaded", function () {
         reviewComment.value = "";
         reviewComment.style.height = "40px";
     });
-
+}
     // Фильтрация отзывов
     filterStars.addEventListener("change", displayReviews);
     filterDate.addEventListener("change", displayReviews);
