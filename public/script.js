@@ -196,7 +196,13 @@ async function loadReviews() {
         
         const reviewContainer = document.getElementById('reviewContainer');
         reviewContainer.innerHTML = '';
-        
+        const totalReviews = reviews.length;
+        const totalRating = reviews.reduce((sum, review) => sum + Number(review.rating), 0);
+        const averageRating = totalReviews ? (totalRating / totalReviews).toFixed(1) : "0.0";
+
+        // Отображение
+        document.getElementById("averageRating").textContent = averageRating;
+        document.getElementById("totalReviews").textContent = `${totalReviews} ${getPluralReviews(totalReviews)}`;
         // Применяем фильтры
         let filteredReviews = [...reviews];
         
@@ -218,7 +224,11 @@ async function loadReviews() {
             document.getElementById('pagination').style.display = 'none';
         return;
     }
-
+    function getPluralReviews(n) {
+    if (n % 10 === 1 && n % 100 !== 11) return "отзыв";
+    if ([2, 3, 4].includes(n % 10) && ![12, 13, 14].includes(n % 100)) return "отзыва";
+    return "отзывов";
+    }
         // Настройки пагинации
         const reviewsPerPage = 5; // Количество отзывов на странице
         const totalPages = Math.ceil(filteredReviews.length / reviewsPerPage);
