@@ -1294,43 +1294,45 @@ function editField(field) {
     }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
     const token = localStorage.getItem("accessToken");
+
+    const usernameEl = document.getElementById("usernameDisplay");
+    const nameInput = document.getElementById("nameInput");
+    const cityInput = document.getElementById("cityInput");
 
     if (!token) {
         console.warn("❌ Нет токена");
-        document.getElementById('usernameDisplay').innerText = "Гость";
+        if (usernameEl) usernameEl.innerText = "Гость";
         return;
     }
 
-    fetch("https://makadamia-e0hb.onrender.com/account", {
-        method: "GET",
-        credentials: "include",
-        headers: {
-            Authorization: `Bearer ${token}`
+    try {
+        const response = await fetch("https://makadamia-e0hb.onrender.com/account", {
+            method: "GET",
+            credentials: "include",
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`Ошибка HTTP: ${response.status}`);
         }
-    })
-    .then(res => {
-        if (!res.ok) throw new Error(`Ошибка HTTP: ${res.status}`);
-        return res.json();
-    })
-    .then(data => {
-        console.log("✅ Ответ сервера:", data);
 
-        const usernameEl = document.getElementById("usernameDisplay");
-        const nameInput = document.getElementById("nameInput");
-        const cityInput = document.getElementById("cityInput");
+        const data = await response.json();
+        console.log("✅ Ответ от /account:", data);
 
-        if (usernameEl) usernameEl.innerText = data.username || "Ошибка";
+        if (usernameEl) usernameEl.innerText = data.username || "Имя не указано";
         if (nameInput) nameInput.value = data.name || "";
         if (cityInput) cityInput.value = data.city || "";
-    })
-    .catch(err => {
+
+    } catch (err) {
         console.error("❌ Ошибка загрузки аккаунта:", err);
-        const usernameEl = document.getElementById("usernameDisplay");
         if (usernameEl) usernameEl.innerText = "Ошибка загрузки";
-    });
+    }
 });
+
 async function updateAccountField(data) {
     const token = localStorage.getItem("accessToken");
 
