@@ -128,7 +128,7 @@ main {
 }
 
 .quantity-controls button:hover {
-    background-color: #45a049;
+    background-color: #9c9c9c;
 }
 
 .quantity-controls button:disabled {
@@ -160,7 +160,7 @@ main {
     background: white;
     font-size: 25px;
     font-weight: bold;
-    color: #4CAF50;
+    color: black;
     padding: 25px;
     border-top: 1px solid #ddd;
     box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
@@ -219,7 +219,7 @@ form button {
 }
 
 form button:hover {
-    background-color: #45a049;
+    background-color: #9c9c9c;
 }
 
 /* Кнопка "Вернуться к покупкам" */
