@@ -311,13 +311,6 @@ function applyFilters() {
         // Отображаем первую страницу и создаем кнопки пагинации
         displayReviewsForPage(currentPage);
         createPaginationButtons();
-        
-    } catch (error) {
-        console.error('Error loading reviews:', error);
-        const reviewContainer = document.getElementById('reviewContainer');
-        reviewContainer.innerHTML = '<p class="error">Ошибка при загрузке отзывов. Пожалуйста, попробуйте позже.</p>';
-    }
-}
 
 let isSubmittingReview = false;
 
