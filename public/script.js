@@ -475,34 +475,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.head.appendChild(style);
 });
 
-document.addEventListener("DOMContentLoaded", function () {
-    if (localStorage.getItem("cookiesAccepted") === "true") {
-        const token = localStorage.getItem("accessToken"); // Получаем токен
 
-        if (!token) {
-            console.warn("❌ Нет токена, не запрашиваем /account");
-            return;
-        }
-
-        fetch("https://makadamia-e0hb.onrender.com/account", {
-            method: "GET", // ✅ Добавляем явное указание метода
-            credentials: "include", // ✅ Передаем cookies
-            headers: {
-                "Authorization": `Bearer ${token}` // ✅ Передаем токен
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`Ошибка HTTP: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => console.log("✅ Данные аккаунта:", data))
-        .catch(error => console.error("❌ Ошибка загрузки аккаунта:", error));
-    } else {
-        console.log("⚠️ Пользователь не принял cookies. Запрос не отправлен.");
-    }
-});
 function saveCart() {
     localStorage.setItem('cart', JSON.stringify(cart));
 }
