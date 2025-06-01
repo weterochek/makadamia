@@ -1394,16 +1394,20 @@ async function logout() {
         console.error("❌ Ошибка при выходе:", error);
     }
 
-    // Очистка локального хранилища
+    // Удаляем все пользовательские данные
     localStorage.removeItem("accessToken");
     localStorage.removeItem("username");
     localStorage.removeItem("userId");
+    localStorage.removeItem("cart");
+    localStorage.removeItem("userData");
+
     sessionStorage.clear();
 
     // Удаление куков
     document.cookie = "refreshTokenDesktop=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
     
-    window.location.href = "/login.html";
+    // Перенаправление на главную
+    window.location.href = "index.html";
 }
 
 
