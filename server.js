@@ -327,21 +327,21 @@ app.post('/login', async (req, res) => {
 
     const { accessToken, refreshToken } = generateTokens(user);
     res.setHeader("Access-Control-Allow-Credentials", "true"); // ✅ Добавили заголовок
-    res.cookie("refreshTokenDesktop", refreshToken, { 
-        httpOnly: true,
-        secure: true,
-        sameSite: "None",
-        path: "/",
-        maxAge: 30 * 24 * 60 * 60 * 1000  // Устанавливаем refreshToken на 30 дней
-    });
-
+    res.cookie("refreshTokenPC", refreshToken, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "None",
+    path: "/",
+    domain: "makadamia-e0hb.onrender.com", // 💡 строго ограничиваем домен
+    maxAge: 30 * 24 * 60 * 60 * 1000
+});
     res.json({ accessToken, userId: user._id });
 });
 
 
 // Обработка запроса на обновление токена для ПК-версии
 app.post('/refresh', async (req, res) => {
-    const refreshToken = req.cookies.refreshTokenDesktop;
+    const refreshToken = req.cookies.refreshTokenPC;
 
     if (!refreshToken) {
         console.error("❌ Refresh-токен отсутствует в cookies");
@@ -408,13 +408,13 @@ app.post('/refresh', async (req, res) => {
 app.post('/logout', (req, res) => {
     console.log("🔄 Выход из аккаунта...");
     
-    res.clearCookie("refreshTokenDesktop", {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'None',
-        path: "/",
-        domain: "makadamia-e0hb.onrender.com"
-    });
+res.clearCookie("refreshTokenPC", {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'None',
+    path: "/",
+    domain: "makadamia-e0hb.onrender.com"
+});
 
     res.json({ message: 'Вы вышли из системы' });
 });
