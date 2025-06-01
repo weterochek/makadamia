@@ -1375,23 +1375,7 @@ function checkAuthStatus() {
         sessionStorage.removeItem("authChecked");
     }
 }
-document.addEventListener("DOMContentLoaded", () => {
-    const stars = document.querySelectorAll('#ratingStars i');
-    const ratingInput = document.getElementById('starRating');
 
-    if (!stars.length || !ratingInput) return;
-
-    stars.forEach((star) => {
-        star.addEventListener('click', () => {
-            const rating = parseInt(star.getAttribute('data-value'));
-            ratingInput.value = rating;
-
-            stars.forEach((s, i) => {
-                s.classList.toggle('selected', i < rating);
-            });
-        });
-    });
-});
 async function logout() {
     try {
         const response = await fetch("https://makadamia-e0hb.onrender.com/logout", { 
