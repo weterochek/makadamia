@@ -1,4 +1,3 @@
-let allReviews = [];
 let productMap = {};// Будет заполнен динамически
 let cart = JSON.parse(localStorage.getItem('cart')) || {};
 (() => {
@@ -185,59 +184,40 @@ document.addEventListener("DOMContentLoaded", async function () {
     document.getElementById("filterStars").addEventListener("change", loadReviews);
     document.getElementById("filterDate").addEventListener("change", loadReviews);
 });
-document.addEventListener("DOMContentLoaded", () => {
-    if (document.getElementById("reviewContainer")) {
-        loadReviews();
-    }
 
-    const starFilter = document.getElementById("filterStars");
-    const dateFilter = document.getElementById("filterDate");
-
-    if (starFilter && dateFilter) {
-        starFilter.addEventListener("change", applyFilters);
-        dateFilter.addEventListener("change", applyFilters);
-    }
-});
 // Функция загрузки отзывов
 async function loadReviews() {
     try {
-        const res = await fetch('/reviews');
-        if (!res.ok) throw new Error('Ошибка загрузки отзывов');
-        const data = await res.json();
-        allReviews = data;
-        applyFilters();
-    } catch (error) {
-        console.error("❌ Ошибка при загрузке отзывов:", error);
-        const container = document.getElementById("reviewContainer");
-        if (container) container.innerHTML = "<p>Не удалось загрузить отзывы.</p>";
+        const response = await fetch('/reviews');
+        if (!response.ok) {
+            throw new Error('Failed to load reviews');
+        }
+        const reviews = await response.json();
+        
+        const reviewContainer = document.getElementById('reviewContainer');
+        reviewContainer.innerHTML = '';
+        
+        // Применяем фильтры
+        let filteredReviews = [...reviews];
+        
+        const filterStars = document.getElementById('filterStars').value;
+        if (filterStars && filterStars !== 'all') {
+            filteredReviews = filteredReviews.filter(review => review.rating == filterStars);
+        }
+        
+        const filterDate = document.getElementById('filterDate').value;
+        if (filterDate === 'newest') {
+            filteredReviews.sort((a, b) => new Date(b.date) - new Date(a.date));
+        } else if (filterDate === 'oldest') {
+            filteredReviews.sort((a, b) => new Date(a.date) - new Date(b.date));
+        }
+        
+        // Если нет отзывов, показываем сообщение
+        if (filteredReviews.length === 0) {
+            reviewContainer.innerHTML = '<p class="no-reviews">Пока нет отзывов. Будьте первым!</p>';
+            document.getElementById('pagination').style.display = 'none';
+        return;
     }
-}
-function applyFilters() {
-    const starEl = document.getElementById("filterStars");
-    const dateEl = document.getElementById("filterDate");
-
-    const starValue = starEl?.value;
-    const dateValue = dateEl?.value;
-
-    let filtered = [...allReviews];
-
-    if (starValue && starValue !== "all") {
-        filtered = filtered.filter(r => Number(r.rating) === Number(starValue));
-    }
-
-    filtered.sort((a, b) => {
-        const dateA = new Date(a.date);
-        const dateB = new Date(b.date);
-        return dateValue === "oldest" ? dateA - dateB : dateB - dateA;
-    });
-
-    const perPage = 5;
-    const totalPages = Math.ceil(filtered.length / perPage);
-    const currentPage = 1;
-
-    displayReviewsForPage(currentPage, perPage, filtered);
-    createPaginationButtons(currentPage, totalPages, perPage, filtered);
-}
 
         // Настройки пагинации
         const reviewsPerPage = 5; // Количество отзывов на странице
@@ -245,72 +225,89 @@ function applyFilters() {
         let currentPage = 1;
         
         // Функция для отображения отзывов на текущей странице
-       function displayReviewsForPage(page, perPage, list) {
-    const container = document.getElementById("reviewContainer");
-    if (!container) return;
-    container.innerHTML = "";
-
-    const start = (page - 1) * perPage;
-    const end = Math.min(start + perPage, list.length);
-
-    for (let i = start; i < end; i++) {
-        const r = list[i];
-        const stars = "★".repeat(r.rating) + "☆".repeat(5 - r.rating);
-        const name = r.displayName || r.username || "Аноним";
-        const date = new Date(r.date).toLocaleString();
-
-        const el = document.createElement("div");
-        el.className = "review";
-        el.innerHTML = `
-            <strong>${name}</strong>
-            <div class="rating">${stars}</div>
-            <p>${r.comment}</p>
-            <small>${date}</small>
-        `;
-        container.appendChild(el);
-    }
-}
-
+        function displayReviewsForPage(page) {
+            reviewContainer.innerHTML = '';
+            const startIndex = (page - 1) * reviewsPerPage;
+            const endIndex = Math.min(startIndex + reviewsPerPage, filteredReviews.length);
+            
+            for (let i = startIndex; i < endIndex; i++) {
+                const review = filteredReviews[i];
+                const reviewElement = document.createElement('div');
+                reviewElement.className = 'review';
+                
+                const nameDisplay = review.displayName 
+                    ? `${review.displayName} (${review.username})` 
+                    : review.username || 'Аноним';
+                
+                // Создаем звезды для рейтинга
+                const stars = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
+                
+                reviewElement.innerHTML = `
+                    <strong>${nameDisplay}</strong>
+                    <div class="rating">${stars}</div>
+                    <p>${review.comment}</p>
+                    <small>${new Date(review.date).toLocaleString()}</small>
+                `;
+                
+                reviewContainer.appendChild(reviewElement);
+            }
+        }
         
         // Функция для создания кнопок пагинации
-        function createPaginationButtons(current, totalPages, perPage, list) {
-    const container = document.getElementById("pagination");
-    if (!container) return;
-    container.innerHTML = "";
-
-    const prev = document.createElement("button");
-    prev.textContent = "←";
-    prev.disabled = current === 1;
-    prev.addEventListener("click", () => {
-        displayReviewsForPage(current - 1, perPage, list);
-        createPaginationButtons(current - 1, totalPages, perPage, list);
-    });
-    container.appendChild(prev);
-
-    for (let i = 1; i <= totalPages; i++) {
-        const btn = document.createElement("button");
-        btn.textContent = i;
-        btn.classList.toggle("active", i === current);
-        btn.addEventListener("click", () => {
-            displayReviewsForPage(i, perPage, list);
-            createPaginationButtons(i, totalPages, perPage, list);
-        });
-        container.appendChild(btn);
-    }
-
-    const next = document.createElement("button");
-    next.textContent = "→";
-    next.disabled = current === totalPages;
-    next.addEventListener("click", () => {
-        displayReviewsForPage(current + 1, perPage, list);
-        createPaginationButtons(current + 1, totalPages, perPage, list);
-    });
-    container.appendChild(next);
-}
+        function createPaginationButtons() {
+            const paginationContainer = document.getElementById('pagination');
+            paginationContainer.innerHTML = '';
+            
+            // Кнопка "Предыдущая страница"
+            const prevButton = document.createElement('button');
+            prevButton.textContent = '←';
+            prevButton.disabled = currentPage === 1;
+            prevButton.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    displayReviewsForPage(currentPage);
+                    createPaginationButtons();
+                }
+            });
+            paginationContainer.appendChild(prevButton);
+            
+            // Кнопки с номерами страниц
+            for (let i = 1; i <= totalPages; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = i;
+                pageButton.classList.toggle('active', i === currentPage);
+                pageButton.addEventListener('click', () => {
+                    currentPage = i;
+                    displayReviewsForPage(currentPage);
+                    createPaginationButtons();
+                });
+                paginationContainer.appendChild(pageButton);
+            }
+            
+            // Кнопка "Следующая страница"
+            const nextButton = document.createElement('button');
+            nextButton.textContent = '→';
+            nextButton.disabled = currentPage === totalPages;
+            nextButton.addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    displayReviewsForPage(currentPage);
+                    createPaginationButtons();
+                }
+            });
+            paginationContainer.appendChild(nextButton);
+        }
         
         // Отображаем первую страницу и создаем кнопки пагинации
         displayReviewsForPage(currentPage);
         createPaginationButtons();
+        
+    } catch (error) {
+        console.error('Error loading reviews:', error);
+        const reviewContainer = document.getElementById('reviewContainer');
+        reviewContainer.innerHTML = '<p class="error">Ошибка при загрузке отзывов. Пожалуйста, попробуйте позже.</p>';
+    }
+}
 
 let isSubmittingReview = false;
 
@@ -925,9 +922,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // Добавление отзыва
-    const submitBtn = document.getElementById("submitReview");
-if (submitBtn) {
-  submitBtn.addEventListener("click", () => {
+    document.getElementById("submitReview").addEventListener("click", function () {
         let name = reviewName.value.trim();
         if (name === "") {
             name = getUserName(); // Получаем имя из личного кабинета
@@ -954,7 +949,7 @@ if (submitBtn) {
         reviewComment.value = "";
         reviewComment.style.height = "40px";
     });
-}
+
     // Фильтрация отзывов
     filterStars.addEventListener("change", displayReviews);
     filterDate.addEventListener("change", displayReviews);
