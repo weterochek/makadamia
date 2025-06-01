@@ -1635,25 +1635,25 @@ async function handleLogin(event) {
 }
 
 
-        document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", function () {
     const stars = document.querySelectorAll('#ratingStars i');
     const ratingInput = document.getElementById('starRating');
 
     if (!stars.length || !ratingInput) {
-        console.warn("❌ Не найдены звёзды или скрытое поле рейтинга");
+        console.warn("❌ Звёзды или поле рейтинга не найдены");
         return;
     }
 
     stars.forEach((star) => {
         star.addEventListener('click', () => {
-            const rating = parseInt(star.getAttribute('data-value'));
+            const rating = parseInt(star.getAttribute('data-value'), 10);
             ratingInput.value = rating;
 
             stars.forEach((s, i) => {
                 s.classList.toggle('selected', i < rating);
             });
 
-            console.log(`⭐ Установлен рейтинг: ${rating}`);
+            console.log(`⭐ Выбран рейтинг: ${rating}`);
         });
     });
 });
