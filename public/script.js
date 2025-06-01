@@ -195,7 +195,9 @@ document.addEventListener("DOMContentLoaded", async function () {
         dateFilter.addEventListener("change", applyFilters);
     }
 
-    await loadReviews();
+        if (document.getElementById("reviewsContainer")) {
+        await loadReviews();
+    }
 });
 try {
     const starsFilter = document.getElementById("filterStars");
@@ -228,6 +230,9 @@ function updateReviewSummary() {
 function applyFilters() {
     const starValue = document.getElementById("filterStars").value;
     const dateValue = document.getElementById("filterDate").value;
+
+    const starValue = starEl ? starEl.value : null;
+    const dateValue = dateEl ? dateEl.value : null;
 
     let filtered = [...allReviews];
 
@@ -954,7 +959,9 @@ document.addEventListener("DOMContentLoaded", async function () {
 });
 
     // Добавление отзыва
-    document.getElementById("submitReview").addEventListener("click", function () {
+    const submitBtn = document.getElementById("submitReview");
+if (submitBtn) {
+    submitBtn.addEventListener("click", function () {
         let name = reviewName.value.trim();
         if (name === "") {
             name = getUserName(); // Получаем имя из личного кабинета
@@ -981,7 +988,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         reviewComment.value = "";
         reviewComment.style.height = "40px";
     });
-
+}
     // Фильтрация отзывов
 filterStars.addEventListener("change", applyFilters);
 filterDate.addEventListener("change", applyFilters);
