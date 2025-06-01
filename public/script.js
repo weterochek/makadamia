@@ -224,28 +224,6 @@ async function loadReviews() {
             document.getElementById('pagination').style.display = 'none';
         return;
     }
-        document.addEventListener("DOMContentLoaded", () => {
-    const stars = document.querySelectorAll('#ratingStars i');
-    const ratingInput = document.getElementById('starRating');
-
-    if (!stars.length || !ratingInput) {
-        console.warn("❌ Не найдены звёзды или скрытое поле рейтинга");
-        return;
-    }
-
-    stars.forEach((star) => {
-        star.addEventListener('click', () => {
-            const rating = parseInt(star.getAttribute('data-value'));
-            ratingInput.value = rating;
-
-            stars.forEach((s, i) => {
-                s.classList.toggle('selected', i < rating);
-            });
-
-            console.log(`⭐ Установлен рейтинг: ${rating}`);
-        });
-    });
-});
 
     function getPluralReviews(n) {
     if (n % 10 === 1 && n % 100 !== 11) return "отзыв";
@@ -1656,3 +1634,26 @@ async function handleLogin(event) {
     }
 }
 
+
+        document.addEventListener("DOMContentLoaded", () => {
+    const stars = document.querySelectorAll('#ratingStars i');
+    const ratingInput = document.getElementById('starRating');
+
+    if (!stars.length || !ratingInput) {
+        console.warn("❌ Не найдены звёзды или скрытое поле рейтинга");
+        return;
+    }
+
+    stars.forEach((star) => {
+        star.addEventListener('click', () => {
+            const rating = parseInt(star.getAttribute('data-value'));
+            ratingInput.value = rating;
+
+            stars.forEach((s, i) => {
+                s.classList.toggle('selected', i < rating);
+            });
+
+            console.log(`⭐ Установлен рейтинг: ${rating}`);
+        });
+    });
+});
