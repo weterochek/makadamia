@@ -115,6 +115,30 @@
     </footer>
 
     <script src="script.js"></script>
+	<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const stars = document.querySelectorAll('#ratingStars i');
+  const ratingInput = document.getElementById('starRating');
+
+  if (!stars.length || !ratingInput) {
+    console.warn("❌ Звёзды или поле рейтинга не найдены");
+    return;
+  }
+
+  stars.forEach((star) => {
+    star.addEventListener('click', () => {
+      const rating = parseInt(star.getAttribute('data-value'), 10);
+      ratingInput.value = rating;
+
+      stars.forEach((s, i) => {
+        s.classList.toggle('selected', i < rating);
+      });
+
+      console.log(`⭐ Выбран рейтинг: ${rating}`);
+    });
+  });
+});
+</script>
     <script>
         document.getElementById('reviewForm').addEventListener('submit', submitReview);
         document.addEventListener('DOMContentLoaded', loadReviews);
