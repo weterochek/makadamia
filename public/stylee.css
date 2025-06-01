@@ -281,7 +281,7 @@ header nav {
     flex-grow: 1;
     padding-right: 10px;
     text-align: left; /* Выравнивание текста по левому краю */
-    font-size: 0.9em;
+    font-size: 0.8em;
 }
 
 .cart-item .cart-buttons {
