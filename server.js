@@ -347,7 +347,10 @@ app.post('/register', async (req, res) => {
     username: Joi.string().trim().min(3).max(30).required(),
     password: Joi.string().min(8).required(),
   });
-
+  const usernameRegex = /^[a-zA-Z0-9_]+$/;
+if (!usernameRegex.test(username)) {
+  return res.status(400).json({ message: "Недопустимое имя пользователя" });
+}
   const { error } = schema.validate(req.body);
   if (error) {
     return res.status(400).json({ message: error.details[0].message });
