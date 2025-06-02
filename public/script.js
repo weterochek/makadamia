@@ -1341,6 +1341,36 @@ document.getElementById('saveName').addEventListener('click', async () => {
     document.getElementById('nameInput').disabled = true;
     document.getElementById('saveName').style.display = 'none';
 });
+// отображение email
+document.getElementById("emailInput").value = user.email || "";
+
+// редактирование
+document.getElementById("editEmail").addEventListener("click", () => {
+  document.getElementById("emailInput").disabled = false;
+  document.getElementById("saveEmail").style.display = "inline";
+});
+
+document.getElementById("saveEmail").addEventListener("click", async () => {
+  const email = document.getElementById("emailInput").value;
+
+  const res = await fetch("/update-email", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("accessToken")}`
+    },
+    body: JSON.stringify({ email })
+  });
+
+  const data = await res.json();
+  if (res.ok) {
+    alert("Email обновлён");
+    document.getElementById("emailInput").disabled = true;
+    document.getElementById("saveEmail").style.display = "none";
+  } else {
+    alert(data.message || "Ошибка при обновлении email");
+  }
+});
 
 // Аккаунт: редактировать город
 document.getElementById('editCity').addEventListener('click', () => {
