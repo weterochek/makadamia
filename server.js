@@ -182,20 +182,22 @@ app.post("/api/order", protect, async (req, res) => {
 
 // Запрос на сброс пароля
 app.post('/request-password-reset', async (req, res) => {
-const { email } = req.body;
-const user = await User.findOne({ email });
+  const { email } = req.body;
+  const user = await User.findOne({ email });
 
   if (!user) {
-    return res.status(404).json({ message: "Пользователь не найден" });
+    return res.status(404).json({ message: "Пользователь с этой почтой не найден" });
   }
 
   const token = crypto.randomBytes(32).toString('hex');
   user.resetToken = token;
-  user.resetTokenExpiration = Date.now() + 1000 * 60 * 15; // 15 мин
+  user.resetTokenExpiration = Date.now() + 15 * 60 * 1000;
   await user.save();
 
-  // Можно отправить ссылку на почту, но пока просто возвращаем
-  res.json({ message: "Ссылка для сброса пароля создана", token });
+  const resetLink = `https://makadamia-app-etvs.onrender.com/reset.html?token=${token}`;
+  console.log("Ссылка для восстановления пароля:", resetLink);
+
+  res.json({ message: "Письмо со ссылкой отправлено (временно в консоли)", token });
 });
 app.post('/reset-password/:token', async (req, res) => {
   const { token } = req.params;
