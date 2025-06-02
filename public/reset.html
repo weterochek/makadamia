@@ -92,7 +92,7 @@
 
     <!-- Шаг 1: Ввод логина -->
     <form id="requestForm">
-      <input type="text" id="username" placeholder="Введите ваш логин" required />
+      <input type="email" id="email" placeholder="Введите вашу почту" required />
       <button type="submit">Отправить ссылку</button>
     </form>
 
@@ -122,29 +122,27 @@
     }
 
     // Шаг 1 — запрос на сброс
-    requestForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const username = document.getElementById("username").value;
+   requestForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const email = document.getElementById("email").value;
 
-      try {
-        const res = await fetch("/request-password-reset", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username })
-        });
-
-        const data = await res.json();
-        messageDiv.textContent = data.message || "Что-то пошло не так";
-
-        if (res.ok && data.token) {
-          // Перейти на страницу с токеном в URL
-          window.location.href = `/reset.html?token=${data.token}`;
-        }
-      } catch (err) {
-        messageDiv.textContent = "Ошибка соединения с сервером.";
-      }
+  try {
+    const res = await fetch("/request-password-reset", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email })
     });
 
+    const data = await res.json();
+    messageDiv.textContent = data.message || "Что-то пошло не так";
+
+    if (res.ok && data.token) {
+      window.location.href = `/reset.html?token=${data.token}`;
+    }
+  } catch (err) {
+    messageDiv.textContent = "Ошибка соединения с сервером.";
+  }
+});
     // Шаг 2 — смена пароля
     resetForm.addEventListener("submit", async (e) => {
       e.preventDefault();
