@@ -7,20 +7,23 @@ body {
   background-color: #f0f2f5;
   font-family: Arial, sans-serif;
 }
-.forgot-password {
+.forgot-link {
+  text-align: center;
   margin-top: 10px;
-  text-align: right;
-  font-size: 14px;
 }
 
-.forgot-password a {
-  color: #007bff;
+.forgot-link a {
+  color: #5a67d8;
   text-decoration: none;
+  font-size: 14px;
+  transition: color 0.2s;
 }
 
-.forgot-password a:hover {
+.forgot-link a:hover {
+  color: #434190;
   text-decoration: underline;
 }
+
 .password-wrapper {
   position: relative;
   width: 100%;
