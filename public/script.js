@@ -470,34 +470,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.head.appendChild(style);
 });
 
-document.addEventListener("DOMContentLoaded", function () {
-    if (localStorage.getItem("cookiesAccepted") === "true") {
-        const token = localStorage.getItem("accessToken"); // Получаем токен
 
-        if (!token) {
-            console.warn("❌ Нет токена, не запрашиваем /account");
-            return;
-        }
-
-        fetch("https://makadamia-e0hb.onrender.com/account", {
-            method: "GET", // ✅ Добавляем явное указание метода
-            credentials: "include", // ✅ Передаем cookies
-            headers: {
-                "Authorization": `Bearer ${token}` // ✅ Передаем токен
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`Ошибка HTTP: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => console.log("✅ Данные аккаунта:", data))
-        .catch(error => console.error("❌ Ошибка загрузки аккаунта:", error));
-    } else {
-        console.log("⚠️ Пользователь не принял cookies. Запрос не отправлен.");
-    }
-});
 function saveCart() {
     localStorage.setItem('cart', JSON.stringify(cart));
 }
@@ -1332,35 +1305,7 @@ function editField(field) {
     }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-    const token = localStorage.getItem("accessToken");
 
-    if (!token) {
-        console.warn("❌ Нет токена, не запрашиваем /account");
-        return;
-    }
-
-    fetch("https://makadamia-e0hb.onrender.com/account", {
-        method: "GET", // ✅ Добавляем явное указание метода
-        headers: { 
-            "Authorization": `Bearer ${token}` // ✅ Передаем токен
-        }
-    })
-    .then(res => {
-        if (!res.ok) {
-            throw new Error(`Ошибка HTTP: ${res.status}`);
-        }
-        return res.json();
-    })
-    .then(data => {
-        const nameInput = document.getElementById("nameInput");
-        const cityInput = document.getElementById("cityInput");
-
-        if (nameInput) nameInput.value = data.name || "";
-        if (cityInput) cityInput.value = data.city || "";
-    })
-    .catch(error => console.error("❌ Ошибка загрузки профиля:", error));
-});
 async function updateAccountField(data) {
     const token = localStorage.getItem("accessToken");
 
@@ -1546,40 +1491,7 @@ function goToCheckoutPage() {
 }
 
 
-document.addEventListener("DOMContentLoaded", () => {
-    const token = localStorage.getItem('accessToken'); // Получаем токен из localStorage
-    if (!token) {
-        document.getElementById('usernameDisplay').innerText = "Гость";
-        return;
-    }
 
-    fetch("https://makadamia-e0hb.onrender.com/account", {
-        method: "GET",
-        credentials: "include", // ✅ Добавляем передачу cookies
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
-    })
-    .then(res => {
-        if (!res.ok) {
-            throw new Error(`Ошибка HTTP: ${res.status}`);
-        }
-        return res.json();
-    })
-    .then(data => {
-        if (data.username) {
-            document.getElementById('usernameDisplay').innerText = data.username;
-            document.getElementById('authButton').style.display = 'none'; // Скрываем "Вход"
-            document.getElementById('cabinetButton').style.display = 'inline-block'; // Показываем "Личный кабинет"
-        } else {
-            document.getElementById('usernameDisplay').innerText = "Ошибка загрузки";
-        }
-    })
-    .catch(error => {
-        console.error("Ошибка загрузки аккаунта:", error);
-        document.getElementById('usernameDisplay').innerText = "Ошибка загрузки";
-    });
-});
 async function updateAccount(newUsername, newPassword) {
   const token = localStorage.getItem("accessToken");
 
