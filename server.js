@@ -181,7 +181,7 @@ app.post("/api/order", protect, async (req, res) => {
     }
 });
 app.post("/update-email", protect, async (req, res) => {
-  const userId = req.userId;
+  const userId = req.user.id;
   const { email } = req.body;
 
   if (!email) return res.status(400).json({ message: "Email обязателен" });
