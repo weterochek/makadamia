@@ -528,7 +528,7 @@ app.get('/account', protect, async (req, res) => {
             return res.status(401).json({ message: "Не авторизован" });
         }
 
-        const user = await User.findById(req.user.id).select("username name city");
+        const user = await User.findById(req.user.id).select("username name city email");
         if (!user) {
             return res.status(404).json({ message: "Пользователь не найден" });
         }
@@ -557,6 +557,7 @@ app.put('/account', protect, async (req, res) => {
         if (city) user.city = city;  // Обновляем город
         if (username) user.username = username;  // Обновляем username
         if (password) user.password = await bcrypt.hash(password, 12);  // Обновляем пароль
+        if (email) user.email = email;
 
         await user.save(); // Сохраняем обновлённые данные
         res.json({ message: 'Аккаунт обновлён', user });
