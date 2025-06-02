@@ -346,29 +346,34 @@ app.post('/register', async (req, res) => {
   const schema = Joi.object({
     username: Joi.string().trim().min(3).max(30).required(),
     password: Joi.string().min(8).required(),
+    email: Joi.string().email().required()
   });
-  const usernameRegex = /^[a-zA-Z0-9_]+$/;
-if (!usernameRegex.test(username)) {
-  return res.status(400).json({ message: "Недопустимое имя пользователя" });
-}
+
   const { error } = schema.validate(req.body);
   if (error) {
     return res.status(400).json({ message: error.details[0].message });
   }
 
-  const { username, password } = req.body;
+  const { username, password, email } = req.body;
+
+  const usernameRegex = /^[a-zA-Z0-9_]+$/;
+  if (!usernameRegex.test(username)) {
+    return res.status(400).json({ message: "Имя пользователя может содержать только латинские буквы, цифры и подчёркивания" });
+  }
 
   try {
     console.log("Регистрация пользователя:", username);
+
     const existingUser = await User.findOne({ username });
     if (existingUser) {
       return res.status(409).json({ message: 'Пользователь с таким именем уже существует' });
     }
 
     const hashedPassword = await bcrypt.hash(password, 12);
-    const newUser = new User({ username, password: hashedPassword });
+    const newUser = new User({ username, password: hashedPassword, email });
 
     await newUser.save();
+
     console.log(`Пользователь "${username}" успешно зарегистрирован.`);
     return res.status(201).json({ message: 'Пользователь успешно зарегистрирован' });
 
