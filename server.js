@@ -545,7 +545,7 @@ app.get('/account', protect, async (req, res) => {
     }
 });
 app.put('/account', protect, async (req, res) => {
-    const { name, city, username, password } = req.body; // Получаем данные из запроса
+    const { name, city, username, password, email } = req.body; // Получаем данные из запроса
 
     try {
         const user = await User.findById(req.user.id);
