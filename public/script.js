@@ -51,25 +51,39 @@ document.addEventListener("DOMContentLoaded", async () => {
         await refreshAccessToken();
     }
 });
-async function loadProfile() {
+
+async function loadProfileData() {
+  const token = localStorage.getItem("accessToken");
+  if (!token) return;
+
   try {
-    const res = await fetch("/account", {
+    const res = await fetch("https://makadamia-e0hb.onrender.com/account", {
+      method: "GET",
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("accessToken")}`
+        Authorization: `Bearer ${token}`
       }
     });
+
+    if (!res.ok) throw new Error("Ошибка HTTP: " + res.status);
+
     const user = await res.json();
-    document.getElementById("emailInput").value = user.email || "";
-  } catch (err) {
-    console.error("Ошибка загрузки профиля", err);
+
+    const nameInput = document.getElementById("nameInput");
+    const cityInput = document.getElementById("cityInput");
+    const emailInput = document.getElementById("emailInput");
+    const usernameDisplay = document.getElementById("usernameDisplay");
+
+    if (nameInput) nameInput.value = user.name || "";
+    if (cityInput) cityInput.value = user.city || "";
+    if (emailInput) emailInput.value = user.email || "";
+    if (usernameDisplay) usernameDisplay.textContent = user.username || "—";
+
+  } catch (error) {
+    console.error("Ошибка загрузки профиля:", error);
   }
 }
-
-loadProfile();
-
-document.getElementById("editEmail").addEventListener("click", () => {
-  document.getElementById("emailInput").disabled = false;
-  document.getElementById("saveEmail").style.display = "inline";
+document.addEventListener("DOMContentLoaded", () => {
+  loadProfileData();
 });
 
 document.getElementById("saveEmail").addEventListener("click", async () => {
