@@ -6,6 +6,7 @@ const cors = require("cors");
 const path = require("path");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
+const crypto = require("crypto");
 const app = express();
 const orderRoutes = require("./routes/orderRoutes");
 const { protect } = require('./middleware/authMiddleware');
@@ -179,7 +180,43 @@ app.post("/api/order", protect, async (req, res) => {
     }
 });
 
+// Запрос на сброс пароля
+app.post('/request-password-reset', async (req, res) => {
+  const { username } = req.body;
+  const user = await User.findOne({ username });
 
+  if (!user) {
+    return res.status(404).json({ message: "Пользователь не найден" });
+  }
+
+  const token = crypto.randomBytes(32).toString('hex');
+  user.resetToken = token;
+  user.resetTokenExpiration = Date.now() + 1000 * 60 * 15; // 15 мин
+  await user.save();
+
+  // Можно отправить ссылку на почту, но пока просто возвращаем
+  res.json({ message: "Ссылка для сброса пароля создана", token });
+});
+app.post('/reset-password/:token', async (req, res) => {
+  const { token } = req.params;
+  const { password } = req.body;
+
+  const user = await User.findOne({
+    resetToken: token,
+    resetTokenExpiration: { $gt: Date.now() }
+  });
+
+  if (!user) {
+    return res.status(400).json({ message: "Ссылка устарела или недействительна" });
+  }
+
+  user.password = await bcrypt.hash(password, 12);
+  user.resetToken = undefined;
+  user.resetTokenExpiration = undefined;
+  await user.save();
+
+  res.json({ message: "Пароль успешно обновлён" });
+});
 // Получение заказов пользователя
 app.get('/user-orders/:userId', protect, async (req, res) => {
     try {
