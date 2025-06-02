@@ -16,19 +16,22 @@
       <button id="toggleLogin" onclick="showLogin()">Вход</button>
     </div>
 
-    <!-- Форма регистрации -->
-<!-- Форма регистрации -->
 <div id="registerForm" class="form-content">
   <h2>Регистрация</h2>
   <form>
+    <!-- ✨ Добавить вот это поле -->
+    <input type="email" id="registerEmail" placeholder="Email" required />
+
     <input type="text" id="registerUsername" placeholder="Имя пользователя" 
        pattern="^[a-zA-Z0-9_]+$"
        title="Только буквы, цифры и подчёркивание"
        required />
-<div class="password-wrapper">
-  <input type="password" id="registerPassword" placeholder="Пароль" required />
-  <span class="toggle-password" onclick="togglePassword(this, 'registerPassword')">👁</span>
-</div>
+
+    <div class="password-wrapper">
+      <input type="password" id="registerPassword" placeholder="Пароль" required />
+      <span class="toggle-password" onclick="togglePassword(this, 'registerPassword')">👁</span>
+    </div>
+
     <button type="submit">Зарегистрироваться</button>
   </form>
 </div>
