@@ -180,7 +180,7 @@ app.post("/api/order", protect, async (req, res) => {
         res.status(500).json({ message: "Ошибка при создании заказа", error: error.message });
     }
 });
-app.post("/update-email", authMiddleware, async (req, res) => {
+app.post("/update-email", protect, async (req, res) => {
   const userId = req.userId;
   const { email } = req.body;
 
