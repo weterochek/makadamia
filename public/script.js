@@ -240,6 +240,42 @@ document.addEventListener("DOMContentLoaded", async function () {
     document.getElementById("filterStars").addEventListener("change", loadReviews);
     document.getElementById("filterDate").addEventListener("change", loadReviews);
 });
+document.addEventListener("DOMContentLoaded", () => {
+  const token = localStorage.getItem("accessToken");
+  if (!token) return;
+
+  fetch("https://makadamia-e0hb.onrender.com/account", {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  })
+    .then(res => res.json())
+    .then(user => {
+      // Показываем данные в личном кабинете
+      const nameInput = document.getElementById("nameInput");
+      const cityInput = document.getElementById("cityInput");
+      const emailInput = document.getElementById("emailInput");
+      const usernameDisplay = document.getElementById("usernameDisplay");
+
+      if (nameInput) nameInput.value = user.name || "";
+      if (cityInput) cityInput.value = user.city || "";
+      if (emailInput) emailInput.value = user.email || "";
+      if (usernameDisplay) usernameDisplay.textContent = user.username || "—";
+
+      // Обновление header
+      const authButton = document.getElementById("authButton");
+      const cabinetButton = document.getElementById("cabinetButton");
+
+      if (authButton && cabinetButton) {
+        authButton.style.display = "none";
+        cabinetButton.style.display = "inline-block";
+      }
+    })
+    .catch(error => {
+      console.error("Ошибка загрузки профиля:", error);
+    });
+});
 
 // Функция загрузки отзывов
 async function loadReviews() {
