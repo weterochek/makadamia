@@ -434,19 +434,20 @@ app.post('/refresh', async (req, res) => {
         if (err) {
             console.error("❌ Ошибка проверки refresh-токена:", err.message);
             
-            res.clearCookie("refreshTokenDesktop", {
-                httpOnly: true,
-                secure: true,
-                sameSite: "None",
-                path: "/"
-            });
+res.clearCookie("refreshTokenPC", {
+  httpOnly: true,
+  secure: true,
+  sameSite: 'None',
+  path: "/",
+  domain: "makadamia-e0hb.onrender.com"
+});
 
             return res.status(403).json({ message: "Refresh-токен недействителен или истёк" });
         }
 
         if (!decoded.exp || (decoded.exp * 1000 < Date.now())) {
             console.error("❌ Refresh-токен окончательно истёк!");
-            res.clearCookie("refreshTokenDesktop", { path: "/" });
+            res.clearCookie("refreshTokenPC", { path: "/" });
             return res.status(403).json({ message: "Refresh-токен истёк" });
         }
 
