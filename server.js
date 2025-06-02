@@ -215,7 +215,7 @@ app.post('/request-password-reset', async (req, res) => {
   user.resetTokenExpiration = Date.now() + 15 * 60 * 1000;
   await user.save();
 
-  const resetLink = `https://makadamia-app-etvs.onrender.com/reset.html?token=${token}`;;
+const resetLink = `https://makadamia-e0hb.onrender.com/reset.html?token=${token}`;
 
 await transporter.sendMail({
   from: '"Makadamia Support" <your_email@gmail.com>', // от кого
