@@ -51,6 +51,48 @@ document.addEventListener("DOMContentLoaded", async () => {
         await refreshAccessToken();
     }
 });
+async function loadProfile() {
+  try {
+    const res = await fetch("/account", {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("accessToken")}`
+      }
+    });
+    const user = await res.json();
+    document.getElementById("emailInput").value = user.email || "";
+  } catch (err) {
+    console.error("Ошибка загрузки профиля", err);
+  }
+}
+
+loadProfile();
+
+document.getElementById("editEmail").addEventListener("click", () => {
+  document.getElementById("emailInput").disabled = false;
+  document.getElementById("saveEmail").style.display = "inline";
+});
+
+document.getElementById("saveEmail").addEventListener("click", async () => {
+  const email = document.getElementById("emailInput").value;
+
+  const res = await fetch("/update-email", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("accessToken")}`
+    },
+    body: JSON.stringify({ email })
+  });
+
+  const data = await res.json();
+  if (res.ok) {
+    alert("Email обновлён");
+    document.getElementById("emailInput").disabled = true;
+    document.getElementById("saveEmail").style.display = "none";
+  } else {
+    alert(data.message || "Ошибка при обновлении email");
+  }
+});
 
 
 
