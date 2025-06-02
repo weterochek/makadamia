@@ -8,7 +8,7 @@ body {
     flex-direction: column;
     padding-top: 80px; /* Добавляем отступ для фиксированной навигации */
 }
-input[type="text"],
+input[type="text"][type="email"],
 textarea {
   border: 1px solid #ccc;
   border-radius: 12px;      /* ← вот тут скругление */
