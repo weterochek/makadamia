@@ -1465,7 +1465,7 @@ function openCabinet() {
 }
 
 // Инициализация авторизации и кнопок при загрузке страницы
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", async function () {
     await refreshAccessToken();
     checkAuthStatus();
 
