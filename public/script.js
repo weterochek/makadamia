@@ -1463,6 +1463,7 @@ function openCabinet() {
 
 // Инициализация авторизации и кнопок при загрузке страницы
 document.addEventListener("DOMContentLoaded", function () {
+    await refreshAccessToken();
     checkAuthStatus();
 
     // Убеждаемся, что кнопка "Выход" отображается только в личном кабинете
