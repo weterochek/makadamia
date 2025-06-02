@@ -617,7 +617,7 @@ async function handleCheckoutFormSubmit(event) {
         productId: productId,
         quantity: cart[productId].quantity
     }));
-
+    
     const nameInput = document.getElementById('customerName');
     const addressInput = document.getElementById('customerAddress');
     const additionalInfoInput = document.getElementById('additionalInfo');
