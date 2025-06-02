@@ -1207,6 +1207,9 @@ function getTokenExp(token) {
 
 
 async function refreshAccessToken() {
+    if (typeof checkAuthStatus === "function") {
+  checkAuthStatus();
+    }
     console.log("🔄 Запрос на обновление access-токена...");
 
     try {
