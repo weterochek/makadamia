@@ -1354,8 +1354,7 @@ document.getElementById('saveName').addEventListener('click', async () => {
     document.getElementById('nameInput').disabled = true;
     document.getElementById('saveName').style.display = 'none';
 });
-// отображение email
-document.getElementById("emailInput").value = user.email || "";
+
 
 // редактирование
 document.getElementById("editEmail").addEventListener("click", () => {
@@ -1371,9 +1370,9 @@ document.getElementById("saveEmail").addEventListener("click", async () => {
 });
 
 // Аккаунт: редактировать город
-document.getElementById('editCity').addEventListener('click', () => {
-    document.getElementById('cityInput').disabled = false;
-    document.getElementById('saveCity').style.display = 'inline-block';
+document.getElementById("editCity").addEventListener("click", () => {
+  document.getElementById("cityInput").disabled = false;
+  document.getElementById("saveCity").style.display = "inline-block";
 });
 
 document.getElementById('saveCity').addEventListener('click', async () => {
