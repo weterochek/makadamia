@@ -18,24 +18,25 @@ function showLogin() {
 showLogin(); // По умолчанию
 
 // === Регистрация ===
-// === Регистрация ===
 const registerForm = document.querySelector("#registerForm form");
 registerForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const username = document.getElementById("registerUsername").value;
     const password = document.getElementById("registerPassword").value;
+    const email = document.getElementById("registerEmail").value; // ← Вот этого у тебя не было!
 
     try {
         const usernameRegex = /^[a-zA-Z0-9_]+$/;
-    if (!usernameRegex.test(username)) {
-      alert("Имя пользователя может содержать только буквы, цифры и подчёркивание");
-      return;
+        if (!usernameRegex.test(username)) {
+            alert("Имя пользователя может содержать только буквы, цифры и подчёркивание");
+            return;
         }
+
         const response = await fetch("https://makadamia-e0hb.onrender.com/register", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username, password, email }),
+            body: JSON.stringify({ username, password, email }) // ← Теперь переменная есть!
         });
 
         const data = await response.json();
