@@ -13,6 +13,24 @@
       align-items: center;
       height: 100vh;
     }
+    .password-wrapper {
+  position: relative;
+}
+
+.password-wrapper input {
+  padding-right: 36px;
+}
+
+.toggle-password {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  font-size: 18px;
+  color: #555;
+  cursor: pointer;
+  user-select: none;
+}
 
     .reset-container {
       background: #fff;
@@ -80,7 +98,10 @@
 
     <!-- Шаг 2: Ввод нового пароля -->
     <form id="resetForm" class="hidden">
-      <input type="password" id="newPassword" placeholder="Новый пароль" required />
+      <div class="password-wrapper">
+  <input type="password" id="newPassword" placeholder="Новый пароль" required />
+  <span class="toggle-password" onclick="togglePassword(this, 'newPassword')">👁</span>
+      </div>
       <input type="password" id="confirmPassword" placeholder="Повторите пароль" required />
       <button type="submit">Сменить пароль</button>
     </form>
@@ -153,6 +174,12 @@
         messageDiv.textContent = "Ошибка соединения с сервером.";
       }
     });
+    function togglePassword(el, inputId) {
+  const input = document.getElementById(inputId);
+  const isHidden = input.type === "password";
+  input.type = isHidden ? "text" : "password";
+  el.textContent = isHidden ? "🙈" : "👁";
+}
   </script>
 </body>
 </html>
