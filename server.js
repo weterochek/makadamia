@@ -87,7 +87,9 @@ app.use((req, res, next) => {
 });
 
 const Cart = require("./models/Cart"); // Подключаем модель
-
+app.get("/reset.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "reset.html"));
+});
 app.post('/cart/add', protect, async (req, res) => {
   try {
     if (!req.user || !req.user.id) {
