@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const cors = require("cors");
 const path = require("path");
+const nodemailer = require("nodemailer");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 const crypto = require("crypto");
@@ -179,7 +180,13 @@ app.post("/api/order", protect, async (req, res) => {
         res.status(500).json({ message: "Ошибка при создании заказа", error: error.message });
     }
 });
-
+const transporter = nodemailer.createTransport({
+  service: "gmail", // или 'yandex', 'mail.ru', 'smtp.yourhost.com'
+  auth: {
+    user: "seryojabaulin25@gmail.com",     // ← ТВОЙ EMAIL
+    pass: "exwtwuflxjzonrpa"         // ← Пароль или App Password
+  }
+});
 // Запрос на сброс пароля
 app.post('/request-password-reset', async (req, res) => {
   const { email } = req.body;
@@ -195,9 +202,21 @@ app.post('/request-password-reset', async (req, res) => {
   await user.save();
 
   const resetLink = `https://makadamia-app-etvs.onrender.com/reset.html?token=${token}`;
-  console.log("Ссылка для восстановления пароля:", resetLink);
 
-  res.json({ message: "Письмо со ссылкой отправлено (временно в консоли)", token });
+await transporter.sendMail({
+  from: '"Makadamia Support" <your_email@gmail.com>', // от кого
+  to: user.email, // кому
+  subject: "Восстановление пароля",
+  html: `
+    <h3>Здравствуйте, ${user.username}!</h3>
+    <p>Вы запросили восстановление пароля на сайте Makadamia.</p>
+    <p>Перейдите по ссылке ниже, чтобы задать новый пароль:</p>
+    <a href="${resetLink}">${resetLink}</a>
+    <p><small>Ссылка активна в течение 15 минут.</small></p>
+  `
+});
+
+res.json({ message: "Письмо с ссылкой отправлено на почту" });
 });
 app.post('/reset-password/:token', async (req, res) => {
   const { token } = req.params;
