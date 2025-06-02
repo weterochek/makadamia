@@ -182,8 +182,8 @@ app.post("/api/order", protect, async (req, res) => {
 
 // Запрос на сброс пароля
 app.post('/request-password-reset', async (req, res) => {
-  const { username } = req.body;
-  const user = await User.findOne({ username });
+const { email } = req.body;
+const user = await User.findOne({ email });
 
   if (!user) {
     return res.status(404).json({ message: "Пользователь не найден" });
