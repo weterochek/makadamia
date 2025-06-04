@@ -37,7 +37,7 @@ if (!usernameRegex.test(username)) {
     usernameError.textContent = "";
     usernameError.style.display = "none";
 }
-        const response = await fetch("https://makadamia-app-etvs.onrender.com/register", {
+        const response = await fetch("https://makadamia-e0hb.onrender.com/register", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username, password, email })
