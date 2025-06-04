@@ -24,45 +24,31 @@ registerForm.addEventListener("submit", async (e) => {
 
     const username = document.getElementById("registerUsername").value;
     const password = document.getElementById("registerPassword").value;
-    const email = document.getElementById("registerEmail").value; // ← Вот этого у тебя не было!
+    const email = document.getElementById("registerEmail").value;
 
     try {
         const usernameRegex = /^[a-zA-Z0-9_]+$/;
-        if (!usernameRegex.test(username)) {
-            alert("Имя пользователя может содержать только буквы, цифры и подчёркивание");
-            return;
-        }
-
-        const response = await fetch("https://makadamia-e0hb.onrender.com/register", {
+        const usernameError = document.getElementById("usernameError");
+if (!usernameRegex.test(username)) {
+    usernameError.textContent = "Имя пользователя может содержать только латинские буквы, цифры и подчёркивание.";
+    usernameError.style.display = "block";
+    return;
+} else {
+    usernameError.textContent = "";
+    usernameError.style.display = "none";
+}
+        const response = await fetch("https://makadamia-app-etvs.onrender.com/register", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username, password, email }) // ← Теперь переменная есть!
+            body: JSON.stringify({ username, password, email })
         });
 
         const data = await response.json();
 
         if (response.ok) {
-            console.log("✅ Регистрация прошла, выполняем авто-вход...");
-
-            const loginResponse = await fetch("https://makadamia-e0hb.onrender.com/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username, password })
-            });
-
-            const loginData = await loginResponse.json();
-
-            if (loginResponse.ok) {
-                localStorage.setItem("accessToken", loginData.accessToken);
-                localStorage.setItem("refreshToken", loginData.refreshToken);
-                localStorage.setItem("userId", loginData.userId);
-                localStorage.setItem("username", username);
-                localStorage.removeItem("logoutFlag");
-
-                window.location.href = "/index.html";
-            } else {
-                alert(loginData.message || "Ошибка авто-входа после регистрации.");
-            }
+            alert("📨 Письмо с подтверждением отправлено на вашу почту. Подтвердите email, прежде чем входить.");
+            window.location.href = "/login.html";
+            return;
         } else {
             alert(data.message || "Ошибка регистрации.");
         }
@@ -71,7 +57,6 @@ registerForm.addEventListener("submit", async (e) => {
         alert("Произошла ошибка.");
     }
 });
-
 
 // === Вход ===
 const loginForm = document.querySelector("#loginForm form");
@@ -94,6 +79,7 @@ loginForm.addEventListener("submit", async (e) => {
             localStorage.setItem("accessToken", data.accessToken);
             localStorage.setItem("userId", data.userId);
             localStorage.setItem("username", username);
+            localStorage.removeItem("logoutFlag");
             window.location.href = "/index.html";
         } else {
             alert(data.message || "Ошибка входа.");
