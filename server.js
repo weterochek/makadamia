@@ -179,6 +179,42 @@ app.post("/api/order", protect, async (req, res) => {
         res.status(500).json({ message: "Ошибка при создании заказа", error: error.message });
     }
 });
+app.post("/update-account", async (req, res) => {
+  const { userId, name, city, email } = req.body;
+
+  const user = await User.findById(userId);
+  if (!user) return res.status(404).json({ message: "Пользователь не найден" });
+
+  user.name = name ?? user.name;
+  user.city = city ?? user.city;
+
+  // 👇 проверим, поменяли ли email
+  if (email && email !== user.email) {
+    user.email = email;
+    user.emailVerified = false;
+
+    const token = crypto.randomBytes(32).toString("hex");
+    user.emailVerificationToken = token;
+    user.emailVerificationExpires = Date.now() + 24 * 60 * 60 * 1000;
+
+    const verifyUrl = `https://makadamia-app-etvs.onrender.com/verify-email?token=${token}&email=${email}`;
+
+    await transporter.sendMail({
+      from: '"Makadamia" <seryojabaulin25@gmail.com>',
+      to: email,
+      subject: "Подтверждение нового email",
+      html: `
+        <h2>Вы сменили почту</h2>
+        <p>Нажмите <a href="${verifyUrl}">сюда</a>, чтобы подтвердить новый email.</p>
+        <p><small>Срок действия — 24 часа.</small></p>
+      `
+    });
+  }
+
+  await user.save();
+  res.json({ message: "Данные обновлены", user });
+});
+
 app.post("/resend-verification", async (req, res) => {
   const { userId } = req.body;
 
