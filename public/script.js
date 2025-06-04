@@ -51,7 +51,18 @@ document.addEventListener("DOMContentLoaded", async () => {
         await refreshAccessToken();
     }
 });
+function formatDateTime(raw) {
+  const date = new Date(raw);
+  if (isNaN(date)) return raw;
 
+  return date.toLocaleString("ru-RU", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
 async function loadProfileData() {
   const token = localStorage.getItem("accessToken");
   if (!token) return;
