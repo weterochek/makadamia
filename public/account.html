@@ -43,16 +43,18 @@
 <main>
 <div class="account-container">
     <h2>Личный кабинет</h2>
-
+<div id="emailWarning" style="color: red; display: none;">
+  ⚠️ Ваша почта не подтверждена. Проверьте письмо на <b>новый адрес</b>.
+</div>
     <p>Пользователь: <span id="usernameDisplay">Загрузка...</span></p>
-	<p>
 <p>
+	<p>
   <label for="emailInput">Email:</label>
   <input id="emailInput" type="email"  disabled />
   <button id="editEmail">Редактировать</button>
   <button id="saveEmail" style="display: none;">Сохранить</button>
-</p>
 	</p>
+</p>
 <p><label>Имя: <input id="nameInput" type="text" disabled> 
   <button id="editName">Редактировать</button> 
   <button id="saveName" style="display:none;">Сохранить</button></label></p>
