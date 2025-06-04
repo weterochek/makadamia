@@ -179,6 +179,33 @@ app.post("/api/order", protect, async (req, res) => {
         res.status(500).json({ message: "Ошибка при создании заказа", error: error.message });
     }
 });
+app.post("/resend-verification", async (req, res) => {
+  const { userId } = req.body;
+
+  const user = await User.findById(userId);
+  if (!user) return res.status(404).json({ message: "Пользователь не найден" });
+  if (user.emailVerified) return res.status(400).json({ message: "Почта уже подтверждена" });
+
+  const token = crypto.randomBytes(32).toString("hex");
+  user.emailVerificationToken = token;
+  user.emailVerificationExpires = Date.now() + 24 * 60 * 60 * 1000;
+  await user.save();
+
+  const verifyUrl = `https://makadamia-app-etvs.onrender.com/verify-email?token=${token}&email=${user.email}`;
+
+  await transporter.sendMail({
+    from: '"Makadamia" <seryojabaulin25@gmail.com>',
+    to: user.email,
+    subject: "Подтверждение почты",
+    html: `
+      <h2>Подтвердите вашу почту</h2>
+      <p>Нажмите <a href="${verifyUrl}">сюда</a>, чтобы подтвердить email.</p>
+      <p><small>Срок действия — 24 часа.</small></p>
+    `
+  });
+
+  res.json({ message: "Письмо повторно отправлено на почту." });
+});
 app.post("/update-email", protect, async (req, res) => {
   const userId = req.user.id;
   const { email } = req.body;
