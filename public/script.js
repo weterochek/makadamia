@@ -905,14 +905,14 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     // Загружаем заказы при загрузке страницы
     try {
-        const response = await fetch("https://makadamia-e0hb.onrender.com/api/user-orders", {
-    method: "GET",
-    headers: {
-                "Authorization": `Bearer ${token}`,
-                "Content-Type": "application/json"
-            }
-        });
-
+        
+        const response = await fetch(`https://makadamia-e0hb.onrender.com/user-orders/${userId}`, {
+  method: "GET",
+  headers: {
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json"
+  }
+});
         if (!response.ok) {
             throw new Error("Ошибка при загрузке заказов");
         }
