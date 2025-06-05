@@ -599,7 +599,24 @@ app.post('/-token', (req, res) => {
     res.status(403).json({ message: 'Недействительный токен обновления' });
   }
 });
+app.post("/account/email-change", protect, async (req, res) => {
+  const { email } = req.body;
+  const user = await User.findById(req.user.id);
+  if (!user) return res.status(404).json({ message: "Пользователь не найден" });
 
+  // Проверка что email не занят
+  const exists = await User.findOne({ email });
+  if (exists) return res.status(400).json({ message: "Этот email уже используется" });
+
+  user.pendingEmail = email;
+  user.emailVerificationToken = uuidv4();
+  await user.save();
+
+  const confirmUrl = `https://makadamia-e0hb.onrender.com/confirm-email-change/${user.emailVerificationToken}`;
+  await sendEmail(email, "Подтвердите новую почту", `Перейдите по ссылке для подтверждения: ${confirmUrl}`);
+
+  res.json({ message: "Письмо с подтверждением отправлено" });
+});
 // Приватный маршрут
 app.get('/private-route', protect, (req, res) => {
   res.json({ message: `Добро пожаловать, пользователь ${req.user.id}` });
