@@ -612,7 +612,12 @@ function renderCart() {
     document.getElementById("totalAmount").textContent = `Итого: ${totalAmount} ₽`;
 }
 
-
+if (!user.emailVerified) {
+  const warning = document.createElement("p");
+  warning.textContent = "⚠️ Ваша почта не подтверждена. Проверьте письмо.";
+  warning.style.color = "red";
+  document.querySelector(".account-container").prepend(warning);
+}
 
 function updateAddToCartButton(productId) {
     const addToCartButton = document.querySelector(`.add-to-cart-button[data-id="${productId}"]`);
