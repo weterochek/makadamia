@@ -1390,19 +1390,19 @@ document.getElementById("saveEmail").addEventListener("click", async () => {
 
   try {
     const token = localStorage.getItem("accessToken");
-    const response = await fetch("https://makadamia-e0hb.onrender.com/account/email-change", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ email }),
-    });
+    const res = await fetch("/account/email-change", {
+  method: "POST",
+  headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
+  body: JSON.stringify({ newEmail })
+});
 
-    const result = await response.json();
+if (!res.ok) {
+  const text = await res.text(); // ⬅️ получаем текст ошибки
+  throw new Error(text || "Ошибка смены email");
+}
 
-    if (response.ok) {
-      alert("📨 Письмо с подтверждением отправлено на новую почту!");
+const result = await res.json();
+alert("📨 Подтверждение отправлено на новый адрес!");
     } else {
       alert(result.message || "Ошибка при смене почты.");
     }
