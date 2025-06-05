@@ -1559,7 +1559,7 @@ async function loadOrders() {
     }
 
     try {
-        const response = await fetch("https://makadamia-e0hb.onrender.com/api/user-orders", {
+        const response = await fetch("https://makadamia-e0hb.onrender.com/api/user-orders/${userId}", {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,
