@@ -638,7 +638,20 @@ app.put('/account', protect, async (req, res) => {
         if (city) user.city = city;  // Обновляем город
         if (username) user.username = username;  // Обновляем username
         if (password) user.password = await bcrypt.hash(password, 12);  // Обновляем пароль
-        if (email) user.email = email;
+        if (email && email !== user.email) {
+    user.pendingEmail = email;
+
+    const token = crypto.randomBytes(32).toString("hex");
+    user.emailVerificationToken = token;
+    user.emailVerificationExpires = Date.now() + 3600000; // 1 час
+
+    const verifyLink = `${user.site || "https://makadamia-e0hb.onrender.com"}/verify-email?token=${token}&email=${email}`;
+    await transporter.sendMail({
+      to: email,
+      subject: "Подтверждение нового email",
+      html: `<p>Вы запросили изменение email. Подтвердите его по ссылке:</p><p><a href="${verifyLink}">${verifyLink}</a></p>`
+    });
+}
 
         await user.save(); // Сохраняем обновлённые данные
         res.json({ message: 'Аккаунт обновлён', user });
