@@ -600,23 +600,51 @@ app.post('/-token', (req, res) => {
   }
 });
 app.post("/account/email-change", protect, async (req, res) => {
-  const { email } = req.body;
-  const user = await User.findById(req.user.id);
-  if (!user) return res.status(404).json({ message: "Пользователь не найден" });
+  try {
+    const { email } = req.body;
 
-  // Проверка что email не занят
-  const exists = await User.findOne({ email });
-  if (exists) return res.status(400).json({ message: "Этот email уже используется" });
+    if (!email) {
+      return res.status(400).json({ message: "Email обязателен" });
+    }
 
-  user.pendingEmail = email;
-  user.emailVerificationToken = uuidv4();
-  await user.save();
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: "Пользователь не найден" });
+    }
 
-  const confirmUrl = `https://makadamia-e0hb.onrender.com/confirm-email-change/${user.emailVerificationToken}`;
-  await sendEmail(email, "Подтвердите новую почту", `Перейдите по ссылке для подтверждения: ${confirmUrl}`);
+    // Проверка, что email уже не занят другим пользователем
+    const exists = await User.findOne({ email, _id: { $ne: user._id } });
+    if (exists) {
+      return res.status(400).json({ message: "Этот email уже используется" });
+    }
 
-  res.json({ message: "Письмо с подтверждением отправлено" });
+    user.pendingEmail = email;
+    user.emailVerificationToken = uuidv4();
+
+    await user.save();
+
+    const confirmUrl = `https://makadamia-e0hb.onrender.com/confirm-email-change/${user.emailVerificationToken}`;
+
+    // Обернуть в try-catch на случай сбоя при отправке
+    try {
+      await sendEmail(
+        email,
+        "Подтвердите новую почту",
+        `Перейдите по ссылке для подтверждения: ${confirmUrl}`
+      );
+    } catch (emailErr) {
+      console.error("Ошибка отправки письма:", emailErr);
+      return res.status(500).json({ message: "Ошибка отправки письма" });
+    }
+
+    return res.json({ message: "Письмо с подтверждением отправлено" });
+
+  } catch (err) {
+    console.error("Ошибка смены email:", err);
+    return res.status(500).json({ message: "Внутренняя ошибка сервера" });
+  }
 });
+
 // Приватный маршрут
 app.get('/private-route', protect, (req, res) => {
   res.json({ message: `Добро пожаловать, пользователь ${req.user.id}` });
