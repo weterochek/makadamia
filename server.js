@@ -601,6 +601,24 @@ app.post('/-token', (req, res) => {
     res.status(403).json({ message: 'Недействительный токен обновления' });
   }
 });
+app.get("/confirm-email-change/:token", async (req, res) => {
+  try {
+    const user = await User.findOne({ emailVerificationToken: req.params.token });
+    if (!user) return res.status(400).send("Неверная или устаревшая ссылка");
+
+    user.email = user.pendingEmail;
+    user.pendingEmail = undefined;
+    user.emailVerificationToken = undefined;
+    user.emailVerified = true;
+    await user.save();
+
+    return res.send("✅ Почта успешно подтверждена. Теперь вы можете войти.");
+  } catch (err) {
+    console.error("Ошибка подтверждения email:", err);
+    return res.status(500).send("Ошибка сервера");
+  }
+});
+
 app.post("/account/email-change", protect, async (req, res) => {
   try {
     const { email } = req.body;
