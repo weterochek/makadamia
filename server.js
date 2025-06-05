@@ -179,6 +179,38 @@ app.post("/api/order", protect, async (req, res) => {
         res.status(500).json({ message: "Ошибка при создании заказа", error: error.message });
     }
 });
+app.get("/verify-email", async (req, res) => {
+  const { token, email } = req.query;
+
+  try {
+    const user = await User.findOne({
+      emailVerificationToken: token,
+      emailVerificationExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).send("Ссылка устарела или недействительна.");
+    }
+
+    // Если пользователь подтверждает новую почту (из pendingEmail)
+    if (user.pendingEmail === email) {
+      user.email = user.pendingEmail;
+      user.pendingEmail = undefined;
+    }
+
+    user.emailVerified = true;
+    user.emailVerificationToken = undefined;
+    user.emailVerificationExpires = undefined;
+
+    await user.save();
+
+    return res.send("✅ Почта успешно подтверждена. Можете закрыть вкладку.");
+  } catch (err) {
+    console.error("Ошибка при подтверждении email:", err);
+    res.status(500).send("Ошибка сервера");
+  }
+});
+
 app.post("/update-account", async (req, res) => {
   const { userId, name, city, email } = req.body;
 
