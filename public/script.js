@@ -1390,25 +1390,27 @@ document.getElementById("saveEmail").addEventListener("click", async () => {
 
   try {
     const token = localStorage.getItem("accessToken");
+
     const res = await fetch("/account/email-change", {
-  method: "POST",
-  headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
-  body: JSON.stringify({ newEmail })
-});
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ email })  // ← используем правильное имя
+    });
 
-if (!res.ok) {
-  const text = await res.text(); // ⬅️ получаем текст ошибки
-  throw new Error(text || "Ошибка смены email");
-}
+    const result = await res.json();
 
-const result = await res.json();
-alert("📨 Подтверждение отправлено на новый адрес!");
-    } else {
+    if (!res.ok) {
       alert(result.message || "Ошибка при смене почты.");
+      return;
     }
+
+    alert("📨 Письмо с подтверждением отправлено на новую почту!");
   } catch (error) {
     console.error("Ошибка смены email:", error);
-    alert("Произошла ошибка.");
+    alert("Произошла ошибка при смене почты.");
   }
 
   document.getElementById("emailInput").disabled = true;
