@@ -601,11 +601,12 @@ app.get('/account', protect, async (req, res) => {
         res.setHeader("Pragma", "no-cache");
         res.setHeader("Expires", "0");
 
-        res.json({
+res.json({
   username: user.username,
   name: user.name,
   city: user.city,
-  email: user.email  // ← ВОТ ЭТОГО НЕ ХВАТАЕТ!
+  email: user.email,
+  emailVerified: user.emailVerified // ⬅️ добавлено
 });
     } catch (error) {  // ✅ Добавляем обработку ошибки
         console.error("Ошибка при загрузке аккаунта:", error);
