@@ -3,6 +3,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const cors = require("cors");
+const { v4: uuidv4 } = require("uuid");
 const path = require("path");
 const nodemailer = require("nodemailer");
 const jwt = require("jsonwebtoken");
