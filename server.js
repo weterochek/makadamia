@@ -612,7 +612,7 @@ app.get("/confirm-email-change/:token", async (req, res) => {
     user.emailVerified = true;
     await user.save();
 
-    return res.send("✅ Почта успешно подтверждена. Теперь вы можете войти.");
+    return res.send("✅ Почта успешно подтверждена. Можете закрыть вкладку.");
   } catch (err) {
     console.error("Ошибка подтверждения email:", err);
     return res.status(500).send("Ошибка сервера");
