@@ -906,7 +906,8 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Загружаем заказы при загрузке страницы
     try {
         
-        const response = await fetch(`https://makadamia-e0hb.onrender.com/user-orders/${userId}`, {
+        const response = await fetch(`/user-orders/${userId}`, {
+  credentials: "include",
   method: "GET",
   headers: {
     Authorization: `Bearer ${token}`,
@@ -1386,7 +1387,30 @@ document.getElementById("editEmail").addEventListener("click", () => {
 
 document.getElementById("saveEmail").addEventListener("click", async () => {
   const email = document.getElementById("emailInput").value;
-  await updateAccountField({ email });
+
+  try {
+    const token = localStorage.getItem("accessToken");
+    const response = await fetch("https://makadamia-e0hb.onrender.com/account/email-change", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ email }),
+    });
+
+    const result = await response.json();
+
+    if (response.ok) {
+      alert("📨 Письмо с подтверждением отправлено на новую почту!");
+    } else {
+      alert(result.message || "Ошибка при смене почты.");
+    }
+  } catch (error) {
+    console.error("Ошибка смены email:", error);
+    alert("Произошла ошибка.");
+  }
+
   document.getElementById("emailInput").disabled = true;
   document.getElementById("saveEmail").style.display = "none";
 });
@@ -1559,7 +1583,8 @@ async function loadOrders() {
     }
 
     try {
-        const response = await fetch("https://makadamia-e0hb.onrender.com/api/user-orders/${userId}", {
+        const userId = localStorage.getItem("userId");
+        const response = await fetch(`https://makadamia-e0hb.onrender.com/user-orders/${userId}`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,
