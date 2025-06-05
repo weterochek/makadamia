@@ -78,6 +78,14 @@ async function loadProfileData() {
     if (!res.ok) throw new Error("Ошибка HTTP: " + res.status);
 
     const user = await res.json();
+      const emailWarning = document.getElementById("emailWarning");
+if (emailWarning) {
+    if (!user.emailVerified) {
+        emailWarning.style.display = "block";
+    } else {
+        emailWarning.style.display = "none";
+    }
+}
 
     const nameInput = document.getElementById("nameInput");
     const cityInput = document.getElementById("cityInput");
