@@ -19,6 +19,7 @@ const fs = require('fs');
 const reviewsFile = 'reviews.json';
 const Review = require('./models/Review');
 const Joi = require("joi");
+const sendEmail = require("./utils/sendEmail");
 
 // Настройка CORS
 const allowedOrigins = [
