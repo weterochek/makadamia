@@ -121,7 +121,14 @@ app.post('/cart/add', protect, async (req, res) => {
 
 // Указание папки со статическими файлами
 app.use(express.static(path.join(__dirname, "public")));
-
+app.get('/user-orders', protect, async (req, res) => {
+  try {
+    const orders = await Order.find({ userId: req.user.id }).sort({ createdAt: -1 });
+    res.json(orders);
+  } catch (error) {
+    res.status(500).json({ message: "Ошибка при получении заказов" });
+  }
+});
 // Маршрут для получения товара по ID
 app.get('/s/:id', async (req, res) => {
   try {
