@@ -1443,7 +1443,11 @@ if (saveEmail && !saveEmail.dataset.bound) {
       });
 
       const result = await res.json();
+        const now = Date.now();
 
+if (now - (user.emailVerificationLastSent || 0) < 60 * 1000) {
+  return res.status(429).json({ message: "⏱ Повторная отправка доступна через минуту" });
+}
       if (!res.ok) {
         showStatus(result.message || "Ошибка при смене почты", "error");
         return;
