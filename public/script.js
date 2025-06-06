@@ -77,7 +77,8 @@ async function loadProfileData() {
 
     if (!res.ok) throw new Error("Ошибка HTTP: " + res.status);
 
-    const user = await res.json();
+    const data = await res.json();
+const user = data.user;
       const emailWarning = document.getElementById("emailWarning");
 if (emailWarning) {
     if (!user.emailVerified) {
@@ -102,7 +103,16 @@ if (emailWarning) {
   }
 }
 document.addEventListener("DOMContentLoaded", () => {
-  loadProfileData();
+ await loadProfileData();
+
+// Автоматическая замена кнопок авторизации на "Личный кабинет"
+const authButton = document.getElementById("authButton");
+const cabinetButton = document.getElementById("cabinetButton");
+
+if (authButton && cabinetButton) {
+  authButton.style.display = "none";
+  cabinetButton.style.display = "inline-block";
+}
 });
 
 
@@ -1429,7 +1439,7 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
 
-        showStatus("📨 Письмо отправлено. Подтвердите email.", "success");
+        showStatus("📨 Письмо отправлено. Подтвердите по ссылке в письме", "success");
 
         emailInput.value = result.email;
         emailInput.disabled = true;
