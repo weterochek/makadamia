@@ -991,24 +991,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 });
 
-document.getElementById("saveName")?.addEventListener("click", async () => {
-  const newName = document.getElementById("nameInput").value;
-  await updateAccountField({ name: newName });
-  document.getElementById("nameInput").disabled = true;
-  document.getElementById("saveName").style.display = "none";
-});
 
-document.getElementById("editCity")?.addEventListener("click", () => {
-  document.getElementById("cityInput").disabled = false;
-  document.getElementById("saveCity").style.display = "inline-block";
-});
-
-document.getElementById("saveCity")?.addEventListener("click", async () => {
-  const newCity = document.getElementById("cityInput").value;
-  await updateAccountField({ city: newCity });
-  document.getElementById("cityInput").disabled = true;
-  document.getElementById("saveCity").style.display = "none";
-});
 
 document.addEventListener("DOMContentLoaded", function () {
     const reviewComment = document.getElementById("reviewComment");
@@ -1385,18 +1368,6 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("saveName").style.display = "none";
   });
 
-  // --- ГОРОД ---
-  document.getElementById("editCity")?.addEventListener("click", () => {
-    document.getElementById("cityInput").disabled = false;
-    document.getElementById("saveCity").style.display = "inline-block";
-  });
-
-  document.getElementById("saveCity")?.addEventListener("click", async () => {
-    const newCity = document.getElementById("cityInput").value;
-    await updateAccountField({ city: newCity });
-    document.getElementById("cityInput").disabled = true;
-    document.getElementById("saveCity").style.display = "none";
-  });
 
 // редактирование
 const emailInput = document.getElementById("emailInput");
