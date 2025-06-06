@@ -294,25 +294,24 @@ app.post('/request-password-reset', async (req, res) => {
     return res.status(404).json({ message: "Пользователь с этой почтой не найден" });
   }
 
-  const token = crypto.randomBytes(32).toString('hex');
-  user.resetToken = token;
-  user.resetTokenExpiration = Date.now() + 15 * 60 * 1000;
+  const resetToken = crypto.randomBytes(32).toString('hex');
+  user.resetToken = resetToken;
+  user.resetTokenExpiration = Date.now() + 15 * 60 * 1000; // 15 минут
   await user.save();
 
-const resetLink = `https://makadamia-e0hb.onrender.com/reset.html?token=${token}`;
+  const resetLink = `https://makadamia-e0hb.onrender.com/reset.html?token=${resetToken}`;
 
-await transporter.sendMail({
-  from: '"Makadamia Support" <your_email@gmail.com>', // от кого
-  to: user.email, // кому
-  subject: "Восстановление пароля",
-  html: `
+  await sendEmail(user.email, "Восстановление пароля", `
     <h3>Здравствуйте, ${user.username}!</h3>
     <p>Вы запросили восстановление пароля на сайте Makadamia.</p>
     <p>Перейдите по ссылке ниже, чтобы задать новый пароль:</p>
     <a href="${resetLink}">${resetLink}</a>
     <p><small>Ссылка активна в течение 15 минут.</small></p>
-  `
+  `);
+
+  res.json({ message: "📨 Письмо со ссылкой отправлено на почту" });
 });
+
 
 res.json({ message: "Письмо с ссылкой отправлено на почту" });
 });
