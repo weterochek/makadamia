@@ -271,10 +271,6 @@ app.post('/request-password-reset', async (req, res) => {
   res.json({ message: "📨 Письмо отправлено" });
 });
 
-
-
-res.json({ message: "Письмо с ссылкой отправлено на почту" });
-
 app.post('/reset-password/:token', async (req, res) => {
   const { token } = req.params;
   const { password } = req.body;
