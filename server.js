@@ -274,7 +274,7 @@ app.post('/request-password-reset', async (req, res) => {
 
 
 res.json({ message: "Письмо с ссылкой отправлено на почту" });
-});
+
 app.post('/reset-password/:token', async (req, res) => {
   const { token } = req.params;
   const { password } = req.body;
@@ -732,4 +732,3 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
-
