@@ -1368,78 +1368,90 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("saveName").style.display = "none";
   });
 
-
-// редактирование
-const emailInput = document.getElementById("emailInput");
-const saveEmail = document.getElementById("saveEmail");
-const editEmail = document.getElementById("editEmail");
-const resendEmailButton = document.getElementById("resendEmailButton");
-const emailWarning = document.getElementById("emailWarning");
-
-if (editEmail) {
-  editEmail.addEventListener("click", () => {
-    emailInput.disabled = false;
-    saveEmail.style.display = "inline-block";
+  // --- ГОРОД ---
+  document.getElementById("editCity")?.addEventListener("click", () => {
+    document.getElementById("cityInput").disabled = false;
+    document.getElementById("saveCity").style.display = "inline-block";
   });
-}
 
-if (saveEmail && !saveEmail.dataset.bound) {
-  saveEmail.dataset.bound = "true";
+  document.getElementById("saveCity")?.addEventListener("click", async () => {
+    const newCity = document.getElementById("cityInput").value;
+    await updateAccountField({ city: newCity });
+    document.getElementById("cityInput").disabled = true;
+    document.getElementById("saveCity").style.display = "none";
+  });
 
-  saveEmail.addEventListener("click", async () => {
-    if (saveEmail.disabled) return;
+  // --- EMAIL ---
+  const emailInput = document.getElementById("emailInput");
+  const saveEmail = document.getElementById("saveEmail");
+  const editEmail = document.getElementById("editEmail");
+  const resendEmailButton = document.getElementById("resendEmailButton");
+  const emailWarning = document.getElementById("emailWarning");
 
-    const email = emailInput.value;
-    if (emailInput.disabled) {
-      showStatus("✋ Сначала нажмите «Редактировать»", "error");
-      return;
-    }
+  if (editEmail) {
+    editEmail.addEventListener("click", () => {
+      emailInput.disabled = false;
+      saveEmail.style.display = "inline-block";
+    });
+  }
 
-    saveEmail.disabled = true;
-    showStatus("⏳ Отправка письма подтверждения...");
+  if (saveEmail && !saveEmail.dataset.bound) {
+    saveEmail.dataset.bound = "true";
 
-    try {
-      const token = localStorage.getItem("accessToken");
+    saveEmail.addEventListener("click", async () => {
+      if (saveEmail.disabled) return;
 
-      const res = await fetch("/account/email-change", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ email })
-      });
-
-      const result = await res.json();
-
-      if (!res.ok) {
-        showStatus(result.message || "Ошибка при смене почты", "error");
+      const email = emailInput.value;
+      if (emailInput.disabled) {
+        showStatus("✋ Сначала нажмите «Редактировать»", "error");
         return;
       }
 
-      showStatus("📨 Письмо отправлено. Подтвердите email.", "success");
+      saveEmail.disabled = true;
+      showStatus("⏳ Отправка письма подтверждения...");
 
-      emailInput.value = result.email;
-      emailInput.disabled = true;
-      saveEmail.style.display = "none";
+      try {
+        const token = localStorage.getItem("accessToken");
 
-      if (emailWarning) {
-        emailWarning.textContent = `⚠️ Новый email (${email}) ещё не подтверждён. Используется ${result.email}`;
-        emailWarning.style.display = "block";
+        const res = await fetch("/account/email-change", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ email })
+        });
+
+        const result = await res.json();
+
+        if (!res.ok) {
+          showStatus(result.message || "Ошибка при смене почты", "error");
+          return;
+        }
+
+        showStatus("📨 Письмо отправлено. Подтвердите email.", "success");
+
+        emailInput.value = result.email;
+        emailInput.disabled = true;
+        saveEmail.style.display = "none";
+
+        if (emailWarning) {
+          emailWarning.textContent = `⚠️ Новый email (${email}) ещё не подтверждён. Используется ${result.email}`;
+          emailWarning.style.display = "block";
+        }
+
+        if (resendEmailButton) {
+          resendEmailButton.style.display = "inline-block";
+        }
+      } catch (error) {
+        console.error("❌ Ошибка:", error);
+        showStatus("❌ Произошла ошибка при смене email", "error");
+      } finally {
+        saveEmail.disabled = false;
       }
-
-      if (resendEmailButton) {
-        resendEmailButton.style.display = "inline-block";
-      }
-    } catch (error) {
-      console.error("❌ Ошибка:", error);
-      showStatus("❌ Произошла ошибка при смене email", "error");
-    } finally {
-      saveEmail.disabled = false;
-    }
-  });
-}
-
+    });
+  }
+});
 
 // Аккаунт: редактировать город
 document.getElementById("editCity").addEventListener("click", () => {
