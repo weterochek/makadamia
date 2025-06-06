@@ -1345,32 +1345,6 @@ setInterval(async () => {
     }
 }, 30000); // Проверяем каждые 30 секунд
 
-function editField(field) {
-    const input = document.getElementById(field + "Input");
-    console.log("Редактируем поле:", field, "Значение:", input.value);
-
-    if (input.disabled) {
-        input.disabled = false;
-        input.focus();
-    } else {
-        fetch("https://makadamia-e0hb.onrender.com/account", {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${localStorage.getItem("accessToken")}`
-            },
-            body: JSON.stringify({ [field]: input.value }) // Отправляем данные на сервер
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log("Ответ сервера:", data);
-            input.disabled = true;
-        })
-        .catch(error => console.log("Ошибка обновления профиля:", error));
-    }
-}
-
-
 async function updateAccountField(data) {
   const token = localStorage.getItem("accessToken");
 
