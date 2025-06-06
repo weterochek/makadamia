@@ -213,38 +213,6 @@ app.get("/verify-email", async (req, res) => {
 });
 
 
-
-app.post("/update-account", async (req, res) => {
-  const { userId, name, city, email } = req.body;
-
-  const user = await User.findById(userId);
-  if (!user) return res.status(404).json({ message: "Пользователь не найден" });
-
-  user.name = name ?? user.name;
-  user.city = city ?? user.city;
-
-  // 👇 проверим, поменяли ли email
- if (email && email !== user.email) {
-  user.pendingEmail = email;
-
-  // генерируем токен подтверждения
-  const token = crypto.randomBytes(32).toString("hex");
-  user.emailVerificationToken = token;
-  user.emailVerificationExpires = Date.now() + 3600000; // 1 час
-
-  // отправка письма
-  const verifyLink = `${user.site}/verify-email?token=${token}&email=${email}`;
-  await transporter.sendMail({
-    to: email,
-    subject: "Подтвердите ваш новый email",
-    html: `<p>Вы запросили изменение email. Подтвердите его, перейдя по ссылке:</p><p><a href="${verifyLink}">${verifyLink}</a></p>`
-  });
-}
-
-  await user.save();
-  res.json({ message: "Данные обновлены", user });
-});
-
 app.post("/resend-verification", async (req, res) => {
   const { userId } = req.body;
 
