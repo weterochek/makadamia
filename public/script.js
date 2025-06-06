@@ -1001,7 +1001,25 @@ document.addEventListener("DOMContentLoaded", async function () {
         console.error("Ошибка при загрузке заказов:", error);
     }
 });
+document.addEventListener("DOMContentLoaded", () => {
+  // Email
+  document.getElementById("editEmail")?.addEventListener("click", () => {
+    document.getElementById("emailInput").disabled = false;
+    document.getElementById("saveEmail").style.display = "inline";
+  });
 
+  // Имя
+  document.getElementById("editName")?.addEventListener("click", () => {
+    document.getElementById("nameInput").disabled = false;
+    document.getElementById("saveName").style.display = "inline";
+  });
+
+  // Город
+  document.getElementById("editCity")?.addEventListener("click", () => {
+    document.getElementById("cityInput").disabled = false;
+    document.getElementById("saveCity").style.display = "inline";
+  });
+});
 document.addEventListener("DOMContentLoaded", function () {
     const reviewComment = document.getElementById("reviewComment");
     const reviewName = document.getElementById("reviewName");
