@@ -191,34 +191,28 @@ app.post("/api/order", protect, async (req, res) => {
 app.get("/verify-email", async (req, res) => {
   const { token, email } = req.query;
 
-  try {
-    const user = await User.findOne({
-      emailVerificationToken: token,
-      emailVerificationExpires: { $gt: Date.now() }
-    });
+  const user = await User.findOne({
+    emailVerificationToken: token,
+    emailVerificationExpires: { $gt: Date.now() },
+    $or: [{ email }, { pendingEmail: email }]
+  });
 
-    if (!user) {
-      return res.status(400).send("Ссылка устарела или недействительна.");
-    }
+  if (!user) return res.status(400).send("❌ Ссылка устарела или неверна");
 
-    // Если пользователь подтверждает новую почту (из pendingEmail)
-    if (user.pendingEmail === email) {
-      user.email = user.pendingEmail;
-      user.pendingEmail = undefined;
-    }
-
-    user.emailVerified = true;
-    user.emailVerificationToken = undefined;
-    user.emailVerificationExpires = undefined;
-
-    await user.save();
-
-    return res.send("✅ Почта успешно подтверждена. Можете закрыть вкладку.");
-  } catch (err) {
-    console.error("Ошибка при подтверждении email:", err);
-    res.status(500).send("Ошибка сервера");
+  user.emailVerified = true;
+  if (user.pendingEmail === email) {
+    user.email = user.pendingEmail;
+    user.pendingEmail = undefined;
   }
+
+  user.emailVerificationToken = undefined;
+  user.emailVerificationExpires = undefined;
+  await user.save();
+
+  res.send("✅ Email успешно подтверждён. Можете закрыть страницу.");
 });
+
+
 
 app.post("/update-account", async (req, res) => {
   const { userId, name, city, email } = req.body;
@@ -290,13 +284,11 @@ app.post('/request-password-reset', async (req, res) => {
   const { email } = req.body;
   const user = await User.findOne({ email });
 
-  if (!user) {
-    return res.status(404).json({ message: "Пользователь с этой почтой не найден" });
-  }
+  if (!user) return res.status(404).json({ message: "Пользователь не найден" });
 
   const resetToken = crypto.randomBytes(32).toString('hex');
   user.resetToken = resetToken;
-  user.resetTokenExpiration = Date.now() + 15 * 60 * 1000; // 15 минут
+  user.resetTokenExpiration = Date.now() + 15 * 60 * 1000;
   await user.save();
 
   const resetLink = `https://makadamia-e0hb.onrender.com/reset.html?token=${resetToken}`;
@@ -304,13 +296,13 @@ app.post('/request-password-reset', async (req, res) => {
   await sendEmail(user.email, "Восстановление пароля", `
     <h3>Здравствуйте, ${user.username}!</h3>
     <p>Вы запросили восстановление пароля на сайте Makadamia.</p>
-    <p>Перейдите по ссылке ниже, чтобы задать новый пароль:</p>
-    <a href="${resetLink}">${resetLink}</a>
+    <p><a href="${resetLink}">${resetLink}</a></p>
     <p><small>Ссылка активна в течение 15 минут.</small></p>
   `);
 
-  res.json({ message: "📨 Письмо со ссылкой отправлено на почту" });
+  res.json({ message: "📨 Письмо отправлено" });
 });
+
 
 
 res.json({ message: "Письмо с ссылкой отправлено на почту" });
@@ -617,52 +609,68 @@ app.get("/confirm-email-change/:token", async (req, res) => {
     return res.status(500).send("Ошибка сервера");
   }
 });
+app.post("/account/resend-verification", protect, async (req, res) => {
+  const user = await User.findById(req.user.id);
+  if (!user || !user.pendingEmail) {
+    return res.status(400).json({ message: "Нет нового email для подтверждения" });
+  }
+
+  const now = Date.now();
+
+  if (now - (user.emailVerificationLastSent || 0) < 60 * 1000) {
+    return res.status(429).json({ message: "⏱ Повторная отправка доступна через минуту" });
+  }
+
+  const token = crypto.randomBytes(32).toString("hex");
+  user.emailVerificationToken = token;
+  user.emailVerificationExpires = now + 24 * 60 * 60 * 1000;
+  user.emailVerificationLastSent = now;
+  await user.save();
+
+  const verifyUrl = `https://makadamia-e0hb.onrender.com/verify-email?token=${token}&email=${user.pendingEmail}`;
+
+  await sendEmail(user.pendingEmail, "Подтверждение нового email", `
+    <h2>Подтвердите новую почту</h2>
+    <p>Нажмите <a href="${verifyUrl}">сюда</a>, чтобы подтвердить email: <b>${user.pendingEmail}</b>.</p>
+    <p><small>Срок действия — 24 часа.</small></p>
+  `);
+
+  res.json({ message: "📨 Письмо повторно отправлено" });
+});
+
 
 app.post("/account/email-change", protect, async (req, res) => {
-  try {
-    const { email } = req.body;
+  const { email } = req.body;
+  const userId = req.user.id;
 
-    if (!email) {
-      return res.status(400).json({ message: "Email обязателен" });
-    }
+  const user = await User.findById(userId);
+  if (!user) return res.status(404).json({ message: "Пользователь не найден" });
 
-    const user = await User.findById(req.user.id);
-    if (!user) {
-      return res.status(404).json({ message: "Пользователь не найден" });
-    }
+  const now = Date.now();
 
-    // Проверка, что email уже не занят другим пользователем
-    const exists = await User.findOne({ email, _id: { $ne: user._id } });
-    if (exists) {
-      return res.status(400).json({ message: "Этот email уже используется" });
-    }
-
-    user.pendingEmail = email;
-    user.emailVerificationToken = uuidv4();
-
-    await user.save();
-
-    const confirmUrl = `https://makadamia-e0hb.onrender.com/confirm-email-change/${user.emailVerificationToken}`;
-
-    // Обернуть в try-catch на случай сбоя при отправке
-    try {
-      await sendEmail(
-        email,
-        "Подтвердите новую почту",
-        `Перейдите по ссылке для подтверждения: ${confirmUrl}`
-      );
-    } catch (emailErr) {
-      console.error("Ошибка отправки письма:", emailErr);
-      return res.status(500).json({ message: "Ошибка отправки письма" });
-    }
-
-    return res.json({ message: "Письмо с подтверждением отправлено" });
-
-  } catch (err) {
-    console.error("Ошибка смены email:", err);
-    return res.status(500).json({ message: "Внутренняя ошибка сервера" });
+  if (now - (user.emailVerificationLastSent || 0) < 60 * 1000) {
+    return res.status(429).json({ message: "⏱ Повторная отправка доступна через минуту" });
   }
+
+  const token = crypto.randomBytes(32).toString("hex");
+
+  user.pendingEmail = email;
+  user.emailVerificationToken = token;
+  user.emailVerificationExpires = now + 24 * 60 * 60 * 1000;
+  user.emailVerificationLastSent = now;
+  await user.save();
+
+  const verifyUrl = `https://makadamia-e0hb.onrender.com/verify-email?token=${token}&email=${email}`;
+
+  await sendEmail(email, "Подтверждение нового email", `
+    <h2>Подтвердите новую почту</h2>
+    <p>Нажмите <a href="${verifyUrl}">сюда</a>, чтобы подтвердить email: <b>${email}</b>.</p>
+    <p><small>Срок действия — 24 часа.</small></p>
+  `);
+
+  res.json({ email: user.email });
 });
+
 
 // Приватный маршрут
 app.get('/private-route', protect, (req, res) => {
