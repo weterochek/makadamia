@@ -11,10 +11,14 @@ const userSchema = new mongoose.Schema({
   orders: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Order' }],
 
   // 👇 Добавь это внутрь схемы
-  emailVerified: { type: Boolean, default: false },
-  emailVerificationToken: String,
-  emailVerificationExpires: Date,
-  pendingEmail: { type: String, default: null }
+emailVerified: { type: Boolean, default: false },
+pendingEmail: { type: String },
+emailVerificationToken: { type: String },
+emailVerificationExpires: { type: Date },
+emailVerificationLastSent: { type: Number },
+
+resetToken: { type: String },
+resetTokenExpiration: { type: Date }
 });
 
 
