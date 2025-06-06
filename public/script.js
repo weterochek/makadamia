@@ -278,17 +278,13 @@ function showStatus(message, type = "info") {
 
   el.textContent = message;
   el.style.display = "block";
-
-  if (type === "error") el.style.color = "red";
-  else if (type === "success") el.style.color = "green";
-  else el.style.color = "#333";
+  el.style.color = type === "error" ? "red" : type === "success" ? "green" : "#333";
 
   clearTimeout(el._timeout);
   el._timeout = setTimeout(() => {
     el.style.display = "none";
   }, 6000);
 }
-
 // Функция загрузки отзывов
 async function loadReviews() {
     try {
@@ -627,13 +623,6 @@ function renderCart() {
     }
 
     document.getElementById("totalAmount").textContent = `Итого: ${totalAmount} ₽`;
-}
-
-if (!user.emailVerified) {
-  const warning = document.createElement("p");
-  warning.textContent = "⚠️ Ваша почта не подтверждена. Проверьте письмо.";
-  warning.style.color = "red";
-  document.querySelector(".account-container").prepend(warning);
 }
 
 function updateAddToCartButton(productId) {
@@ -1000,29 +989,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     } catch (error) {
         console.error("Ошибка при загрузке заказов:", error);
     }
-});
-document.addEventListener("DOMContentLoaded", () => {
-  // Email
-  document.getElementById("editEmail")?.addEventListener("click", () => {
-    document.getElementById("emailInput").disabled = false;
-    document.getElementById("saveEmail").style.display = "inline";
-  });
-
-  // Имя
-  document.getElementById("editName")?.addEventListener("click", () => {
-    document.getElementById("nameInput").disabled = false;
-    document.getElementById("saveName").style.display = "inline";
-  });
-
-  // Город
-  document.getElementById("editCity")?.addEventListener("click", () => {
-    document.getElementById("cityInput").disabled = false;
-    document.getElementById("saveCity").style.display = "inline";
-  });
-});
-document.getElementById("editName")?.addEventListener("click", () => {
-  document.getElementById("nameInput").disabled = false;
-  document.getElementById("saveName").style.display = "inline-block";
 });
 
 document.getElementById("saveName")?.addEventListener("click", async () => {
@@ -1406,42 +1372,57 @@ function editField(field) {
 
 
 async function updateAccountField(data) {
-    const token = localStorage.getItem("accessToken");
+  const token = localStorage.getItem("accessToken");
 
-    try {
-        const response = await fetch("https://makadamia-e0hb.onrender.com/account", {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}` // Без этого сервер отклонит запрос
-            },
-            body: JSON.stringify(data),
-        });
+  try {
+    const response = await fetch("/account", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify(data)
+    });
 
-        if (!response.ok) {
-            throw new Error("Ошибка при обновлении данных");
-        }
+    const result = await response.json();
 
-        const result = await response.json();
-        console.log("✅ Данные успешно обновлены:", result);
-    } catch (error) {
-        console.error("❌ Ошибка обновления данных:", error);
+    if (!response.ok) {
+      showStatus(result.message || "❌ Ошибка при обновлении данных", "error");
+      return;
     }
+
+    showStatus("✅ Данные успешно обновлены", "success");
+  } catch (error) {
+    showStatus("❌ Ошибка при отправке запроса", "error");
+  }
 }
 
+document.addEventListener("DOMContentLoaded", () => {
+  // --- ИМЯ ---
+  document.getElementById("editName")?.addEventListener("click", () => {
+    document.getElementById("nameInput").disabled = false;
+    document.getElementById("saveName").style.display = "inline-block";
+  });
 
-document.getElementById('editName').addEventListener('click', () => {
-    document.getElementById('nameInput').disabled = false;
-    document.getElementById('saveName').style.display = 'inline-block';
-});
-
-document.getElementById('saveName').addEventListener('click', async () => {
-    const newName = document.getElementById('nameInput').value;
+  document.getElementById("saveName")?.addEventListener("click", async () => {
+    const newName = document.getElementById("nameInput").value;
     await updateAccountField({ name: newName });
-    document.getElementById('nameInput').disabled = true;
-    document.getElementById('saveName').style.display = 'none';
-});
+    document.getElementById("nameInput").disabled = true;
+    document.getElementById("saveName").style.display = "none";
+  });
 
+  // --- ГОРОД ---
+  document.getElementById("editCity")?.addEventListener("click", () => {
+    document.getElementById("cityInput").disabled = false;
+    document.getElementById("saveCity").style.display = "inline-block";
+  });
+
+  document.getElementById("saveCity")?.addEventListener("click", async () => {
+    const newCity = document.getElementById("cityInput").value;
+    await updateAccountField({ city: newCity });
+    document.getElementById("cityInput").disabled = true;
+    document.getElementById("saveCity").style.display = "none";
+  });
 
 // редактирование
 const emailInput = document.getElementById("emailInput");
