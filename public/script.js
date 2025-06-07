@@ -102,7 +102,7 @@ if (emailWarning) {
     console.error("Ошибка загрузки профиля:", error);
   }
 }
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
  await loadProfileData();
 
 // Автоматическая замена кнопок авторизации на "Личный кабинет"
