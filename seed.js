@@ -6,7 +6,7 @@ const Cart = require('./models/Cart');
 const Order = require('./models/Order');
 const productsData = require('./models/products.json'); // если есть JSON
 
-const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://makadamia:tAboLWufOqunAY09@cluster0.3v6ie.mongodb.net/moviebox?retryWrites=true&w=majority&authSource=admin';
+const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://makadamia:tAboLWufOqunAY09@cluster0.3v6ie.mongodb.net/?appName=Cluster0';
 
 mongoose.connect(MONGO_URI, {
   useNewUrlParser: true,
@@ -45,3 +45,4 @@ const seed = async () => {
 };
 
 seed();
+
