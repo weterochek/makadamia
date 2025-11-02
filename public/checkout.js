@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const backToShoppingButton = document.getElementById("backToShopping");
 
     // Загружаем корзину из localStorage
-    cart = JSON.parse(localStorage.getItem('cart')) || {};
+    cart = JSON.parse(localStorage.getItem('cart'))  {};
 
     // Отображаем товары в корзине
     function renderCartItems() {
@@ -68,7 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
         try {
-            const response = await fetch("https://makadamia.onrender.com/account", {
+            const response = await fetch("https://makadamia-e0hb.onrender.com/account", {
                 method: "GET",
                 headers: {
                     "Authorization": `Bearer ${token}`,
@@ -79,8 +79,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 throw new Error("Ошибка при загрузке данных профиля");
             }
             const userData = await response.json();
-            document.getElementById("customerName").value = userData.name || "";
-            document.getElementById("customerAddress").value = userData.city || "";
+            document.getElementById("customerName").value = userData.name  "";
+            document.getElementById("customerAddress").value = userData.city  "";
         } catch (error) {
             console.error("Ошибка загрузки данных профиля:", error);
             alert("Не удалось загрузить данные профиля.");
@@ -98,10 +98,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
+            const submitButton = e.target.querySelector('button[type="submit"]');
+            const originalButtonText = submitButton.textContent;
+            
             try {
                 isSubmitting = true;
-                const submitButton = e.target.querySelector('button[type="submit"]');
-                const originalButtonText = submitButton.textContent;
                 submitButton.disabled = true;
                 submitButton.textContent = 'Оформляем заказ...';
                 
@@ -111,7 +112,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     return;
                 }
 const phoneInput = document.getElementById("customerPhone");
-if (!phoneInput || !phoneInput.value.trim()) {
+if (!phoneInput  !phoneInput.value.trim()) {
   alert("Пожалуйста, введите номер телефона.");
   return;
 }
@@ -119,13 +120,7 @@ if (!phoneInput || !phoneInput.value.trim()) {
 const orderData = {
   name: document.getElementById("customerName").value,
   address: document.getElementById("customerAddress").value,
-  deliveryTime: new Date(document.getElementById("deliveryTime").value).toLocaleString("ru-RU", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit"
-  }),
+  deliveryTime: document.getElementById("deliveryTime").value,
   additionalInfo: document.getElementById("additionalInfo").value,
   phone: phoneInput.value.trim(),
   totalAmount: Object.values(cart).reduce((sum, item) => sum + item.price * item.quantity, 0),
@@ -136,17 +131,17 @@ const orderData = {
   }))
 };
 
-                const response = await fetch("https://makadamia.onrender.com/api/order", {
+                const response = await fetch("/api/order", {
                     method: "POST",
                     headers: {
-                        "Authorization": `Bearer ${token}`,
+                        "Authorization": Bearer ${token},
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify(orderData)
                 });
 
                 if (!response.ok) {
-                    console.error(`Ошибка ${response.status}:`, response.statusText);
+                    console.error(Ошибка ${response.status}:, response.statusText);
                     alert("Ошибка при оформлении заказа.");
                     return;
                 }
@@ -194,4 +189,3 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
-
