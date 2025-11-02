@@ -68,7 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
         try {
-            const response = await fetch("https://makadamia-e0hb.onrender.com/account", {
+            const response = await fetch("https://makadamia.onrender.com/account", {
                 method: "GET",
                 headers: {
                     "Authorization": `Bearer ${token}`,
@@ -136,7 +136,7 @@ const orderData = {
   }))
 };
 
-                const response = await fetch("https://makadamia-e0hb.onrender.com/api/order", {
+                const response = await fetch("https://makadamia.onrender.com/api/order", {
                     method: "POST",
                     headers: {
                         "Authorization": `Bearer ${token}`,
@@ -194,3 +194,4 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
