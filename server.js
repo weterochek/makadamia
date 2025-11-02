@@ -57,8 +57,7 @@ const mongoURI = process.env.MONGO_URI
 const REFRESH_SECRET = process.env.REFRESH_SECRET || "J8$GzP1d&KxT^m4YvNcR";
 mongoose.connect(mongoURI, {
   useNewUrlParser: true,
-  useUnifiedTopology: true,
-  ssl: true, // Включено SSL
+  useUnifiedTopology: true
 })
   .then(() => console.log("MongoDB connected"))
   .catch((error) => console.error("MongoDB connection error:", error));
