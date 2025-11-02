@@ -96,7 +96,7 @@ loginForm.addEventListener("submit", async (e) => {
 
 // === Выход ===
 function logout() {
-    fetch("https://makadamia-e0hb.onrender.com/logout", { method: "POST", credentials: "include" })
+    fetch("https://makadamia.onrender.com/logout", { method: "POST", credentials: "include" })
         .then(() => {
             localStorage.removeItem("accessToken");
             localStorage.removeItem("username");
