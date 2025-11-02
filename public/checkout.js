@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const backToShoppingButton = document.getElementById("backToShopping");
 
     // Загружаем корзину из localStorage
-    cart = JSON.parse(localStorage.getItem('cart'))  {};
+    cart = JSON.parse(localStorage.getItem('cart')) || {};
 
     // Отображаем товары в корзине
     function renderCartItems() {
@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
             itemElement.innerHTML = `
                 <div class="item-info">
                     <span class="item-name">${item.name}</span>
-                    <span class="item-price">${item.price} ₽</span>
+                    <span class="item-price">${item.price} ?</span>
                 </div>
                 <div class="quantity-controls">
                     <button class="decrease-quantity" data-id="${productId}">-</button>
@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
             totalAmount += item.price * item.quantity;
         }
 
-        totalAmountElement.textContent = `Итого: ${totalAmount} ₽`;
+        totalAmountElement.textContent = `Итого: ${totalAmount} ?`;
     }
 
     // Обработчики для изменения количества товаров
@@ -79,8 +79,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 throw new Error("Ошибка при загрузке данных профиля");
             }
             const userData = await response.json();
-            document.getElementById("customerName").value = userData.name  "";
-            document.getElementById("customerAddress").value = userData.city  "";
+            document.getElementById("customerName").value = userData.name || "";
+            document.getElementById("customerAddress").value = userData.city || "";
         } catch (error) {
             console.error("Ошибка загрузки данных профиля:", error);
             alert("Не удалось загрузить данные профиля.");
@@ -112,7 +112,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     return;
                 }
 const phoneInput = document.getElementById("customerPhone");
-if (!phoneInput  !phoneInput.value.trim()) {
+if (!phoneInput || !phoneInput.value.trim()) {
   alert("Пожалуйста, введите номер телефона.");
   return;
 }
@@ -134,20 +134,20 @@ const orderData = {
                 const response = await fetch("/api/order", {
                     method: "POST",
                     headers: {
-                        "Authorization": Bearer ${token},
+                        "Authorization": `Bearer ${token}`,
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify(orderData)
                 });
 
                 if (!response.ok) {
-                    console.error(Ошибка ${response.status}:, response.statusText);
+                    console.error(`Ошибка ${response.status}:`, response.statusText);
                     alert("Ошибка при оформлении заказа.");
                     return;
                 }
 
                 const responseData = await response.json();
-                alert("🎉 Заказ успешно оформлен!");
+                alert("?? Заказ успешно оформлен!");
 
                 // Очистка корзины после успешного оформления
                 cart = {};  // Очищаем корзину
