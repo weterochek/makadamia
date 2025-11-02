@@ -1,26 +1,51 @@
-const mongoose = require('mongoose');
+const supabase = require('../config/supabase');
 
-const userSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  resetToken: String,
-  resetTokenExpiration: Date,
-  name: { type: String, default: "" },
-  city: { type: String, default: "" },
-  orders: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Order' }],
+class User {
+  static async create(userData) {
+    const { data, error } = await supabase
+      .from('users')
+      .insert(userData)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  }
 
-  // 👇 Добавь это внутрь схемы
-emailVerified: { type: Boolean, default: false },
-pendingEmail: { type: String },
-emailVerificationToken: { type: String },
-emailVerificationExpires: { type: Date },
-emailVerificationLastSent: { type: Number },
+  static async findOne(query) {
+    let supabaseQuery = supabase.from('users').select('*');
+    
+    Object.keys(query).forEach(key => {
+      supabaseQuery = supabaseQuery.eq(key, query[key]);
+    });
+    
+    const { data, error } = await supabaseQuery.single();
+    if (error && error.code !== 'PGRST116') throw error;
+    return data;
+  }
 
-resetToken: { type: String },
-resetTokenExpiration: { type: Date }
-});
+  static async findById(id) {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (error && error.code !== 'PGRST116') throw error;
+    return data;
+  }
 
+  static async updateById(id, updates) {
+    const { data, error } = await supabase
+      .from('users')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  }
+}
 
-const User = mongoose.model('User', userSchema);
 module.exports = User;

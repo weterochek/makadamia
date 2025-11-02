@@ -1,6 +1,5 @@
 require("dotenv").config();
 const express = require("express");
-const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const cors = require("cors");
 const { v4: uuidv4 } = require("uuid");
@@ -20,6 +19,7 @@ const reviewsFile = 'reviews.json';
 const Review = require('./models/Review');
 const Joi = require("joi");
 const sendEmail = require("./utils/sendEmail");
+const supabase = require('./config/supabase');
 
 // Настройка CORS
 const allowedOrigins = [
@@ -31,36 +31,23 @@ const allowedOrigins = [
 console.log("Отправка запроса на /refresh");
 
 const corsOptions = {
-    origin: (origin, callback) => {
-        const allowedOrigins = [
-            "https://makadamia.onrender.com",
-            "https://mobile-site.onrender.com",
-            "http://localhost:3000"
-        ];
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error("Not allowed by CORS"));
-        }
-    },
-    credentials: true, // Обязательно для передачи s!
+    origin: true,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 };
+app.use(cors(corsOptions));
 app.use(express.json());
-app.use(cors(corsOptions));
-// Используем CORS с настройками
-app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use('/api', orderRoutes);
-// Подключение к MongoDB
+// Конфигурация JWT
 const JWT_SECRET = process.env.JWT_SECRET || "ai3ohPh3Aiy9eeThoh8caaM9voh5Aezaenai0Fae2Pahsh2Iexu7Qu/";
-const mongoURI = process.env.MONGO_URI
 const REFRESH_SECRET = process.env.REFRESH_SECRET || "J8$GzP1d&KxT^m4YvNcR";
-mongoose.connect(mongoURI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
-  .then(() => console.log("MongoDB connected"))
-  .catch((error) => console.error("MongoDB connection error:", error));
+
+// Проверка подключения к Supabase
+supabase.from('users').select('count', { count: 'exact', head: true })
+  .then(() => console.log("Supabase connected"))
+  .catch((error) => console.error("Supabase connection error:", error));
 
 // Middleware для обработки JSON
 
@@ -100,19 +87,11 @@ app.post('/cart/add', protect, async (req, res) => {
     let cart = await Cart.findOne({ userId });
 
     if (!cart) {
-      cart = new Cart({ userId, items: [] });
+      cart = await Cart.create({ userId });
     }
 
-    const existingItem = cart.items.find(item => item.productId.toString() === productId);
-
-    if (existingItem) {
-      existingItem.quantity += quantity;
-    } else {
-      cart.items.push({ productId, quantity });
-    }
-
-    await cart.save();
-    res.status(200).json({ message: "Товар добавлен в корзину", cart });
+    await Cart.addItem(cart.id, productId, quantity);
+    res.status(200).json({ message: "Товар добавлен в корзину" });
 
   } catch (error) {
     console.error("Ошибка добавления в корзину:", error);
@@ -124,7 +103,7 @@ app.post('/cart/add', protect, async (req, res) => {
 app.use(express.static(path.join(__dirname, "public")));
 app.get('/user-orders', protect, async (req, res) => {
   try {
-    const orders = await Order.find({ userId: req.user.id }).sort({ createdAt: -1 });
+    const orders = await Order.find({ userId: req.user.id });
     res.json(orders);
   } catch (error) {
     res.status(500).json({ message: "Ошибка при получении заказов" });
@@ -133,11 +112,11 @@ app.get('/user-orders', protect, async (req, res) => {
 // Маршрут для получения товара по ID
 app.get('/s/:id', async (req, res) => {
   try {
-    const product = await Products.findById(req.params.id); // Используется Products, так как это ваша модель
+    const product = await Product.findById(req.params.id);
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
     }
-    res.json(product);  // Отправляем товар
+    res.json(product);
   } catch (error) {
     console.error("Ошибка при получении товара:", error);
     res.status(500).json({ message: 'Ошибка при получении товара' });
@@ -146,7 +125,7 @@ app.get('/s/:id', async (req, res) => {
 
 app.get('/api/products', async (req, res) => {
     try {
-        const products = await Products.find();  // Используется Products, так как это ваша модель
+        const products = await Product.find();
         res.json(products);
     } catch (err) {
         res.status(500).json({ message: "Ошибка получения списка продуктов" });
@@ -156,7 +135,7 @@ app.get('/api/products', async (req, res) => {
 // Получение всех заказов
 app.get('/orders', async (req, res) => {
     try {
-        const orders = await Order.find().populate('items.productId');
+        const orders = await Order.find();
         res.json(orders);
     } catch (err) {
         console.error("❌ Ошибка получения заказов:", err);
@@ -165,21 +144,21 @@ app.get('/orders', async (req, res) => {
 });
 app.post("/api/order", protect, async (req, res) => {
     try {
-        const { items, address, additionalInfo, createdAt } = req.body;
+        const { items, address, additionalInfo, phone, name, totalAmount } = req.body;
 
         if (!items || items.length === 0) {
             return res.status(400).json({ message: "Корзина не может быть пустой" });
         }
 
-        const newOrder = new Order({
+        const newOrder = await Order.create({
             userId: req.user.id,
             address,
             additionalInfo,
-            items,
-            createdAt,
+            phone,
+            name,
+            totalAmount,
+            items
         });
-
-        await newOrder.save();
 
         res.status(201).json({ message: "Заказ успешно оформлен", order: newOrder });
     } catch (error) {
@@ -190,23 +169,17 @@ app.post("/api/order", protect, async (req, res) => {
 app.get("/verify-email", async (req, res) => {
   const { token, email } = req.query;
 
-  const user = await User.findOne({
-    emailVerificationToken: token,
-    emailVerificationExpires: { $gt: Date.now() },
-    $or: [{ email }, { pendingEmail: email }]
-  });
+  const user = await User.findOne({ email_verification_token: token });
 
   if (!user) return res.status(400).send("❌ Ссылка устарела или неверна");
 
-  user.emailVerified = true;
-  if (user.pendingEmail === email) {
-    user.email = user.pendingEmail;
-    user.pendingEmail = undefined;
-  }
-
-  user.emailVerificationToken = undefined;
-  user.emailVerificationExpires = undefined;
-  await user.save();
+  await User.updateById(user.id, {
+    email_verified: true,
+    email: email,
+    pending_email: null,
+    email_verification_token: null,
+    email_verification_expires: null
+  });
 
   res.send("✅ Email успешно подтверждён. Можете закрыть страницу.");
 });
@@ -217,14 +190,15 @@ app.post("/resend-verification", async (req, res) => {
 
   const user = await User.findById(userId);
   if (!user) return res.status(404).json({ message: "Пользователь не найден" });
-  if (user.emailVerified) return res.status(400).json({ message: "Почта уже подтверждена" });
+  if (user.email_verified) return res.status(400).json({ message: "Почта уже подтверждена" });
 
   const token = crypto.randomBytes(32).toString("hex");
-  user.emailVerificationToken = token;
-  user.emailVerificationExpires = Date.now() + 24 * 60 * 60 * 1000;
-  await user.save();
+  await User.updateById(userId, {
+    email_verification_token: token,
+    email_verification_expires: new Date(Date.now() + 24 * 60 * 60 * 1000)
+  });
 
-  const verifyUrl = `https://makadamia.onrender.com/verify-email?token=${token}&email=${user.email}`;
+  const verifyUrl = `https://makadamia-app-etvs.onrender.com/verify-email?token=${token}&email=${user.email}`;
 
   await transporter.sendMail({
     from: '"Makadamia" <seryojabaulin25@gmail.com>',
@@ -254,11 +228,12 @@ app.post('/request-password-reset', async (req, res) => {
   if (!user) return res.status(404).json({ message: "Пользователь не найден" });
 
   const resetToken = crypto.randomBytes(32).toString('hex');
-  user.resetToken = resetToken;
-  user.resetTokenExpiration = Date.now() + 15 * 60 * 1000;
-  await user.save();
+  await User.updateById(user.id, {
+    reset_token: resetToken,
+    reset_token_expiration: new Date(Date.now() + 15 * 60 * 1000)
+  });
 
-  const resetLink = `https://makadamia.onrender.com/reset.html?token=${resetToken}`;
+  const resetLink = `https://makadamia-e0hb.onrender.com/reset.html?token=${resetToken}`;
 
   await sendEmail(user.email, "Восстановление пароля", `
     <h3>Здравствуйте, ${user.username}!</h3>
@@ -274,19 +249,18 @@ app.post('/reset-password/:token', async (req, res) => {
   const { token } = req.params;
   const { password } = req.body;
 
-  const user = await User.findOne({
-    resetToken: token,
-    resetTokenExpiration: { $gt: Date.now() }
-  });
+  const user = await User.findOne({ reset_token: token });
 
   if (!user) {
     return res.status(400).json({ message: "Ссылка устарела или недействительна" });
   }
 
-  user.password = await bcrypt.hash(password, 12);
-  user.resetToken = undefined;
-  user.resetTokenExpiration = undefined;
-  await user.save();
+  const hashedPassword = await bcrypt.hash(password, 12);
+  await User.updateById(user.id, {
+    password: hashedPassword,
+    reset_token: null,
+    reset_token_expiration: null
+  });
 
   res.json({ message: "Пароль успешно обновлён" });
 });
@@ -319,27 +293,13 @@ app.post('/reviews', protect, async (req, res) => {
             return res.status(404).json({ message: 'Пользователь не найден' });
         }
 
-        const review = new Review({
+        const review = await Review.create({
             rating,
             comment,
             username: user.username,
             displayName: displayName || null,
-            userId: user._id
+            userId: user.id
         });
-
-        await review.save();
-
-        // Также сохраняем в файл для обратной совместимости
-        const reviews = readReviews();
-        reviews.push({
-            id: review._id.toString(),
-            rating: review.rating,
-            comment: review.comment,
-            username: review.username,
-            displayName: review.displayName,
-            date: review.date
-        });
-        saveReviews(reviews);
 
         res.status(201).json(review);
     } catch (error) {
@@ -376,15 +336,15 @@ function generateTokens(user, site) {
     const issuedAt = Math.floor(Date.now() / 1000);
     
     const accessToken = jwt.sign(
-        { id: user._id, username: user.username, site: "https://makadamia.onrender.com", iat: issuedAt },
+        { id: user.id, username: user.username, site: "https://makadamia-e0hb.onrender.com", iat: issuedAt },
         JWT_SECRET,
-        { expiresIn: "30m" }  // ⏳ Access-токен на 30 минут
+        { expiresIn: "30m" }
     );
 
     const refreshToken = jwt.sign(
-        { id: user._id, username: user.username, site: "https://makadamia.onrender.com", iat: issuedAt },
+        { id: user.id, username: user.username, site: "https://makadamia-e0hb.onrender.com", iat: issuedAt },
         REFRESH_SECRET,
-        { expiresIn: "7d" }  // 🔄 Refresh-токен на 7 дней
+        { expiresIn: "7d" }
     );
 
     return { accessToken, refreshToken };
@@ -422,9 +382,7 @@ app.post('/register', async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 12);
-    const newUser = new User({ username, password: hashedPassword, email });
-
-    await newUser.save();
+    const newUser = await User.create({ username, password: hashedPassword, email });
 
     console.log(`Пользователь "${username}" успешно зарегистрирован.`);
     return res.status(201).json({ message: 'Пользователь успешно зарегистрирован' });
@@ -450,10 +408,10 @@ app.post('/login', async (req, res) => {
     secure: true,
     sameSite: "None",
     path: "/",
-    domain: "https://makadamia.onrender.com", // 💡 строго ограничиваем домен
+    domain: "makadamia-e0hb.onrender.com", // 💡 строго ограничиваем домен
     maxAge: 30 * 24 * 60 * 60 * 1000
 });
-    res.json({ accessToken, userId: user._id });
+    res.json({ accessToken, userId: user.id });
 });
 
 
@@ -477,7 +435,7 @@ res.clearCookie("refreshTokenPC", {
   secure: true,
   sameSite: 'None',
   path: "/",
-  domain: "https://makadamia.onrender.com"
+  domain: "makadamia-e0hb.onrender.com"
 });
 
             return res.status(403).json({ message: "Refresh-токен недействителен или истёк" });
@@ -532,7 +490,7 @@ res.clearCookie("refreshTokenPC", {
     secure: true,
     sameSite: 'None',
     path: "/",
-    domain: "https://makadamia.onrender.com"
+    domain: "makadamia-e0hb.onrender.com"
 });
 
     res.json({ message: 'Вы вышли из системы' });
@@ -590,7 +548,7 @@ app.post("/account/resend-verification", protect, async (req, res) => {
   user.emailVerificationLastSent = now;
   await user.save();
 
-  const verifyUrl = `https://makadamia.onrender.com/verify-email?token=${token}&email=${user.pendingEmail}`;
+  const verifyUrl = `https://makadamia-e0hb.onrender.com/verify-email?token=${token}&email=${user.pendingEmail}`;
 
   await sendEmail(user.pendingEmail, "Подтверждение нового email", `
     <h2>Подтвердите новую почту</h2>
@@ -623,7 +581,7 @@ app.post("/account/email-change", protect, async (req, res) => {
   user.emailVerificationLastSent = now;
   await user.save();
 
-  const verifyUrl = `https://makadamia.onrender.com/verify-email?token=${token}&email=${email}`;
+  const verifyUrl = `https://makadamia-e0hb.onrender.com/verify-email?token=${token}&email=${email}`;
 
   await sendEmail(email, "Подтверждение нового email", `
     <h2>Подтвердите новую почту</h2>
@@ -645,7 +603,7 @@ app.get('/account', protect, async (req, res) => {
             return res.status(401).json({ message: "Не авторизован" });
         }
 
-        const user = await User.findById(req.user.id).select("username name city email");
+        const user = await User.findById(req.user.id);
         if (!user) {
             return res.status(404).json({ message: "Пользователь не найден" });
         }
@@ -660,7 +618,7 @@ res.json({
   name: user.name,
   city: user.city,
   email: user.email,
-  emailVerified: user.emailVerified // ⬅️ добавлено
+  emailVerified: user.email_verified
 });
     } catch (error) {  // ✅ Добавляем обработку ошибки
         console.error("Ошибка при загрузке аккаунта:", error);
@@ -676,27 +634,28 @@ app.put('/account', protect, async (req, res) => {
             return res.status(404).json({ message: 'Пользователь не найден' });
         }
 
-        if (name) user.name = name;  // Обновляем имя
-        if (city) user.city = city;  // Обновляем город
-        if (username) user.username = username;  // Обновляем username
-        if (password) user.password = await bcrypt.hash(password, 12);  // Обновляем пароль
+        const updates = {};
+        if (name) updates.name = name;
+        if (city) updates.city = city;
+        if (username) updates.username = username;
+        if (password) updates.password = await bcrypt.hash(password, 12);
+        
         if (email && email !== user.email) {
-    user.pendingEmail = email;
+            const token = crypto.randomBytes(32).toString("hex");
+            updates.pending_email = email;
+            updates.email_verification_token = token;
+            updates.email_verification_expires = new Date(Date.now() + 3600000);
 
-    const token = crypto.randomBytes(32).toString("hex");
-    user.emailVerificationToken = token;
-    user.emailVerificationExpires = Date.now() + 3600000; // 1 час
+            const verifyLink = `https://makadamia-e0hb.onrender.com/verify-email?token=${token}&email=${email}`;
+            await transporter.sendMail({
+                to: email,
+                subject: "Подтверждение нового email",
+                html: `<p>Вы запросили изменение email. Подтвердите его по ссылке:</p><p><a href="${verifyLink}">${verifyLink}</a></p>`
+            });
+        }
 
-    const verifyLink = `${user.site || "https://makadamia.onrender.com"}/verify-email?token=${token}&email=${email}`;
-    await transporter.sendMail({
-      to: email,
-      subject: "Подтверждение нового email",
-      html: `<p>Вы запросили изменение email. Подтвердите его по ссылке:</p><p><a href="${verifyLink}">${verifyLink}</a></p>`
-    });
-}
-
-        await user.save(); // Сохраняем обновлённые данные
-        res.json({ message: 'Аккаунт обновлён', user });
+        const updatedUser = await User.updateById(req.user.id, updates);
+        res.json({ message: 'Аккаунт обновлён', user: updatedUser });
     } catch (error) {
         res.status(500).json({ message: 'Ошибка при обновлении аккаунта', error: error.message });
     }

@@ -1,34 +1,33 @@
-const mongoose = require("mongoose");
+const supabase = require('../config/supabase');
 
-const reviewSchema = new mongoose.Schema({
-    rating: {
-        type: Number,
-        required: true,
-        min: 1,
-        max: 5
-    },
-    comment: {
-        type: String,
-        required: true
-    },
-    username: {
-        type: String,
-        required: true
-    },
-    displayName: {
-        type: String,
-        default: null
-    },
-    userId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
-    },
-    date: {
-        type: Date,
-        default: Date.now
-    }
-});
+class Review {
+  static async find() {
+    const { data, error } = await supabase
+      .from('reviews')
+      .select('*')
+      .order('date', { ascending: false });
+    
+    if (error) throw error;
+    return data;
+  }
 
-module.exports = mongoose.model("Review", reviewSchema);
+  static async create(reviewData) {
+    const { data, error } = await supabase
+      .from('reviews')
+      .insert({
+        user_id: reviewData.userId,
+        username: reviewData.username,
+        display_name: reviewData.displayName,
+        rating: reviewData.rating,
+        comment: reviewData.comment
+      })
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  }
+}
+
+module.exports = Review;
 
