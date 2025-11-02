@@ -10,7 +10,7 @@ let cart = JSON.parse(localStorage.getItem('cart')) || {};
 
     if (sessionStorage.getItem("redirected")) {
         console.log("Редирект уже выполнялся, прерываем.");
-        return;ы
+        return;
     }
 
     if (userAgent.includes("mobile") && !currentURL.includes("mobile-site.onrender.com")) {
@@ -68,7 +68,7 @@ async function loadProfileData() {
   if (!token) return;
 
   try {
-    const res = await fetch("https://makadamia.onrender.com/account", {
+    const res = await fetch("https://makadamia-e0hb.onrender.com/account", {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`
@@ -78,10 +78,10 @@ async function loadProfileData() {
     if (!res.ok) throw new Error("Ошибка HTTP: " + res.status);
 
     const data = await res.json();
-const user = data.user;
+const user = data;
       const emailWarning = document.getElementById("emailWarning");
 if (emailWarning) {
-    if (!user.emailVerified) {
+    if (!data.emailVerified) {
         emailWarning.style.display = "block";
     } else {
         emailWarning.style.display = "none";
@@ -118,7 +118,7 @@ if (authButton && cabinetButton) {
 
 async function loadProductMap() {
     try {
-        const response = await fetch('https://makadamia.onrender.com/api/products');
+        const response = await fetch('https://makadamia-e0hb.onrender.com/api/products');
         const products = await response.json();
         products.forEach(product => {
             productMap[product._id] = { name: product.name, price: product.price };
@@ -249,7 +249,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const token = localStorage.getItem("accessToken");
   if (!token) return;
 
-  fetch("https://makadamia.onrender.com/account", {
+  fetch("https://makadamia-e0hb.onrender.com/account", {
     method: "GET",
     headers: {
       Authorization: `Bearer ${token}`
@@ -298,21 +298,24 @@ function showStatus(message, type = "info") {
 // Функция загрузки отзывов
 async function loadReviews() {
     try {
-        const response = await fetch('/reviews');
+        const response = await fetch('https://makadamia-e0hb.onrender.com/reviews');
         if (!response.ok) {
             throw new Error('Failed to load reviews');
         }
         const reviews = await response.json();
         
         const reviewContainer = document.getElementById('reviewContainer');
+        if (!reviewContainer) return;
         reviewContainer.innerHTML = '';
         const totalReviews = reviews.length;
         const totalRating = reviews.reduce((sum, review) => sum + Number(review.rating), 0);
         const averageRating = totalReviews ? (totalRating / totalReviews).toFixed(1) : "0.0";
 
         // Отображение
-        document.getElementById("averageRating").textContent = averageRating;
-        document.getElementById("totalReviews").textContent = `${totalReviews} ${getPluralReviews(totalReviews)}`;
+        const avgRating = document.getElementById("averageRating");
+        const totalReviewsEl = document.getElementById("totalReviews");
+        if (avgRating) avgRating.textContent = averageRating;
+        if (totalReviewsEl) totalReviewsEl.textContent = `${totalReviews} ${getPluralReviews(totalReviews)}`;
         // Применяем фильтры
         let filteredReviews = [...reviews];
         
@@ -331,7 +334,8 @@ async function loadReviews() {
         // Если нет отзывов, показываем сообщение
         if (filteredReviews.length === 0) {
             reviewContainer.innerHTML = '<p class="no-reviews">Пока нет отзывов. Будьте первым!</p>';
-            document.getElementById('pagination').style.display = 'none';
+            const pagination = document.getElementById('pagination');
+            if (pagination) pagination.style.display = 'none';
         return;
     }
 
@@ -377,6 +381,7 @@ async function loadReviews() {
         // Функция для создания кнопок пагинации
         function createPaginationButtons() {
             const paginationContainer = document.getElementById('pagination');
+            if (!paginationContainer) return;
             paginationContainer.innerHTML = '';
             
             // Кнопка "Предыдущая страница"
@@ -673,7 +678,7 @@ async function handleCheckoutFormSubmit(event) {
     console.log("📡 Отправка данных заказа:", orderData);
 
     try {
-        const response = await fetch("https://makadamia.onrender.com/api/order", {
+        const response = await fetch("https://makadamia-e0hb.onrender.com/api/order", {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${token}`,
@@ -927,7 +932,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Загружаем заказы при загрузке страницы
     try {
         
-        const response = await fetch(`/user-orders/${userId}`, {
+        const response = await fetch(`https://makadamia-e0hb.onrender.com/user-orders/${userId}`, {
   credentials: "include",
   method: "GET",
   headers: {
@@ -1129,6 +1134,8 @@ function renderCheckoutCart() {
     const cartItemsContainer = document.getElementById("cartItems");
     const cartTotalPrice = document.getElementById("cartTotalPrice");
 
+    if (!cartItemsContainer) return;
+    
     cartItemsContainer.innerHTML = "";
     let totalPrice = 0;
 
@@ -1147,7 +1154,7 @@ function renderCheckoutCart() {
         cartItemsContainer.appendChild(cartItemElement);
     }
 
-    cartTotalPrice.textContent = totalPrice.toFixed(2) + " ₽";
+    if (cartTotalPrice) cartTotalPrice.textContent = totalPrice.toFixed(2) + " ₽";
 }
 function updateTotal() {
     const cartItems = getCartItems();
@@ -1186,7 +1193,7 @@ function resetAddToCartButtons() {
 
 // Загрузка корзины из localStorage при загрузке страницы
 document.addEventListener("DOMContentLoaded", () => {
-    loadCartFromLocalStorage();
+    // loadCartFromLocalStorage(); // Функция не определена
     const cartModal = document.getElementById("cartModal");
     if (cartModal) cartModal.style.display = "none";
 });
@@ -1256,7 +1263,7 @@ async function refreshAccessToken() {
     console.log("🔄 Запрос на обновление access-токена...");
 
     try {
-        const response = await fetch("https://makadamia.onrender.com/refresh", {
+        const response = await fetch("https://makadamia-e0hb.onrender.com/refresh", {
             method: "POST",
             credentials: "include"  // Отправляем cookies
         });
@@ -1501,7 +1508,7 @@ function checkAuthStatus() {
 
 async function logout() {
     try {
-        const response = await fetch("https://makadamia.onrender.com/logout", { 
+        const response = await fetch("https://makadamia-e0hb.onrender.com/logout", { 
             method: "POST", 
             credentials: "include"
         });
@@ -1586,7 +1593,7 @@ function goToCheckoutPage() {
 async function updateAccount(newUsername, newPassword) {
   const token = localStorage.getItem("accessToken");
 
-  const response = await fetch("https://makadamia.onrender.com/account", {
+  const response = await fetch("https://makadamia-e0hb.onrender.com/account", {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -1632,7 +1639,7 @@ async function loadOrders() {
 
     try {
         const userId = localStorage.getItem("userId");
-        const response = await fetch(`https://makadamia.onrender.com/user-orders/${userId}`, {
+        const response = await fetch(`https://makadamia-e0hb.onrender.com/user-orders/${userId}`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,
