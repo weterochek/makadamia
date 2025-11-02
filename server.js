@@ -53,7 +53,7 @@ app.use(cookieParser());
 app.use('/api', orderRoutes);
 // Подключение к MongoDB
 const JWT_SECRET = process.env.JWT_SECRET || "ai3ohPh3Aiy9eeThoh8caaM9voh5Aezaenai0Fae2Pahsh2Iexu7Qu/";
-const mongoURI = process.env.MONGO_URI || "mongodb+srv://makadamia:tAboLWufOqunAY09@cluster0.3v6ie.mongodb.net/moviebox?appName=Cluster0";
+const mongoURI = process.env.MONGO_URI || "mongodb+srv://makadamia:tAboLWufOqunAY09@cluster0.3v6ie.mongodb.net/moviebox?retryWrites=true&w=majority&authSource=admin";
 const REFRESH_SECRET = process.env.REFRESH_SECRET || "J8$GzP1d&KxT^m4YvNcR";
 mongoose.connect(mongoURI, {
   useNewUrlParser: true,
