@@ -33,7 +33,7 @@ console.log("Отправка запроса на /refresh");
 const corsOptions = {
     origin: (origin, callback) => {
         const allowedOrigins = [
-            "https://makadamia-e0hb.onrender.com",
+            "https://makadamia.onrender.com",
             "https://mobile-site.onrender.com",
             "http://localhost:3000"
         ];
@@ -53,7 +53,7 @@ app.use(cookieParser());
 app.use('/api', orderRoutes);
 // Подключение к MongoDB
 const JWT_SECRET = process.env.JWT_SECRET || "ai3ohPh3Aiy9eeThoh8caaM9voh5Aezaenai0Fae2Pahsh2Iexu7Qu/";
-const mongoURI = process.env.MONGO_URI || "mongodb://11_whatslide:0a53b4a821bb53479e0982d4f721befc9b406376@odl9-t.h.filess.io:61004/11_whatslide";
+const mongoURI = process.env.MONGO_URI || "MONGO_URI=mongodb+srv://weterochek:tAboLWufOqunAY09@cluster0.3v6ie.mongodb.net/?appName=Cluster0";
 const REFRESH_SECRET = process.env.REFRESH_SECRET || "J8$GzP1d&KxT^m4YvNcR";
 mongoose.connect(mongoURI, {
   useNewUrlParser: true,
@@ -225,7 +225,7 @@ app.post("/resend-verification", async (req, res) => {
   user.emailVerificationExpires = Date.now() + 24 * 60 * 60 * 1000;
   await user.save();
 
-  const verifyUrl = `https://makadamia-app-etvs.onrender.com/verify-email?token=${token}&email=${user.email}`;
+  const verifyUrl = `https://makadamia.onrender.com/verify-email?token=${token}&email=${user.email}`;
 
   await transporter.sendMail({
     from: '"Makadamia" <seryojabaulin25@gmail.com>',
@@ -259,7 +259,7 @@ app.post('/request-password-reset', async (req, res) => {
   user.resetTokenExpiration = Date.now() + 15 * 60 * 1000;
   await user.save();
 
-  const resetLink = `https://makadamia-e0hb.onrender.com/reset.html?token=${resetToken}`;
+  const resetLink = `https://makadamia.onrender.com/reset.html?token=${resetToken}`;
 
   await sendEmail(user.email, "Восстановление пароля", `
     <h3>Здравствуйте, ${user.username}!</h3>
@@ -377,13 +377,13 @@ function generateTokens(user, site) {
     const issuedAt = Math.floor(Date.now() / 1000);
     
     const accessToken = jwt.sign(
-        { id: user._id, username: user.username, site: "https://makadamia-e0hb.onrender.com", iat: issuedAt },
+        { id: user._id, username: user.username, site: "https://makadamia.onrender.com", iat: issuedAt },
         JWT_SECRET,
         { expiresIn: "30m" }  // ⏳ Access-токен на 30 минут
     );
 
     const refreshToken = jwt.sign(
-        { id: user._id, username: user.username, site: "https://makadamia-e0hb.onrender.com", iat: issuedAt },
+        { id: user._id, username: user.username, site: "https://makadamia.onrender.com", iat: issuedAt },
         REFRESH_SECRET,
         { expiresIn: "7d" }  // 🔄 Refresh-токен на 7 дней
     );
@@ -451,7 +451,7 @@ app.post('/login', async (req, res) => {
     secure: true,
     sameSite: "None",
     path: "/",
-    domain: "makadamia-e0hb.onrender.com", // 💡 строго ограничиваем домен
+    domain: "https://makadamia.onrender.com", // 💡 строго ограничиваем домен
     maxAge: 30 * 24 * 60 * 60 * 1000
 });
     res.json({ accessToken, userId: user._id });
@@ -478,7 +478,7 @@ res.clearCookie("refreshTokenPC", {
   secure: true,
   sameSite: 'None',
   path: "/",
-  domain: "makadamia-e0hb.onrender.com"
+  domain: "https://makadamia.onrender.com"
 });
 
             return res.status(403).json({ message: "Refresh-токен недействителен или истёк" });
@@ -533,7 +533,7 @@ res.clearCookie("refreshTokenPC", {
     secure: true,
     sameSite: 'None',
     path: "/",
-    domain: "makadamia-e0hb.onrender.com"
+    domain: "https://makadamia.onrender.com"
 });
 
     res.json({ message: 'Вы вышли из системы' });
@@ -591,7 +591,7 @@ app.post("/account/resend-verification", protect, async (req, res) => {
   user.emailVerificationLastSent = now;
   await user.save();
 
-  const verifyUrl = `https://makadamia-e0hb.onrender.com/verify-email?token=${token}&email=${user.pendingEmail}`;
+  const verifyUrl = `https://makadamia.onrender.com/verify-email?token=${token}&email=${user.pendingEmail}`;
 
   await sendEmail(user.pendingEmail, "Подтверждение нового email", `
     <h2>Подтвердите новую почту</h2>
@@ -624,7 +624,7 @@ app.post("/account/email-change", protect, async (req, res) => {
   user.emailVerificationLastSent = now;
   await user.save();
 
-  const verifyUrl = `https://makadamia-e0hb.onrender.com/verify-email?token=${token}&email=${email}`;
+  const verifyUrl = `https://makadamia.onrender.com/verify-email?token=${token}&email=${email}`;
 
   await sendEmail(email, "Подтверждение нового email", `
     <h2>Подтвердите новую почту</h2>
@@ -688,7 +688,7 @@ app.put('/account', protect, async (req, res) => {
     user.emailVerificationToken = token;
     user.emailVerificationExpires = Date.now() + 3600000; // 1 час
 
-    const verifyLink = `${user.site || "https://makadamia-e0hb.onrender.com"}/verify-email?token=${token}&email=${email}`;
+    const verifyLink = `${user.site || "https://makadamia.onrender.com"}/verify-email?token=${token}&email=${email}`;
     await transporter.sendMail({
       to: email,
       subject: "Подтверждение нового email",
